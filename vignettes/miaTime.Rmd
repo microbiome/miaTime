@@ -1,0 +1,39 @@
+---
+title: "miaTime"
+output: rmarkdown::html_vignette
+vignette: >
+    %\VignetteIndexEntry{miaTime}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>"
+)
+```
+
+`miaTime` implements tools for microbiome time series manipulation based on the
+`SummarizedExperiment` [@SE]  
+
+# Installation
+
+To install `miaTime`, install `devtools` first, if it is not installed.
+Afterwards use the `install_github` function from `devtools`.
+
+```{r, eval=FALSE}
+library(devtools)
+devtools::install_github("microbiome/miaTime")
+```
+# Load *miaTime*
+
+```{r load-packages, message=FALSE, warning=FALSE}
+library("miaTime")
+```
+
+# Session info
+
+```{r}
+sessionInfo()
+```
