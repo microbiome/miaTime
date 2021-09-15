@@ -4,25 +4,25 @@
 \alias{addRank}
 \title{Rank the sample information in a \code{SummarizedExperiment} Object}
 \usage{
-addRank(x, field, rank_field, na.last, ties.method, ...)
+addRank(x, field, field_matrix, rank_field_name, ...)
 }
 \arguments{
 \item{x}{\linkS4class{SummarizedExperiment} object}
 
-\item{field}{A character string indicating the field aimed to be ranked}
+\item{field}{A character value indicating the name of the matrix column that
+is aimed to be ranked.}
 
-\item{rank_field}{A single character value to name the newly ranked field}
+\item{field_matrix}{A matrix that is aimed to be ranked. If the aimed matrix
+string already exists in colData segment, this optional matrix doesn't need
+to be added.}
 
-\item{na.last}{Logical scalar: NA values are put last when \code{TRUE} ,first
-when \code{FALSE}. If \code{'NA'}, they are removed; if \code{"keep"}
-they are kept with rank NA.(default: \code{norm = TRUE})}
-
-\item{ties.method}{a character string indicating the method used in ranking}
+\item{rank_field_name}{A character value to name the newly ranked \code{field}}
 
 \item{...}{Allow new parameters to be defined for this function.}
 }
 \value{
-\linkS4class{SummarizedExperiment} object with ranked field added
+\linkS4class{RangedSummarizedExperiment} object with ranked field
+added
 }
 \description{
 The information stored in \code{colData} in \linkS4class{SummarizedExperiment}
@@ -34,7 +34,7 @@ library(SummarizedExperiment)
 data(airway, package="airway")
 se <- airway
 
-addRank(se, field = "SampleName", rank_field = "SampleName_rank",
+abc <- addRank(se, field = "SampleName", rank_field_name = "SampleName_rank",
                                 na.last ="TRUE", ties.method = "first")
 
 }
