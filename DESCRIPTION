@@ -1,21 +1,26 @@
 Package: miaTime
 Type: Package
-Title: Time Series Analysis
+Title: Microbiome Time Series Analysis
 Version: 0.1.0
 Authors@R:
      c(person(given = "Leo", family = "Lahti", role = c("aut"),
               email = "leo.lahti@iki.fi",
               comment = c(ORCID = "0000-0001-5537-637X")),
        person(given = "Yagmur", family = "Simsek", role = c("aut", "cre"),
-              email = "yagmur.simsek@utu.fi"))
-Description: Time series analysis of microbiome data sets
+              email = "yagmur.simsek.98@gmail.com"))
+Description: 
+    Time series analysis of microbiome data sets is evaluated by the functions
+    in `miaTime` package.
 biocViews: Microbiome, Software, Sequencing, Coverage
 License: Artistic-2.0 | file LICENSE
 Depends:
     SummarizedExperiment
+Imports:
+    methods
 Suggests: 
     rmarkdown,
-    knitr    
+    knitr,
+    airway
 Encoding: UTF-8
 URL: https://github.com/microbiome/miaTime
 LazyData: false

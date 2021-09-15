@@ -1,48 +1,45 @@
 #' Rank the sample information in a `SummarizedExperiment` Object
 #'
 #' The information stored in `colData` in \linkS4class{SummarizedExperiment}
-#' object can be ranked by `addRank` function.
+#' object is ranked by `addRank` function and newly ranked field is added back
+#' to \linkS4class{SummarizedExperiment} object.
 #'
 #' @param x \linkS4class{SummarizedExperiment} object
-#' @param ... Allow new parameters to be defined for this function.
-#' @param na.last  NA values are put last when \code{TRUE} or put first when
-#' \code{FALSE} or they are kept with rank NA when \code{"keep"}
+#' @param field A character string indicating the field aimed to be ranked
+#' @param rank_field A single character value to name the newly ranked field
+#' @param na.last Logical scalar: NA values are put last when \code{TRUE} ,first
+#' when \code{FALSE}. If \code{'NA'}, they are removed; if \code{"keep"}
+#' they are kept with rank NA.(default: \code{norm = TRUE})
 #' @param ties.method a character string indicating the method used in ranking
+#' @param ... Allow new parameters to be defined for this function.
 #'
-#' @return a list shows the ranked components of
-#' \linkS4class{SummarizedExperiment} object
+#' @return \linkS4class{SummarizedExperiment} object with ranked field added
 #'
 #' @examples
 #' library(SummarizedExperiment)
 #' data(airway, package="airway")
 #' se <- airway
 #'
-#' addRank(se, na.last ="TRUE", ties.method = "last")
+#' addRank(se, field = "SampleName", rank_field = "SampleName_rank",
+#'                                 na.last ="TRUE", ties.method = "first")
 #'
-#' @importFrom SummarizedExperiment SummarizedExperiment
+#' @importFrom SummarizedExperiment colData
+#' @importFrom methods setGeneric
 #'
 #' @export
 setGeneric("addRank", signature = "x",
-        function(x,...)
+        function(x, field, rank_field, na.last, ties.method, ...)
             standardGeneric("addRank"))
 
-.is_integer <- function(t){
-    i <- seq_along(t)
-    for (i in t){
-        if(is.integer(t[[i]]) == FALSE){
-        t[-i]
-        }
-    }
-}
-
 setMethod("addRank", signature(x = "SummarizedExperiment"),
-            function(x,
-                    na.last = "TRUE",
-                    ties.method = c("average", "first", "last", "random", "max",
-                        "min"), ...){
+            function(x, field, rank_field,
+                    na.last = TRUE,
+                    ties.method = c("average", "first", "last", "random",
+                                                        "max", "min"), ...){
             col_data <- colData(x)
-            list <- col_data@listData
-            integerlist <- .is_integer(list) #lapply(list, .is_integer)
-            ranked <- rank(integerlist, na.last, ties.method)
-            return(ranked)
+            mdat <- do.call(cbind,lapply(col_data, as.vector))
+            data <- mdat[,field]
+            ranked <- rank(data, na.last, ties.method)
+            x$rank_field <- ranked
+            return(x)
     })

@@ -4,31 +4,37 @@
 \alias{addRank}
 \title{Rank the sample information in a \code{SummarizedExperiment} Object}
 \usage{
-addRank(x, ...)
+addRank(x, field, rank_field, na.last, ties.method, ...)
 }
 \arguments{
 \item{x}{\linkS4class{SummarizedExperiment} object}
 
-\item{...}{Allow new parameters to be defined for this function.}
+\item{field}{A character string indicating the field aimed to be ranked}
 
-\item{na.last}{NA values are put last when \code{TRUE} or put first when
-\code{FALSE} or they are kept with rank NA when \code{"keep"}}
+\item{rank_field}{A single character value to name the newly ranked field}
+
+\item{na.last}{Logical scalar: NA values are put last when \code{TRUE} ,first
+when \code{FALSE}. If \code{'NA'}, they are removed; if \code{"keep"}
+they are kept with rank NA.(default: \code{norm = TRUE})}
 
 \item{ties.method}{a character string indicating the method used in ranking}
+
+\item{...}{Allow new parameters to be defined for this function.}
 }
 \value{
-a list shows the ranked components of
-\linkS4class{SummarizedExperiment} object
+\linkS4class{SummarizedExperiment} object with ranked field added
 }
 \description{
 The information stored in \code{colData} in \linkS4class{SummarizedExperiment}
-object can be ranked by \code{addRank} function.
+object is ranked by \code{addRank} function and newly ranked field is added back
+to \linkS4class{SummarizedExperiment} object.
 }
 \examples{
 library(SummarizedExperiment)
 data(airway, package="airway")
 se <- airway
 
-addRank(se, na.last ="TRUE", ties.method = "last")
+addRank(se, field = "SampleName", rank_field = "SampleName_rank",
+                                na.last ="TRUE", ties.method = "first")
 
 }

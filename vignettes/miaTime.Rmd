@@ -26,6 +26,7 @@ Afterwards use the `install_github` function from `devtools`.
 library(devtools)
 devtools::install_github("microbiome/miaTime")
 ```
+
 # Load *miaTime*
 
 ```{r load-packages, message=FALSE, warning=FALSE}
