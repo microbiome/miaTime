@@ -34,7 +34,14 @@ library(SummarizedExperiment)
 data(airway, package="airway")
 se <- airway
 
-abc <- addRank(se, field = "SampleName", rank_field_name = "SampleName_rank",
-                                na.last ="TRUE", ties.method = "first")
+rank <- addRank(se,field = "SampleName", rank_field_name = "SampleName_rank",
+                na.last = TRUE, ties.method = "first")
+
+#example 2: new matrix and its rank added
+newmatrix <- matrix(1:8, nrow = 8, ncol = 1)
+
+Added_field <- addRank(se, field = "NewMatrixAdded" ,
+            field_matrix = newmatrix, rank_field_name = "newRankedField" ,
+            na.last = TRUE , ties.method = "first")
 
 }
