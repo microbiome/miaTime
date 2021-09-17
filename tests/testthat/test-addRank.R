@@ -1,22 +1,17 @@
-library(testthat)
-library(miaTime)
 
-data(airway, package="airway")
-se <- airway
-newmatrix <- matrix(1:8, nrow = 8, ncol = 1)
+data(GlobalPatterns, package="mia")
+se <- GlobalPatterns
 
 test_that("addRank", {
-    expect_error(miaTime:::addRank(x = se, field = "SampleName"),
-                'argument "rank_field_name" is missing' , fixed = TRUE)
-    expect_error(miaTime:::addRank(x = se, rank_field_name = "SampleName_rank"),
-                'argument "field" is missing')
+    expect_error(miaTime:::addRank(x = se, field = "SampleType", na.last = TRUE , ties.method = "first"),
+                'argument "rank_field_name" is missing')
 
-    Added_field <- addRank(se, field = "NewMatrixAdded" ,
-                field_matrix = newmatrix, rank_field_name = "newRankedField" ,
+    se$newfield <- matrix(1:26, nrow = 26, ncol = 1)
+    se2 <- addRank(se, field = "newfield" ,
+                rank_field_name = "newfield_rank" ,
                 na.last = TRUE , ties.method = "first")
 
-    expect_true(is.matrix(newmatrix))
-    expect_equal(dim(newmatrix), c(8,1))
-    expect_s4_class(Added_field, "RangedSummarizedExperiment")
+    expect_equal(dim(se$newfield), c(26,1))
+    expect_s4_class(se2, "TreeSummarizedExperiment")
 
 })

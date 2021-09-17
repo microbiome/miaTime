@@ -1,21 +1,30 @@
 ---
-title: "miaTime"
-output: rmarkdown::html_vignette
+title: "miaTime: Microbiome Time Series Analysis"
+date: "`r Sys.Date()`"
+package: 
+    miaTime
+output: 
+    BiocStyle::html_document:
+        fig_height: 7
+        fig_width: 10
+        toc: yes
+        toc_depth: 2
+        number_sections: true
 vignette: >
     %\VignetteIndexEntry{miaTime}
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-    collapse = TRUE,
-    comment = "#>"
-)
+```{r, echo=FALSE}
+knitr::opts_chunk$set(cache = FALSE,
+                        fig.width = 9,
+                        message = FALSE,
+                        warning = FALSE)
 ```
 
 `miaTime` implements tools for microbiome time series manipulation based on the
-`SummarizedExperiment` [@SE]  
+`TreeSummarizedExperiment` [@TSE] 
 
 # Installation
 

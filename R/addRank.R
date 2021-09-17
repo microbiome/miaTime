@@ -1,60 +1,51 @@
-#' Rank the sample information in a `SummarizedExperiment` Object
+#' Rank the sample information in a `TreeSummarizedExperiment` Object
 #'
-#' The information stored in `colData` in \linkS4class{SummarizedExperiment}
-#' object is ranked by `addRank` function and newly ranked field is added back
-#' to \linkS4class{SummarizedExperiment} object.
+#' The information stored in `colData` in
+#' \linkS4class{TreeSummarizedExperiment} object is ranked by `addRank`
+#' function and newly ranked field is added back to
+#' \linkS4class{TreeSummarizedExperiment} object.
 #'
-#' @param x \linkS4class{SummarizedExperiment} object
+#' @param x \linkS4class{TreeSummarizedExperiment} object containing time series
 #' @param field A character value indicating the name of the matrix column that
 #' is aimed to be ranked.
-#' @param field_matrix A matrix that is aimed to be ranked. If the aimed matrix
-#' string already exists in colData segment, this optional matrix doesn't need
-#' to be added.
 #' @param rank_field_name A character value to name the newly ranked `field`
 #' @param ... Allow new parameters to be defined for this function.
 #'
-#' @return \linkS4class{RangedSummarizedExperiment} object with ranked field
+#' @return \linkS4class{TreeSummarizedExperiment} object with ranked field
 #' added
 #'
-#' @examples
-#' library(SummarizedExperiment)
-#' data(airway, package="airway")
-#' se <- airway
+#' @docType methods
+#' @aliases addRank-TreeSummarizedExperiment
+#' @aliases addRank,TreeSummarizedExperiment-method
+#' @importFrom SummarizedExperiment colData
+#' @importFrom SummarizedExperiment colData<-
 #'
-#' rank <- addRank(se,field = "SampleName", rank_field_name = "SampleName_rank",
+#' @examples
+#' library(TreeSummarizedExperiment)
+#' data(GlobalPatterns, package="mia")
+#' se <- GlobalPatterns
+#'
+#' se1 <- addRank(se,field = "SampleType", rank_field_name = "SampleType_rank",
 #'                 na.last = TRUE, ties.method = "first")
 #'
 #' #example 2: new matrix and its rank added
-#' newmatrix <- matrix(1:8, nrow = 8, ncol = 1)
 #'
-#' Added_field <- addRank(se, field = "NewMatrixAdded" ,
-#'             field_matrix = newmatrix, rank_field_name = "newRankedField" ,
-#'             na.last = TRUE , ties.method = "first")
-#'
-#' @importFrom SummarizedExperiment colData
-#' @importFrom SummarizedExperiment colData<-
-#' @importFrom methods setGeneric
+#' se$newfield <- matrix(1:26, nrow = 26, ncol = 1)
+#' se2 <- addRank(se, field = "newfield" ,
+#'                 rank_field_name = "newfield_rank" , na.last = TRUE ,
+#'                 ties.method = "first")
 #'
 #' @export
 setGeneric("addRank", signature = "x",
-        function(x, field, field_matrix, rank_field_name, ...)
+        function(x, field, rank_field_name, ...)
             standardGeneric("addRank"))
 
-setMethod("addRank", signature(x = "SummarizedExperiment"),
-            function(x, field, field_matrix, rank_field_name, ...){
+setMethod("addRank", signature(x = "TreeSummarizedExperiment"),
+            function(x, field, rank_field_name, ...){
             col_data <- colData(x)
             mdat <- do.call(cbind,lapply(col_data, as.vector))
-
-            if ( field %in% colnames(mdat) == TRUE ){
-                data <- mdat[, field]
-                } else if (missing(field_matrix)){
-                            return(NULL)
-                } else {
-                        data <- field_matrix
-                        col_data[, field] <- data
-            }
-
-            ranked <- rank( x = data, ...)
+            data <- mdat[, field]
+            ranked <- rank(data, ...)
             col_data[, rank_field_name] <- ranked
             colData(x) <- col_data
             return(x)

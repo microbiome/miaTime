@@ -3,4 +3,3 @@
 export(addRank)
 importFrom(SummarizedExperiment,"colData<-")
 importFrom(SummarizedExperiment,colData)
-importFrom(methods,setGeneric)

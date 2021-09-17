@@ -16,11 +16,14 @@ License: Artistic-2.0 | file LICENSE
 Depends:
     SummarizedExperiment
 Imports:
-    methods
+    methods,
+    TreeSummarizedExperiment
 Suggests: 
     rmarkdown,
     knitr,
-    airway,
+    mia,
+    devtools,
+    BiocStyle,
     testthat (>= 3.0.0)
 Encoding: UTF-8
 URL: https://github.com/microbiome/miaTime
