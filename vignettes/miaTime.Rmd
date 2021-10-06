@@ -24,7 +24,7 @@ knitr::opts_chunk$set(cache = FALSE,
 ```
 
 `miaTime` implements tools for microbiome time series manipulation based on the
-`TreeSummarizedExperiment` [@TSE] 
+`SummarizedExperiment` [@SE] 
 
 # Installation
 
