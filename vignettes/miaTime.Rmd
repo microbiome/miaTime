@@ -1,6 +1,11 @@
 ---
 title: "miaTime: Microbiome Time Series Analysis"
 date: "`r Sys.Date()`"
+author:
+    - name: Leo Lahti
+    email: leo.lahti@iki.fi
+    - name: Yagmur Simsek
+    email: yagmur.simsek@hsrw.org
 package: 
     miaTime
 output: 
@@ -23,6 +28,8 @@ knitr::opts_chunk$set(cache = FALSE,
                         warning = FALSE)
 ```
 
+# Introduction
+
 `miaTime` implements tools for microbiome time series manipulation based on the
 `SummarizedExperiment` [@SE] 
 
@@ -41,6 +48,30 @@ devtools::install_github("microbiome/miaTime")
 ```{r load-packages, message=FALSE, warning=FALSE}
 library("miaTime")
 ```
+
+# Functions
+
+`TimePointsToDate` converts time points to POSIXct class time object. 
+The dataset stored in `miaTime` can be used as an example.
+```{r}
+library(miaTime)
+data(hitchip1006)
+force(hitchip1006)
+HitchipDate <- TimePointsToDate(hitchip1006, "time", origin = "1970-01-01")
+```
+
+`addOrderSequence` adds a new field that gives the rank of the chosen field.
+```{r}
+data(GlobalPatterns, package="mia")
+se <- GlobalPatterns
+se1 <- addOrderSequence(se,field = "SampleType",
+            rank_field_name = "SampleType_rank",
+            na.last = TRUE, ties.method = "first")
+```
+
+The functions in `miaTime` are applied on `SummarizedExperiment`
+object or `TreeSummarizedExperiment` object. It returns same object 
+class as given.
 
 # Session info
 

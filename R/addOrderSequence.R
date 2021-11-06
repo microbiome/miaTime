@@ -43,7 +43,7 @@ setGeneric("addOrderSequence", signature = "x",
         function(x, field, rank_field_name, ...)
             standardGeneric("addOrderSequence"))
 
-setMethod("addOrderSequence", "SummarizedExperiment",
+setMethod("addOrderSequence", "TreeSummarizedExperiment",
     function(x, field, rank_field_name, ...){
         col_data <- colData(x)[,field]
         colData(x)[, rank_field_name] <- rank(col_data, ...)
