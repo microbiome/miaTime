@@ -15,8 +15,7 @@ biocViews: Microbiome, Software, Sequencing, Coverage
 License: Artistic-2.0 | file LICENSE
 Depends:
     R (>= 4.1),
-    SummarizedExperiment,
-    TreeSummarizedExperiment
+    SummarizedExperiment
 Imports:
     methods
 Suggests: 

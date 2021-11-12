@@ -7,15 +7,16 @@
 \alias{addOrderSequence,SummarizedExperiment-method}
 \title{Rank the sample information in a \code{SummarizedExperiment} Object}
 \usage{
-addOrderSequence(x, field, rank_field_name, ...)
+addOrderSequence(data, field, rank_field_name, ...)
 }
 \arguments{
-\item{x}{\linkS4class{SummarizedExperiment} object containing time series}
+\item{data}{: \linkS4class{SummarizedExperiment} object containing time
+series.}
 
-\item{field}{A character value indicating the name of the matrix column that
-is aimed to be ranked.}
+\item{field}{: A character value indicating the name of the matrix
+column that is aimed to be ranked.}
 
-\item{rank_field_name}{A character value to name the newly ranked \code{field}}
+\item{rank_field_name}{: A character value to name the newly ranked \code{field}}
 
 \item{...}{Allow new parameters to be defined for this function.}
 }
@@ -36,6 +37,11 @@ se <- GlobalPatterns
 se1 <- addOrderSequence(se,field = "SampleType",
             rank_field_name = "SampleType_rank",
             na.last = TRUE, ties.method = "first")
+
+data(hitchip1006)
+hitchip_data <- hitchip1006
+hitchip_data <- addOrderSequence(hitchip_data, field = "time",
+            rank_field_name = "time_rank")
 
 #example 2: new matrix and its rank added
 

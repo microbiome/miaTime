@@ -5,7 +5,8 @@
 \alias{hitchip1006}
 \title{HITChip Atlas with 1006 Western Adults}
 \format{
-The data set in \code{\link{TreeSummarizedExperiment-class}} format.
+The data set in \code{\link{TreeSummarizedExperiment-class}}
+format.
 }
 \usage{
 data(hitchip1006)

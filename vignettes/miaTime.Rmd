@@ -2,10 +2,10 @@
 title: "miaTime: Microbiome Time Series Analysis"
 date: "`r Sys.Date()`"
 author:
-    - name: Leo Lahti
-    email: leo.lahti@iki.fi
-    - name: Yagmur Simsek
-    email: yagmur.simsek@hsrw.org
+- name: Leo Lahti
+  email: leo.lahti@iki.fi
+- name: Yagmur Simsek
+  email: yagmur.simsek@hsrw.org
 package: 
     miaTime
 output: 
@@ -51,13 +51,37 @@ library("miaTime")
 
 # Functions
 
-`TimePointsToDate` converts time points to POSIXct class time object. 
-The dataset stored in `miaTime` can be used as an example.
+`timeToDate` converts numeric time points to characters that contain time. 
+The dataset `hitchip1006` stored in `miaTime` can be used as an example.
 ```{r}
 library(miaTime)
 data(hitchip1006)
-force(hitchip1006)
-HitchipDate <- TimePointsToDate(hitchip1006, "time", origin = "1970-01-01")
+hitchipDate <- timeToDate(hitchip1006, "time", unit = "mins")
+
+colData(hitchip1006)$time[c(1141:1151)]
+```
+```{r}
+hitchipDate[c(1141:1151)]
+
+```
+This can be added to `SummarizedExperiment` object that is used to store 
+`hitchip1006`. 
+```{r}
+colData(hitchip1006)$clock <- hitchipDate
+colData(hitchip1006)
+```
+
+Function `timeDifferences` helps to find the consecutive time difference and 
+the distance from the specified time point. It also converts the given time
+character is converted to numeric time.
+
+```{r}
+hitchipTime <- timeDifferences(hitchipDate, baseline = 1, units = "mins")
+
+colData(hitchip1006)$time_diff <- hitchipTime$Consecutive
+colData(hitchip1006)$base_diff <- hitchipTime$Baseline
+
+colData(hitchip1006)
 ```
 
 `addOrderSequence` adds a new field that gives the rank of the chosen field.

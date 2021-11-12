@@ -5,10 +5,11 @@
 #' function and newly ranked field is added back to
 #' \linkS4class{SummarizedExperiment} object.
 #'
-#' @param x \linkS4class{SummarizedExperiment} object containing time series
-#' @param field A character value indicating the name of the matrix column that
-#' is aimed to be ranked.
-#' @param rank_field_name A character value to name the newly ranked `field`
+#' @param data : \linkS4class{SummarizedExperiment} object containing time
+#' series.
+#' @param field : A character value indicating the name of the matrix
+#' column that is aimed to be ranked.
+#' @param rank_field_name : A character value to name the newly ranked `field`
 #' @param ... Allow new parameters to be defined for this function.
 #'
 #' @return \linkS4class{SummarizedExperiment} object with ranked field
@@ -21,7 +22,6 @@
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment colData<-
 #' @importFrom methods setGeneric
-#' @importFrom TreeSummarizedExperiment TreeSummarizedExperiment
 #'
 #' @examples
 #' data(GlobalPatterns, package="mia")
@@ -31,6 +31,11 @@
 #'             rank_field_name = "SampleType_rank",
 #'             na.last = TRUE, ties.method = "first")
 #'
+#' data(hitchip1006)
+#' hitchip_data <- hitchip1006
+#' hitchip_data <- addOrderSequence(hitchip_data, field = "time",
+#'             rank_field_name = "time_rank")
+#'
 #' #example 2: new matrix and its rank added
 #'
 #' se$newfield <- matrix(1:26, nrow = 26, ncol = 1)
@@ -39,14 +44,14 @@
 #'                 ties.method = "first")
 #'
 #' @export
-setGeneric("addOrderSequence", signature = "x",
-        function(x, field, rank_field_name, ...)
+setGeneric("addOrderSequence", signature = "data",
+        function(data, field, rank_field_name, ...)
             standardGeneric("addOrderSequence"))
 
-setMethod("addOrderSequence", "TreeSummarizedExperiment",
-    function(x, field, rank_field_name, ...){
-        col_data <- colData(x)[,field]
-        colData(x)[, rank_field_name] <- rank(col_data, ...)
-        return(x)
+setMethod("addOrderSequence", "SummarizedExperiment",
+    function(data, field, rank_field_name, ...){
+        col_data <- colData(data)[,field]
+        colData(data)[, rank_field_name] <- rank(col_data, ...)
+        return(data)
     }
 )
