@@ -17,6 +17,7 @@ Depends:
     R (>= 4.1),
     SummarizedExperiment
 Imports:
+    lubridate,
     methods
 Suggests: 
     rmarkdown,

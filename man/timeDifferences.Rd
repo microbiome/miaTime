@@ -2,42 +2,37 @@
 % Please edit documentation in R/timeDifferences.R
 \name{timeDifferences}
 \alias{timeDifferences}
-\title{Time field is provided in the format of "\%H:\%M:\%S" can be converted to
-numeric values depending on the units. Consecutive time difference of these
-numeric values can be then calculated as well as the time difference based on
-the certain time point with parameter \code{baseline}.}
+\title{Consecutive time difference of numeric values can be calculated
+as well as the time difference based on the certain time point with
+parameter \code{baseline}.}
 \usage{
-timeDifferences(time_field, baseline = 1, units = "mins")
+timeDifferences(time_field, baseline = 1)
 }
 \arguments{
-\item{time_field}{: character vector, contains the time points}
+\item{time_field}{: vector containing time points}
 
 \item{baseline}{: integer, value to calculate the distance from certain time
 point. (default: \code{baseline = 1})}
-
-\item{units}{: The unit of time points selected in \code{time_field}.
-It can be hours, minutes or seconds.(default: \code{unit = "mins"})}
 }
 \value{
-a list object containing the numeric values of time, consecutive time
-differences and the distance from the chosen time point to each time point.
+a list object containing consecutive time differences and
+the distance from selected time point to each time point.
 }
 \description{
-Time field is provided in the format of "\%H:\%M:\%S" can be converted to
-numeric values depending on the units. Consecutive time difference of these
-numeric values can be then calculated as well as the time difference based on
-the certain time point with parameter \code{baseline}.
+Consecutive time difference of numeric values can be calculated
+as well as the time difference based on the certain time point with
+parameter \code{baseline}.
 }
 \examples{
 data(hitchip1006)
-hitchipDate <- timeToDate(hitchip1006, time_field = "time", unit = "mins")
 
-hitchipTime <- timeDifferences(hitchipDate, baseline = 1, units = "mins")
+diffHitchip <- timeDifferences(time_field = colData(hitchip1006)[,"time"],
+                                             baseline = 1)
 
-##Each of these fields in the list object can be applied to the dataset as
-#new fields.
+##Each of these fields in the list object can be applied to the
+#\linkS4class{SummarizedExperiment} object as new fields.
 
-colData(hitchip1006)$time_diff <- hitchipTime$Consecutive
-colData(hitchip1006)$base_diff <- hitchipTime$Baseline
+colData(hitchip1006)$time_diff <- diffHitchip$Consecutive
+colData(hitchip1006)$base_diff <- diffHitchip$Baseline
 
 }

@@ -2,33 +2,48 @@
 % Please edit documentation in R/timeToDate.R
 \name{timeToDate}
 \alias{timeToDate}
-\title{Numerically provided time points are converted to a character object in the
-format "\%H:\%M:\%S".}
+\title{Numerically provided time points are converted to a Period class object in
+"H M S" format based on unit. In addition to the time information,
+date information can also be given.}
 \usage{
-timeToDate(data, time_field, unit = "mins")
+timeToDate(time_field, unit = "mins", date)
 }
 \arguments{
-\item{data}{: dataset with numeric time points in it}
-
-\item{time_field}{: character, time points field in the dataset}
+\item{time_field}{: vector containing numeric time points}
 
 \item{unit}{: character, indicating the unit of given times
 (default: \code{unit = "mins"})}
+
+\item{date}{: vector containing date information in "YYYY-MM-DD" format.
+This information is optional.}
 }
 \value{
-a list object containing time in "\%H:\%M:\%S" format.
+a Period class object("H M S") or a list containing the date(s)
+information provided and a Period class object containing time information
 }
 \description{
-Numerically provided time points are converted to a character object in the
-format "\%H:\%M:\%S".
+Numerically provided time points are converted to a Period class object in
+"H M S" format based on unit. In addition to the time information,
+date information can also be given.
 }
 \examples{
+library(miaTime)
 data(hitchip1006)
-hitchipDate <- timeToDate(hitchip1006, time_field = "time", unit = "mins")
+
+##without date information
+
+hitchipTime <- timeToDate(time_field = colData(hitchip1006)[,"time"], unit = "mins")
+
+##with date
+
+DateColumn <- seq.Date(as.Date("2011-05-01"), by = "days", length.out = 1151)
+
+hitchipDate <- timeToDate(time_field = colData(hitchip1006)[,"time"] , unit = "mins",
+                            date = DateColumn)
 
 ##This can be added back to \linkS4class{SummarizedExperiment} object that
 #is used to store `hitchip1006` dataset.
 
-colData(hitchip1006)$clock <- hitchipDate
+colData(hitchip1006)$clock <- hitchipTime
 
 }

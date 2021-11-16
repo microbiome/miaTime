@@ -51,51 +51,45 @@ library("miaTime")
 
 # Functions
 
-`timeToDate` converts numeric time points to characters that contain time. 
+`timeToDate` converts numeric time points to "Period" class time object contains 
+time points in "H M S" format.
 The dataset `hitchip1006` stored in `miaTime` can be used as an example.
 ```{r}
 library(miaTime)
 data(hitchip1006)
-hitchipDate <- timeToDate(hitchip1006, "time", unit = "mins")
+hitchipTime <- timeToDate(time_field = colData(hitchip1006)[,"time"], unit = "mins")
 
 colData(hitchip1006)$time[c(1141:1151)]
+hitchipTime[c(1141:1151)]
 ```
+Also, the date information can be added if it is available.
 ```{r}
-hitchipDate[c(1141:1151)]
+DateColumn <- seq.Date(as.Date("2011-05-01"), by = "days", length.out = 1151)
 
+hitchipDate <- timeToDate(time_field = colData(hitchip1006)[,"time"] , unit = "mins",
+                      date = DateColumn)
+
+hitchipDate$time[c(1141:1151)]
+hitchipDate$date[c(1141:1151)]
 ```
-This can be added to `SummarizedExperiment` object that is used to store 
-`hitchip1006`. 
+This information can then be applied to the SummarizedExperiment object as new fields.
+
 ```{r}
-colData(hitchip1006)$clock <- hitchipDate
+colData(hitchip1006)$clock <- hitchipTime
 colData(hitchip1006)
 ```
 
 Function `timeDifferences` helps to find the consecutive time difference and 
-the distance from the specified time point. It also converts the given time
-character is converted to numeric time.
+the distance from the specific time point.
 
 ```{r}
-hitchipTime <- timeDifferences(hitchipDate, baseline = 1, units = "mins")
+diffHitchip <- timeDifferences(time_field = colData(hitchip1006)[,"time"], baseline = 1)
 
-colData(hitchip1006)$time_diff <- hitchipTime$Consecutive
-colData(hitchip1006)$base_diff <- hitchipTime$Baseline
+colData(hitchip1006)$time_diff <- diffHitchip$Consecutive
+colData(hitchip1006)$base_diff <- diffHitchip$Baseline
 
 colData(hitchip1006)
 ```
-
-`addOrderSequence` adds a new field that gives the rank of the chosen field.
-```{r}
-data(GlobalPatterns, package="mia")
-se <- GlobalPatterns
-se1 <- addOrderSequence(se,field = "SampleType",
-            rank_field_name = "SampleType_rank",
-            na.last = TRUE, ties.method = "first")
-```
-
-The functions in `miaTime` are applied on `SummarizedExperiment`
-object or `TreeSummarizedExperiment` object. It returns same object 
-class as given.
 
 # Session info
 

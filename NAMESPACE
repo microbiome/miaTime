@@ -2,7 +2,9 @@
 
 export(addOrderSequence)
 export(timeDifferences)
+export(timeNumeric)
 export(timeToDate)
 importFrom(SummarizedExperiment,"colData<-")
 importFrom(SummarizedExperiment,colData)
+importFrom(lubridate,hms)
 importFrom(methods,setGeneric)
