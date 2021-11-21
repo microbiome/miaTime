@@ -1,12 +1,33 @@
 Package: miaTime
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Microbiome Time Series Analysis
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Authors@R:
+     c(person(given = "Leo", family = "Lahti", role = c("aut"),
+              email = "leo.lahti@iki.fi",
+              comment = c(ORCID = "0000-0001-5537-637X")),
+       person(given = "Yagmur", family = "Simsek", role = c("aut", "cre"),
+              email = "yagmur.simsek@hsrw.org"))
+Description: 
+    Time series analysis of microbiome data sets is evaluated by the functions
+    in `miaTime` package.
+biocViews: Microbiome, Software, Sequencing, Coverage
+License: Artistic-2.0 | file LICENSE
+Depends:
+    R (>= 4.1)
+Imports:
+    lubridate,
+    SummarizedExperiment
+Suggests: 
+    rmarkdown,
+    knitr,
+    mia,
+    devtools,
+    BiocStyle,
+    testthat
 Encoding: UTF-8
-LazyData: true
+URL: https://github.com/microbiome/miaTime
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
+VignetteBuilder: knitr
+LazyData: false

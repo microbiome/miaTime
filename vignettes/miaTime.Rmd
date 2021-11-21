@@ -1,0 +1,118 @@
+---
+title: "miaTime: Microbiome Time Series Analysis"
+date: "`r Sys.Date()`"
+author:
+- name: Leo Lahti
+  email: leo.lahti@iki.fi
+- name: Yagmur Simsek
+  email: yagmur.simsek@hsrw.org
+package: 
+    miaTime
+output: 
+    BiocStyle::html_document:
+        fig_height: 7
+        fig_width: 10
+        toc: yes
+        toc_depth: 2
+        number_sections: true
+vignette: >
+    %\VignetteIndexEntry{miaTime}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(cache = FALSE,
+                        fig.width = 9,
+                        message = FALSE,
+                        warning = FALSE)
+```
+
+# Introduction
+
+`miaTime` implements tools for microbiome time series manipulation based on the
+`SummarizedExperiment` [@SE] 
+
+# Installation
+
+To install `miaTime`, install `devtools` first, if it is not installed.
+Afterwards use the `install_github` function from `devtools`.
+
+```{r, eval=FALSE}
+library(devtools)
+devtools::install_github("microbiome/miaTime")
+```
+
+# Load *miaTime*
+
+```{r load-packages, message=FALSE, warning=FALSE}
+library("miaTime")
+```
+
+# Functions
+
+`miaTime` utilizes the functions available in the package 
+`lubridate` to convert time series field to "Period" class object.
+
+The dataset `hitchip1006` stored in `miaTime` can be used as an example.
+```{r}
+library(miaTime)
+library(lubridate)
+library(SummarizedExperiment)
+data(hitchip1006)
+
+Seconds <- as.period(60*60*24*colData(hitchip1006)[,"time"], unit="sec")
+Seconds[1140:1151]
+```
+
+The time field in days is now converted to seconds. It can then be converted to 
+different units.
+
+```{r}
+Hours <- as.period(Seconds, unit = "hour")
+Hours[1140:1151]
+```
+This information can then be added to the SummarizedExperiment object 
+as new fields.
+
+```{r}
+colData(hitchip1006)$timeSec <- Seconds
+colData(hitchip1006)
+```
+
+The `as.duration` function helps to specify time points as durations. 
+Durations are stored in seconds, the only time unit with a consistent length.
+```{r}
+Duration <- as.duration(Seconds)
+Duration[1140:1151]
+```
+
+The difference between subsequent time points can then be calculated.
+
+```{r}
+Timediff <- diff(Duration)
+Timediff <- c(NA, Timediff)
+Timediff[1140:1151]
+```
+
+Also, the time difference from selected point to rest of each time point 
+can be calculated.
+```{r}
+base <- Hours - Hours[1] #distance from starting point
+base[1140:1151]
+
+base_1140 <- Seconds - Seconds[1140]
+base_1140[1140:1151]
+
+```
+Rank of the time points can be calculated by `rank` function provided in base R.
+```{r}
+colData(hitchip1006)$rank <- rank(colData(hitchip1006)$time)
+colData(hitchip1006)
+```
+
+# Session info
+
+```{r}
+sessionInfo()
+```
