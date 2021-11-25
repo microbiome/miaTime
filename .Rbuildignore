@@ -7,3 +7,5 @@
 ^docs$
 ^codecov.yml$
 ^README.Rmd$
+^_pkgdown\.yml$
+^pkgdown$
