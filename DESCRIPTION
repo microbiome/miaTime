@@ -17,7 +17,9 @@ Depends:
     R (>= 4.1)
 Imports:
     lubridate,
-    SummarizedExperiment
+    SummarizedExperiment,
+    dplyr,
+    S4Vectors
 Suggests: 
     rmarkdown,
     knitr,
