@@ -14,11 +14,12 @@ Description:
 biocViews: Microbiome, Software, Sequencing, Coverage
 License: Artistic-2.0 | file LICENSE
 Depends:
-    R (>= 4.1),
-    SummarizedExperiment
+    R (>= 4.1)
 Imports:
     lubridate,
-    methods
+    SummarizedExperiment,
+    dplyr,
+    S4Vectors
 Suggests: 
     rmarkdown,
     knitr,
