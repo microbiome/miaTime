@@ -7,7 +7,7 @@ each sample in \code{colData} field. Time information can be categorized by
 per subject(individual) and then used with the selected time operation.
 The resulting vector is added as a new column of the\code{colData} field.}
 \usage{
-timePerSubject(se, time_field, subject_field, operation, new_field)
+timePerSubject(se, time_field, subject_field, operation, new_field, ...)
 }
 \arguments{
 \item{se}{: \linkS4class{SummarizedExperiment} class object}
@@ -21,6 +21,8 @@ information}
 
 \item{new_field}{: character class object refers to the name of a
 newly added field}
+
+\item{...}{for new parameters}
 }
 \value{
 a list object containing each subject individually with the
@@ -38,6 +40,6 @@ data(hitchip1006)
 se <- hitchip1006
 
 hitchipTime <- timePerSubject(se, time_field = "time",
-    subject_field = "subject", operation ="rev", new_field = "reversed")
+    subject_field = "subject", operation ="rev", new_field = "reversed", decreasing = TRUE)
 
 }

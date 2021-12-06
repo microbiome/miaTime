@@ -10,6 +10,7 @@
 #' @param operation : a function applied to `time_field`
 #' @param new_field : character class object refers to the name of a
 #' newly added field
+#' @param ... for new parameters
 #'
 #' @examples
 #' library(miaTime)
@@ -17,7 +18,7 @@
 #' se <- hitchip1006
 #'
 #' hitchipTime <- timePerSubject(se, time_field = "time",
-#'     subject_field = "subject", operation ="rev", new_field = "reversed")
+#'     subject_field = "subject", operation ="rev", new_field = "reversed", decreasing = TRUE)
 #'
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment colData<-
@@ -30,7 +31,7 @@
 #' related data provided in the `colData` field
 #'
 #' @export
-timePerSubject <- function(se, time_field, subject_field, operation, new_field){
+timePerSubject <- function(se, time_field, subject_field, operation, new_field, ...){
 
     colData(se)$time_field <- colData(se)[,time_field]
 
@@ -39,7 +40,7 @@ timePerSubject <- function(se, time_field, subject_field, operation, new_field){
     colData(se) <- colData(se) %>%
         as.data.frame() %>%
         group_by(col = subject_field) %>%
-        mutate(new_field = match.fun(operation)(time_field)) %>%
+        mutate(new_field = match.fun(operation)(time_field, ...)) %>%
         DataFrame()
 
 
