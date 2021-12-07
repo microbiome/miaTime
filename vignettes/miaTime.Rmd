@@ -205,6 +205,7 @@ colData(se)$time_from_baseline <- colData(se)[, "time"] -
                                   colData(se)[baseline_sample, "time"]
 
 # Visualize time difference vs. community divergence (dissimilarity)
+library(dplyr)
 df <- as.data.frame(colData(se)) %>% dplyr::filter(time_from_baseline > 0)
 
 library(ggplot2)
