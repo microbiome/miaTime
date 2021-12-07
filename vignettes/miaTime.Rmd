@@ -183,26 +183,26 @@ as.data.frame(colData(se)[, c("subject", "time", "shifted")]) %>%
 ```
 
 
-## Estimating divergence from a reference sample
+## Estimating divergence and convergence
 
 Calculate divergence from a baseline sample (or another reference sample).
 
 ```{r}
 # Identify the baseline sample
 se <- hitchip1006
-reference_sample <- colnames(se[, which.min(colData(se)$time)])
+baseline_sample <- colnames(se[, which.min(colData(se)$time)])
 
 # Pick the reference sample from count assay and calculate euclidean distance
 # Name the new field as "divergence_from_baseline".
 # This contains the divergence information.
 library(mia)
 se <- estimateDivergence(se, name = "divergence_from_baseline", 
-                         reference = assays(se)$counts[, reference_sample], 
+                         reference = assays(se)$counts[, baseline_sample], 
                          FUN = stats::dist, method = "euclidean")
 
 # Also add time from baseline
 colData(se)$time_from_baseline <- colData(se)[, "time"] -
-                                  colData(se)[reference_sample, "time"]
+                                  colData(se)[baseline_sample, "time"]
 
 # Visualize time difference vs. community divergence (dissimilarity)
 df <- as.data.frame(colData(se)) %>% dplyr::filter(time_from_baseline > 0)
@@ -220,9 +220,9 @@ Divergence from baseline per subject:
 # First define the function that calculates divergence for a given SE object
 # in a desired way:
 fun <- function (se) {
-  reference_sample <- rownames(colData(se)[which.min(colData(se)$time),])
+  baseline_sample <- rownames(colData(se)[which.min(colData(se)$time),])
   estimateDivergence(se, name = "divergence_from_baseline", 
-                     reference = assays(se)$counts[, reference_sample],
+                     reference = assays(se)$counts[, baseline_sample],
 		     FUN = stats::dist, method = "euclidean")
 
 }
@@ -237,7 +237,26 @@ se_list <- lapply(spl[1:3], function (s) {fun(se[,s])})
 se2 <- do.call(cbind, se_list)
 ```
 
+Calculate convergence i.e. divergence from the last sample:
 
+```{r}
+# Identify the last sample
+se <- hitchip1006
+endpoint_sample <- colnames(se[, which.max(colData(se)$time)])
+
+# Pick the reference sample from count assay and calculate euclidean distance
+# Name the new field as "convergence".
+# This contains the divergence information.
+library(mia)
+se <- estimateDivergence(se, name = "convergence", 
+                         reference = assays(se)$counts[, endpoint_sample], 
+                         FUN = stats::dist, method = "euclidean")
+
+# Also add time from endpoint
+colData(se)$time_from_endpoint <- colData(se)[, "time"] -
+                                  colData(se)[endpoint_sample, "time"]
+
+```
 
 # Session info
 
