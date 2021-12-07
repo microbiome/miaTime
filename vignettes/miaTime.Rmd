@@ -30,58 +30,78 @@ knitr::opts_chunk$set(cache = FALSE,
 
 # Introduction
 
-`miaTime` implements tools for microbiome time series manipulation based on the
-`SummarizedExperiment` [@SE] 
+`miaTime` implements tools for microbiome time series manipulation based
+on the `SummarizedExperiment` [@SE] data container.
 
-# Installation
 
-To install `miaTime`, install `devtools` first, if it is not installed.
-Afterwards use the `install_github` function from `devtools`.
+## Installation
+
+Installing the latest development version in R.
 
 ```{r, eval=FALSE}
 library(devtools)
 devtools::install_github("microbiome/miaTime")
 ```
 
-# Load *miaTime*
+Loading the package:
 
 ```{r load-packages, message=FALSE, warning=FALSE}
 library("miaTime")
 ```
 
-# Functions
 
-`miaTime` utilizes the functions available in the package 
-`lubridate` to convert time series field to "Period" class object.
+## Storing time information with Period class
 
-The dataset `hitchip1006` stored in `miaTime` can be used as an example.
+`miaTime` utilizes the functions available in the package `lubridate`
+to convert time series field to "Period" class object. This gives access to a number of readily available [time series manipulation tools](https://cran.r-project.org/web/packages/lubridate/vignettes/lubridate.html).
+
+
+Load example data:
+
 ```{r}
+# Load packages
 library(miaTime)
 library(lubridate)
 library(SummarizedExperiment)
-data(hitchip1006)
 
-Seconds <- as.period(60*60*24*colData(hitchip1006)[,"time"], unit="sec")
+# Load demo data
+data(hitchip1006)
+se <- hitchip1006
+
+# Time is given in days in the demo data.
+# Convert days to seconds
+time_in_seconds <- 60*60*24*colData(se)[,"time"]
+# Convert the time data to period class
+Seconds <- as.period(time_in_seconds, unit="sec")
+# Check the output
 Seconds[1140:1151]
 ```
 
-The time field in days is now converted to seconds. It can then be converted to 
-different units.
+
+## Conversion between time units
+
+The time field in days is now shown in seconds. It can then be
+converted to many different units using the lubridate package.
 
 ```{r}
 Hours <- as.period(Seconds, unit = "hour")
 Hours[1140:1151]
 ```
-This information can then be added to the SummarizedExperiment object 
-as new fields.
+
+The updated time information can then be added to the
+`SummarizedExperiment` data object as a new `colData` (sample data)
+field.
+
 
 ```{r}
-colData(hitchip1006)$timeSec <- Seconds
-colData(hitchip1006)
+colData(se)$timeSec <- Seconds
+colData(se)
 ```
 
-The `as.duration` function helps to specify time points as durations. 
-Durations are stored in seconds, the only time unit with a consistent length.
+## Calculating time differences 
+
+The `as.duration` function helps to specify time points as durations.
+
 ```{r}
 Duration <- as.duration(Seconds)
 Duration[1140:1151]
@@ -95,21 +115,129 @@ Timediff <- c(NA, Timediff)
 Timediff[1140:1151]
 ```
 
-Also, the time difference from selected point to rest of each time point 
-can be calculated.
+The time difference from a selected point to the other time points
+can be calculated as follows.
+
 ```{r}
 base <- Hours - Hours[1] #distance from starting point
 base[1140:1151]
 
 base_1140 <- Seconds - Seconds[1140]
 base_1140[1140:1151]
+```
 
-```
+## Time point rank
+
 Rank of the time points can be calculated by `rank` function provided in base R.
+
 ```{r}
-colData(hitchip1006)$rank <- rank(colData(hitchip1006)$time)
-colData(hitchip1006)
+colData(se)$rank <- rank(colData(se)$time)
+colData(se)
 ```
+
+
+## Operations per unit
+
+Sometimes we need to operate on time series per unit (subject,
+reaction chamber, sampling location, ...).
+
+Add time point rank per subject.
+
+```{r}
+library(dplyr)
+colData(se) <- colData(se) %>%
+   as.data.frame() %>%
+   group_by(subject) %>%
+   mutate(rank = rank(time, ties.method="average")) %>%
+   DataFrame()
+```
+
+
+
+Calculate the difference in time from a given baseline time point.
+
+```{r}
+# Define baseline function;
+base <- function (x, baseline=min(x)) {x - baseline}
+
+# Use time 1 as the baseline
+colData(se) <- colData(se) %>%
+    as.data.frame() %>%
+    group_by(subject) %>%
+    mutate(shifted = base(time, baseline=1)) %>%
+    DataFrame()
+# Check output
+as.data.frame(colData(se)[, c("subject", "time", "shifted")]) %>%
+    dplyr::filter(subject == "831")
+
+# Use the minimum time point per subject as the baseline:
+colData(se) <- colData(se) %>%
+    as.data.frame() %>%
+    group_by(subject) %>%
+    mutate(shifted = base(time)) %>%
+    DataFrame()
+
+# Check output
+as.data.frame(colData(se)[, c("subject", "time", "shifted")]) %>%
+    dplyr::filter(subject == "831")
+```
+
+
+## Estimating divergence from a reference sample
+
+Calculate divergence from a baseline sample (or another reference sample).
+
+```{r}
+# Identify the baseline sample
+se <- hitchip1006
+reference_sample <- colnames(se[, which.min(colData(se)$time)])
+
+# Pick the reference sample from count assay and calculate euclidean distance
+# Name the new field as "divergence_from_baseline".
+# This contains the divergence information.
+library(mia)
+se <- estimateDivergence(se, name = "divergence_from_baseline", 
+                         reference = assays(se)$counts[, reference_sample], 
+                         FUN = stats::dist, method = "euclidean")
+
+# Also add time from baseline
+colData(se)$time_from_baseline <- colData(se)[, "time"] -
+                                  colData(se)[reference_sample, "time"]
+
+# Visualize time difference vs. community divergence (dissimilarity)
+df <- as.data.frame(colData(se)) %>% dplyr::filter(time_from_baseline > 0)
+
+library(ggplot2)
+ggplot(data=df, aes(x=time_from_baseline, y=divergence_from_baseline)) +
+    geom_point() +
+    geom_smooth(method="lm")
+```
+
+
+Divergence from baseline per subject:
+
+```{r}
+# First define the function that calculates divergence for a given SE object
+# in a desired way:
+fun <- function (se) {
+  reference_sample <- rownames(colData(se)[which.min(colData(se)$time),])
+  estimateDivergence(se, name = "divergence_from_baseline", 
+                     reference = assays(se)$counts[, reference_sample],
+		     FUN = stats::dist, method = "euclidean")
+
+}
+
+# List samples per subject
+spl <- split(colnames(se), se$subject)
+
+# Apply the operation per subject (here just the first 3 to speed up example)
+se_list <- lapply(spl[1:3], function (s) {fun(se[,s])})
+
+# Combine the SE elements in the list
+se2 <- do.call(cbind, se_list)
+```
+
+
 
 # Session info
 
