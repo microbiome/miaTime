@@ -19,6 +19,7 @@ vignette: >
     %\VignetteIndexEntry{miaTime}
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
+bibliography: references.bib
 ---
 
 ```{r, echo=FALSE}
@@ -53,7 +54,8 @@ library("miaTime")
 ## Storing time information with Period class
 
 `miaTime` utilizes the functions available in the package `lubridate`
-to convert time series field to "Period" class object. This gives access to a number of readily available [time series manipulation tools](https://cran.r-project.org/web/packages/lubridate/vignettes/lubridate.html).
+to convert time series field to "Period" class object. This gives access to a 
+number of readily available [time series manipulation tools](https://cran.r-project.org/web/packages/lubridate/vignettes/lubridate.html).
 
 
 Load example data:
@@ -185,9 +187,11 @@ as.data.frame(colData(se)[, c("subject", "time", "shifted")]) %>%
 
 ## Estimating divergence and convergence
 
+[@gutMicrobiota] is available for further details.
+
 Calculate divergence from a baseline sample (or another reference sample).
 
-```{r, eval=FALSE}
+```{r}
 # Identify the baseline sample
 se <- hitchip1006
 baseline_sample <- colnames(se[, which.min(colData(se)$time)])
@@ -196,8 +200,11 @@ baseline_sample <- colnames(se[, which.min(colData(se)$time)])
 # Name the new field as "divergence_from_baseline".
 # This contains the divergence information.
 library(mia)
+baseline_profile <- assays(se)$counts[, baseline_sample]
+print(length(baseline_profile))
+print(dim(se))
 se <- estimateDivergence(se, name = "divergence_from_baseline", 
-                         reference = assays(se)$counts[, baseline_sample], 
+                         reference = baseline_profile,
                          FUN = stats::dist, method = "euclidean")
 
 # Also add time from baseline
@@ -211,7 +218,7 @@ df <- as.data.frame(colData(se)) %>% dplyr::filter(time_from_baseline > 0)
 library(ggplot2)
 ggplot(data=df, aes(x=time_from_baseline, y=divergence_from_baseline)) +
     geom_point() +
-    geom_smooth(method="lm")
+    geom_smooth(formula = y ~ x, method="lm")
 ```
 
 
