@@ -191,7 +191,7 @@ as.data.frame(colData(se)[, c("subject", "time", "shifted")]) %>%
 
 Calculate divergence from a baseline sample (or another reference sample).
 
-```{r}
+```{r, eval=FALSE}
 # Identify the baseline sample
 se <- hitchip1006
 baseline_sample <- colnames(se[, which.min(colData(se)$time)])
@@ -224,7 +224,7 @@ ggplot(data=df, aes(x=time_from_baseline, y=divergence_from_baseline)) +
 
 Divergence from baseline per subject:
 
-```{r}
+```{r, eval=FALSE}
 # First define the function that calculates divergence for a given SE object
 # in a desired way:
 fun <- function (se) {
@@ -247,7 +247,7 @@ se2 <- do.call(cbind, se_list)
 
 Calculate convergence i.e. divergence from the last sample:
 
-```{r}
+```{r, eval=FALSE}
 # Identify the last sample
 se <- hitchip1006
 endpoint_sample <- colnames(se[, which.max(colData(se)$time)])
