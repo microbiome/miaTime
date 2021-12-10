@@ -15,6 +15,8 @@
 #'
 #' @return `colData` field in \linkS4class{SummarizedExperiment} object
 #'
+#' @importFrom SummarizedExperiment colData
+#'
 #' @examples
 #' library(miaTime)
 #' data(hitchip1006)
@@ -22,9 +24,7 @@
 #'
 #' seventeenTime <- getTimeDivergence(se, time_field = "time" , time_interval = 17)
 #'
-#'
 #'@export
-
 getTimeDivergence <- function(se, time_field, starting_position = 1, time_interval){
 
     n <- 1:length(colData(se)[, time_field])
