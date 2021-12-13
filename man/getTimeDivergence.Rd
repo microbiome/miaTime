@@ -2,37 +2,54 @@
 % Please edit documentation in R/getTimeDivergence.R
 \name{getTimeDivergence}
 \alias{getTimeDivergence}
-\title{Time difference between Nth time steps}
+\title{Beta diversity calculation between samples at the interval of n time steps}
 \usage{
-getTimeDivergence(se, time_field, starting_position = 1, time_interval)
+getTimeDivergence(
+  se,
+  sample_field,
+  sample_id,
+  time_field,
+  time_interval,
+  transposed = FALSE
+)
 }
 \arguments{
 \item{se}{A
 \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
-object.}
+object or
+\code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}}
+
+\item{sample_field}{column vector containing the all individuals in
+\code{colData} field}
+
+\item{sample_id}{character indicating a individual inside of \code{sample_field}}
 
 \item{time_field}{column vector containing the time information
-in \code{colData} field inside of \linkS4class{SummarizedExperiment} object}
-
-\item{starting_position}{integer value that defines from which time step the
-operation begins (default: \code{starting_position = 1})}
+in \code{colData} field}
 
 \item{time_interval}{integer value indicating the increment between the time
 steps. It can be 1 or higher than 1.}
+
+\item{transposed}{logical scalar assigning samples to rows if they are in
+columns (default: \code{transposed = FALSE})}
 }
 \value{
-\code{colData} field in \linkS4class{SummarizedExperiment} object
+a list containing the beta diversity in matrix and a numeric vector
+containing the time difference between the samples
 }
 \description{
-The time difference can be calculated between successive time steps, with
-steps n >= 1.
+The dissimilarity (beta distance) is calculated in steps of n for each
+individual. "n" can be 1 or greater than 1. The time difference between
+the time points used for beta diversity calculation is also given as output.
 }
 \examples{
-library(miaTime)
-data(hitchip1006)
-se <- hitchip1006
+library(microbiomeDataSets)
+tse <- GrieneisenTSData()
 
-seventeenTime <- getTimeDivergence(se, time_field = "time" , time_interval = 17)
-
+BaboonDivergence <- getTimeDivergence(tse, sample_field = "baboon_id",
+                                    sample_id = "Baboon_1" ,
+                                    time_field = "collection_date",
+                                    time_interval =2,
+                                    transposed = FALSE )
 
 }

@@ -19,7 +19,9 @@ Imports:
     lubridate,
     SummarizedExperiment,
     dplyr,
-    S4Vectors
+    S4Vectors,
+    vegan,
+    microbiomeDataSets
 Suggests: 
     rmarkdown,
     knitr,

@@ -2,3 +2,4 @@
 
 export(getTimeDivergence)
 importFrom(SummarizedExperiment,colData)
+importFrom(vegan,vegdist)
