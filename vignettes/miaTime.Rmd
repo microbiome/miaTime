@@ -161,6 +161,7 @@ Calculate the difference in time from a given baseline time point.
 ```{r}
 # Define baseline function;
 base <- function (x, baseline=min(x)) {x - baseline}
+filter <- dplyr::filter
 
 # Use time 1 as the baseline
 colData(se) <- colData(se) %>%
@@ -170,7 +171,7 @@ colData(se) <- colData(se) %>%
     DataFrame()
 # Check output
 as.data.frame(colData(se)[, c("subject", "time", "shifted")]) %>%
-    dplyr::filter(subject == "831")
+    filter(subject == "831")
 
 # Use the minimum time point per subject as the baseline:
 colData(se) <- colData(se) %>%
@@ -181,7 +182,7 @@ colData(se) <- colData(se) %>%
 
 # Check output
 as.data.frame(colData(se)[, c("subject", "time", "shifted")]) %>%
-    dplyr::filter(subject == "831")
+    filter(subject == "831")
 ```
 
 
