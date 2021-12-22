@@ -1,8 +1,8 @@
 #' Beta diversity calculation between samples at the interval of n time steps
 #'
-#' The dissimilarity (beta distance) is calculated in steps of n for each
-#' individual. "n" can be 1 or greater than 1. The time difference between
-#' the time points used for beta diversity calculation is also given as output.
+#' The dissimilarity (beta distance) is calculated in steps of n between the
+#' samples of subject. "n" can be 1 or greater than 1. The time difference
+#' between the n points is also calculated.
 #'
 #' @param se A
 #' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
@@ -18,11 +18,13 @@
 #' @param transposed logical scalar assigning samples to rows if they are in
 #' columns (default: \code{transposed = FALSE})
 #'
-#' @return a list containing the beta diversity in matrix and a numeric vector
-#' containing the time difference between the samples
+#' @return a matrix containing the beta diversity and time difference
+#' between samples
 #'
 #' @importFrom SummarizedExperiment colData
-#' @importFrom vegan vegdist
+#' @importFrom mia calculateDistance
+#' @importFrom mia calculateJSD
+#' @importFrom otuSummary matrixConvert
 #'
 #' @examples
 #' library(microbiomeDataSets)
@@ -31,7 +33,7 @@
 #' BaboonDivergence <- getTimeDivergence(tse, sample_field = "baboon_id",
 #'                                     sample_id = "Baboon_1" ,
 #'                                     time_field = "collection_date",
-#'                                     time_interval =2,
+#'                                     time_interval = 2,
 #'                                     transposed = FALSE )
 #'
 #'@export
@@ -58,21 +60,24 @@ getTimeDivergence <- function(se, sample_field, sample_id, time_field, time_inte
     mat[, time_field][location] <- extracted_time
 
     #related samples are chosen from assay
-    x <- as.matrix(assay(tse)[,rownames(sample_df)[which(is.na(mat[, time_field]) == FALSE)]])
+    x <- as.matrix(assay(se)[,rownames(sample_df)[which(is.na(mat[, time_field]) == FALSE)]])
 
     if(!transposed){
       x <- t(x)
     }
 
-    timedivergence_n <- as.matrix(vegan::vegdist(x), "bray")
+    #timedivergence_n <- calculateDistance(x)
+    timedivergence_n <- calculateJSD(x)
 
-    #timedivergence_n <-do.call(stats::dist, list(x))
-    #timedivergence_n <- as.data.frame(as.matrix(time_divergence_n))
+    mat.m <- matrixConvert(timedivergence_n, colname = c("sp1", "sp2", "dist"))
 
-    time_diff <- diff(extracted_time)
+    mat.m$timedifference_n <- vapply(seq_len(length(timedivergence_n)),
+                                     FUN = function(i) {extracted_time[mat.m$sp2[i]] - extracted_time[mat.m$sp1[i]]},
+                                     FUN.VALUE = 1)
 
-    timedifference_n <- c(NA, time_diff)
 
-    return(list(timedivergence_n = timedivergence_n,
-                timedifference_n = timedifference_n))
+    mat.m$sample_id <- c(sample_id)
+    mat.m <- mat.m[,c("sample_id", "sp1", "sp2", "dist", "timedifference_n")]
+
+    return(mat.m)
 }
