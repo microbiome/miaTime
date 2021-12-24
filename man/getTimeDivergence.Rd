@@ -34,13 +34,13 @@ steps. It can be 1 or higher than 1.}
 columns (default: \code{transposed = FALSE})}
 }
 \value{
-a list containing the beta diversity in matrix and a numeric vector
-containing the time difference between the samples
+a matrix containing the beta diversity and time difference
+between samples in n time steps
 }
 \description{
-The dissimilarity (beta distance) is calculated in steps of n for each
-individual. "n" can be 1 or greater than 1. The time difference between
-the time points used for beta diversity calculation is also given as output.
+The dissimilarity (beta distance) is calculated in steps of n between the
+samples of subject. "n" can be 1 or greater than 1. The time difference
+between the n points is also calculated.
 }
 \examples{
 library(microbiomeDataSets)
@@ -49,7 +49,7 @@ tse <- GrieneisenTSData()
 BaboonDivergence <- getTimeDivergence(tse, sample_field = "baboon_id",
                                     sample_id = "Baboon_1" ,
                                     time_field = "collection_date",
-                                    time_interval =2,
+                                    time_interval = 2,
                                     transposed = FALSE )
 
 }

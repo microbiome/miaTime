@@ -19,13 +19,12 @@ Imports:
     lubridate,
     SummarizedExperiment,
     dplyr,
-    S4Vectors,
     vegan,
-    microbiomeDataSets
+    microbiomeDataSets,
+    mia
 Suggests: 
     rmarkdown,
     knitr,
-    mia,
     devtools,
     BiocStyle,
     testthat

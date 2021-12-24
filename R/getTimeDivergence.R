@@ -19,12 +19,9 @@
 #' columns (default: \code{transposed = FALSE})
 #'
 #' @return a matrix containing the beta diversity and time difference
-#' between samples
+#' between samples in n time steps
 #'
-#' @importFrom SummarizedExperiment colData
 #' @importFrom mia calculateDistance
-#' @importFrom mia calculateJSD
-#' @importFrom otuSummary matrixConvert
 #'
 #' @examples
 #' library(microbiomeDataSets)
@@ -46,38 +43,44 @@ getTimeDivergence <- function(se, sample_field, sample_id, time_field, time_inte
 
     mat <- data.matrix(sample_df)
 
-    #time in descending order
+    #time in increasing order
     mat[, time_field] <- mat[, time_field][order(mat[, time_field], decreasing = FALSE)]
 
-    # Nth times are extracted
-    location <-seq(0, length(mat[, time_field]), time_interval)
+     tt <- sapply(seq_len(nrow(mat)), FUN = function(i){
+      k <- c(i, i + time_interval)
+      i <- i + 1
+      k
+     })
 
-    extracted_time <- mat[, time_field][location]
+    #total number of sample pairs
+    total <- nrow(mat) - time_interval
 
-    mat[, time_field] <- matrix(NA, ncol = 1, nrow = length(time))
+    location <- tt[,seq_len(total)]
 
-    #extracted time places back
-    mat[, time_field][location] <- extracted_time
+    #location matrix turned into list object
+    list <- lapply(seq_len(ncol(location)), function(i) location[,i])
+
+    samplename <-lapply(seq_len(length(list)), function(i){ mat[, sample_field][list[[i]]]})
+
+    time <-lapply(seq_len(length(list)), function(i){ mat[, time_field][list[[i]]]})
 
     #related samples are chosen from assay
-    x <- as.matrix(assay(se)[,rownames(sample_df)[which(is.na(mat[, time_field]) == FALSE)]])
+    list_t <- lapply(seq_len(length(time)), function(i){ as.matrix(assay(se)[,names(samplename[[i]])])})
 
     if(!transposed){
-      x <- t(x)
+      list_t <- lapply(seq_len(length(list_t)), function(i){
+        t(list_t[[i]])
+        })
     }
 
-    #timedivergence_n <- calculateDistance(x)
-    timedivergence_n <- calculateJSD(x)
+    timedivergence_n <- vapply(seq_len(length(list_t)),
+                               FUN = function(i) {calculateDistance(list_t[[i]])},
+                               FUN.VALUE = 1)
 
-    mat.m <- matrixConvert(timedivergence_n, colname = c("sp1", "sp2", "dist"))
 
-    mat.m$timedifference_n <- vapply(seq_len(length(timedivergence_n)),
-                                     FUN = function(i) {extracted_time[mat.m$sp2[i]] - extracted_time[mat.m$sp1[i]]},
+    timedifference_n <- vapply(seq_len(length(timedivergence_n)),
+                                     FUN = function(i) {diff(time[[i]])},
                                      FUN.VALUE = 1)
 
-
-    mat.m$sample_id <- c(sample_id)
-    mat.m <- mat.m[,c("sample_id", "sp1", "sp2", "dist", "timedifference_n")]
-
-    return(mat.m)
+    return(cbind(timedivergence_n,timedifference_n))
 }
