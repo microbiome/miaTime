@@ -16,7 +16,8 @@
 #' @param time_interval integer value indicating the increment between the time
 #' steps. It can be 1 or higher than 1.
 #' @param transposed logical scalar assigning samples to rows if they are in
-#' columns (default: \code{transposed = FALSE})
+#' columns. If samples are not in rows, the default value is applied.
+#' (default: \code{transposed = FALSE})
 #'
 #' @return a matrix containing the beta diversity and time difference
 #' between samples in n time steps
@@ -30,7 +31,7 @@
 #' BaboonDivergence <- getTimeDivergence(tse, sample_field = "baboon_id",
 #'                                     sample_id = "Baboon_1" ,
 #'                                     time_field = "collection_date",
-#'                                     time_interval = 2,
+#'                                     time_interval = 1,
 #'                                     transposed = FALSE )
 #'
 #'@export
@@ -58,29 +59,40 @@ getTimeDivergence <- function(se, sample_field, sample_id, time_field, time_inte
     location <- tt[,seq_len(total)]
 
     #location matrix turned into list object
-    list <- lapply(seq_len(ncol(location)), function(i) location[,i])
+    if(length(location) > 2){
+        list <- lapply(seq_len(ncol(location)), function(i) location[,i])
 
-    samplename <-lapply(seq_len(length(list)), function(i){ mat[, sample_field][list[[i]]]})
+        samplename <-lapply(seq_len(length(list)), function(i){ mat[, sample_field][list[[i]]]})
 
-    time <-lapply(seq_len(length(list)), function(i){ mat[, time_field][list[[i]]]})
+        time <-lapply(seq_len(length(list)), function(i){ mat[, time_field][list[[i]]]})
 
-    #related samples are chosen from assay
-    list_t <- lapply(seq_len(length(time)), function(i){ as.matrix(assay(se)[,names(samplename[[i]])])})
+        #related samples are chosen from assay
+        list_t <- lapply(seq_len(length(time)), function(i){ as.matrix(assay(se)[,names(samplename[[i]])])})
 
-    if(!transposed){
-      list_t <- lapply(seq_len(length(list_t)), function(i){
-        t(list_t[[i]])
-        })
+        if(!transposed){
+          list_t <- lapply(seq_len(length(list_t)), function(i){
+            t(list_t[[i]])
+          })
+        }
+
+        timedivergence_n <- vapply(seq_len(length(list_t)),
+                                   FUN = function(i) {calculateDistance(list_t[[i]])},
+                                   FUN.VALUE = 1)
+
+
+        timedifference_n <- vapply(seq_len(length(timedivergence_n)),
+                                   FUN = function(i) {diff(time[[i]])},
+                                   FUN.VALUE = 1)
+    } else {
+        samplename <- mat[, sample_field][location]
+        time <- mat[, time_field][location]
+        mat_t <- as.matrix(assay(se)[,names(samplename)])
+        if(!transposed){
+          mat_t <- t(mat_t)
+        }
+        timedivergence_n <- calculateDistance(mat_t)
+        timedifference_n <- diff(time)
     }
-
-    timedivergence_n <- vapply(seq_len(length(list_t)),
-                               FUN = function(i) {calculateDistance(list_t[[i]])},
-                               FUN.VALUE = 1)
-
-
-    timedifference_n <- vapply(seq_len(length(timedivergence_n)),
-                                     FUN = function(i) {diff(time[[i]])},
-                                     FUN.VALUE = 1)
 
     return(cbind(timedivergence_n,timedifference_n))
 }

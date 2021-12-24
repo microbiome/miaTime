@@ -31,7 +31,8 @@ in \code{colData} field}
 steps. It can be 1 or higher than 1.}
 
 \item{transposed}{logical scalar assigning samples to rows if they are in
-columns (default: \code{transposed = FALSE})}
+columns. If samples are not in rows, the default value is applied.
+(default: \code{transposed = FALSE})}
 }
 \value{
 a matrix containing the beta diversity and time difference
@@ -49,7 +50,7 @@ tse <- GrieneisenTSData()
 BaboonDivergence <- getTimeDivergence(tse, sample_field = "baboon_id",
                                     sample_id = "Baboon_1" ,
                                     time_field = "collection_date",
-                                    time_interval = 2,
+                                    time_interval = 1,
                                     transposed = FALSE )
 
 }
