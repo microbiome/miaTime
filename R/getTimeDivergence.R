@@ -1,6 +1,6 @@
 #' Beta diversity calculation between samples at the interval of n time steps
 #'
-#' The dissimilarity (beta distance) is calculated in steps of n between the
+#' The dissimilarity (beta diversity) is calculated in steps of n between the
 #' samples of subject. "n" can be 1 or greater than 1. The time difference
 #' between the n points is also calculated.
 #'
@@ -8,91 +8,74 @@
 #' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
 #' object or
 #' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
-#' @param sample_field column vector containing the all individuals in
-#' `colData` field
-#' @param sample_id character indicating a individual inside of `sample_field`
-#' @param time_field column vector containing the time information
-#' in `colData` field
+#' @param field column vector chosen from `colData` field to determine
+#' the grouping factor in order to split `SummarizedExperiment` object.
+#' @param time_field column vector chosen from `colData` field  indicating the
+#' time
 #' @param time_interval integer value indicating the increment between the time
-#' steps. It can be 1 or higher than 1.
-#' @param transposed logical scalar assigning samples to rows if they are in
-#' columns. If samples are not in rows, the default value is applied.
-#' (default: \code{transposed = FALSE})
+#' steps. It can be 1 or higher than 1. (default: \code{time_interval = 1})
 #'
-#' @return a matrix containing the beta diversity and time difference
-#' between samples in n time steps
-#'
-#' @importFrom mia calculateDistance
+#' @return a \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
+#' containing the beta diversity and time difference between samples
+#' in n time steps
 #'
 #' @examples
-#' library(microbiomeDataSets)
-#' tse <- GrieneisenTSData()
+#' library(miaTime)
+#' data(hitchip1006)
 #'
-#' BaboonDivergence <- getTimeDivergence(tse, sample_field = "baboon_id",
-#'                                     sample_id = "Baboon_1" ,
-#'                                     time_field = "collection_date",
-#'                                     time_interval = 1,
-#'                                     transposed = FALSE )
+#' hitchipTime <- getTimeDivergence(hitchip1006, field = "subject",
+#'                                    time_interval = 1,
+#'                                    time_field = "time")
 #'
 #'@export
-getTimeDivergence <- function(se, sample_field, sample_id, time_field, time_interval, transposed = FALSE ){
+getTimeDivergence <- function(se, field, time_field, time_interval){
 
-    df <-as.data.frame(colData(se)[, c(sample_field, time_field)])
+# Define the names for the newly added fields
+# for the time difference and community dissimilarity
+new_field <- "time_divergence"
+new_field2 <- "time_difference"
 
-    #per sample
-    sample_df <- df[which((df[, sample_field] == sample_id) == TRUE),]
+# Dissimilarity will be calculated between rows, as in stats::dist
+check_pairwise_dist <- function (x, secondx, distfun, time_interval, new_field, new_field2, time_field) {
 
-    mat <- data.matrix(sample_df)
+  if (nrow(colData(x)) == 1 | nrow(colData(secondx))== 1){
+    mat <- t(assay(x))
+    mat2 <- t(assay(secondx))
+    mat_t <- rbind(mat, mat2)
 
-    #time in increasing order
-    mat[, time_field] <- mat[, time_field][order(mat[, time_field], decreasing = FALSE)]
+    time <- colData(x)[, time_field]
+    time2 <- colData(secondx)[, time_field]
+    time_t <- rbind(time, time2)
 
-     tt <- sapply(seq_len(nrow(mat)), FUN = function(i){
-      k <- c(i, i + time_interval)
-      i <- i + 1
-      k
-     })
+    # Add new field to coldata
+    colData(x)[, new_field] <- rep(NA, nrow(mat))
 
-    #total number of sample pairs
-    total <- nrow(mat) - time_interval
-
-    location <- tt[,seq_len(total)]
-
-    #location matrix turned into list object
-    if(length(location) > 2){
-        list <- lapply(seq_len(ncol(location)), function(i) location[,i])
-
-        samplename <-lapply(seq_len(length(list)), function(i){ mat[, sample_field][list[[i]]]})
-
-        time <-lapply(seq_len(length(list)), function(i){ mat[, time_field][list[[i]]]})
-
-        #related samples are chosen from assay
-        list_t <- lapply(seq_len(length(time)), function(i){ as.matrix(assay(se)[,names(samplename[[i]])])})
-
-        if(!transposed){
-          list_t <- lapply(seq_len(length(list_t)), function(i){
-            t(list_t[[i]])
-          })
-        }
-
-        timedivergence_n <- vapply(seq_len(length(list_t)),
-                                   FUN = function(i) {calculateDistance(list_t[[i]])},
-                                   FUN.VALUE = 1)
-
-
-        timedifference_n <- vapply(seq_len(length(timedivergence_n)),
-                                   FUN = function(i) {diff(time[[i]])},
-                                   FUN.VALUE = 1)
-    } else {
-        samplename <- mat[, sample_field][location]
-        time <- mat[, time_field][location]
-        mat_t <- as.matrix(assay(se)[,names(samplename)])
-        if(!transposed){
-          mat_t <- t(mat_t)
-        }
-        timedivergence_n <- calculateDistance(mat_t)
-        timedifference_n <- diff(time)
-    }
-
-    return(cbind(timedivergence_n,timedifference_n))
+    if (nrow(mat_t) > time_interval) {
+      d <- distfun(mat_t[c(2, 1), ])
+      colData(x)[, new_field] <- d
+      t <- diff(time_t)
+      colData(x)[, new_field2] <- t
+    }} else {
+    colData(x)[, new_field] <- NA
+    colData(x)[, new_field2] <- NA
+  }
+  return(x)
 }
+
+# Split SE into a list, by subject
+spl <- split(colnames(se), colData(se)[, field])
+
+# Manipulate each subobject
+se_list <- lapply((time_interval+1):length(spl),
+                  function(i){ check_pairwise_dist(x = se[, spl[[i - time_interval]]],
+                                                   secondx = se[, spl[[i]]],
+                                                   distfun=stats::dist,
+                                                   time_interval,
+                                                   new_field,
+                                                   new_field2,
+                                                   time_field)})
+
+# Merge the objects back into a single SE
+se <- do.call("cbind", se_list)
+}
+
