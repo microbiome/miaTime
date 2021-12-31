@@ -1,21 +1,26 @@
-#' Beta diversity calculation between samples at the interval of n time steps
+#' Beta diversity calculation within individuals in the interval of n time steps
 #'
-#' The dissimilarity (beta diversity) is calculated in steps of n between the
-#' samples of subject. "n" can be 1 or greater than 1. The time difference
-#' between the n points is also calculated.
+#' The dissimilarity (beta diversity) is calculated in time steps of n, between
+#' the samples of subject(individuals).Time interval can be 1 or greater than 1.
+#' The time difference between n points is also calculated. Given input,
+#' `SummarizedExperiment` or `TreeSummarizedExperiment` object, returns with
+#' the calculations inserted in columns of `colData` field.
 #'
 #' @param se A
 #' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
 #' object or
 #' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
-#' @param field column vector chosen from `colData` field to determine
-#' the grouping factor in order to split `SummarizedExperiment` object.
-#' @param time_field column vector chosen from `colData` field  indicating the
-#' time
+#' @param field a single character value for specifying which grouping
+#' factor chosen from columns of `colData` field.
+#' @param time_field a single character value for specifying time series
+#' vector given in `colData` field.
 #' @param time_interval integer value indicating the increment between the time
 #' steps. It can be 1 or higher than 1. (default: \code{time_interval = 1})
 #'
-#' @return a \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
+#' @return a
+#' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
+#' or
+#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
 #' containing the beta diversity and time difference between samples
 #' in n time steps
 #'
@@ -24,7 +29,7 @@
 #' data(hitchip1006)
 #'
 #' hitchipTime <- getTimeDivergence(hitchip1006, field = "subject",
-#'                                    time_interval = 1,
+#'                                    time_interval = 3,
 #'                                    time_field = "time")
 #'
 #'@export
@@ -36,39 +41,50 @@ new_field <- "time_divergence"
 new_field2 <- "time_difference"
 
 # Dissimilarity will be calculated between rows, as in stats::dist
-check_pairwise_dist <- function (x, secondx, distfun, time_interval, new_field, new_field2, time_field) {
+check_pairwise_dist <- function (x,
+                                 distfun,
+                                 time_interval,
+                                 new_field,
+                                 new_field2,
+                                 time_field) {
 
-  if (nrow(colData(x)) == 1 | nrow(colData(secondx))== 1){
     mat <- t(assay(x))
-    mat2 <- t(assay(secondx))
-    mat_t <- rbind(mat, mat2)
 
     time <- colData(x)[, time_field]
-    time2 <- colData(secondx)[, time_field]
-    time_t <- rbind(time, time2)
 
     # Add new field to coldata
     colData(x)[, new_field] <- rep(NA, nrow(mat))
+    colData(x)[, new_field2] <- rep(NA, nrow(mat))
 
-    if (nrow(mat_t) > time_interval) {
-      d <- distfun(mat_t[c(2, 1), ])
-      colData(x)[, new_field] <- d
-      t <- diff(time_t)
-      colData(x)[, new_field2] <- t
-    }} else {
-    colData(x)[, new_field] <- NA
-    colData(x)[, new_field2] <- NA
-  }
-  return(x)
+
+    if (nrow(mat) > time_interval) {
+
+        #beta diversity calculation
+        n <- sapply((time_interval+1):nrow(mat),
+                    function (i) {distfun(mat[c(i, i-time_interval), ])})
+
+        for(i in (time_interval+1):nrow(colData(x))){
+            colData(x)[, new_field][[i]] <- n[[i-time_interval]]
+        }
+
+        #time difference calculation
+        time <- sapply((time_interval+1):nrow(mat),
+                       function (i) {diff(colData(x)[c(i-time_interval, i), time_field])})
+
+        for(i in (time_interval+1):nrow(colData(x))){
+            colData(x)[, new_field2][[i]] <- time[[i-time_interval]]
+        }
+    }
+
+    return(x)
 }
 
 # Split SE into a list, by subject
 spl <- split(colnames(se), colData(se)[, field])
 
 # Manipulate each subobject
-se_list <- lapply((time_interval+1):length(spl),
-                  function(i){ check_pairwise_dist(x = se[, spl[[i - time_interval]]],
-                                                   secondx = se[, spl[[i]]],
+se_list <- lapply(seq_along(spl),
+                  function(i){check_pairwise_dist(x = se[, spl[[i]]],
                                                    distfun=stats::dist,
                                                    time_interval,
                                                    new_field,
@@ -77,5 +93,8 @@ se_list <- lapply((time_interval+1):length(spl),
 
 # Merge the objects back into a single SE
 se <- do.call("cbind", se_list)
+
+return(se)
+
 }
 

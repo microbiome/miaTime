@@ -18,7 +18,9 @@ Depends:
 Imports:
     lubridate,
     SummarizedExperiment,
+    TreeSummarizedExperiment,
     dplyr,
+    S4Vectors,
     vegan,
     microbiomeDataSets,
     mia

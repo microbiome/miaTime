@@ -2,16 +2,9 @@
 % Please edit documentation in R/getTimeDivergence.R
 \name{getTimeDivergence}
 \alias{getTimeDivergence}
-\title{Beta diversity calculation between samples at the interval of n time steps}
+\title{Beta diversity calculation within individuals in the interval of n time steps}
 \usage{
-getTimeDivergence(
-  se,
-  sample_field,
-  sample_id,
-  time_field,
-  time_interval,
-  transposed = FALSE
-)
+getTimeDivergence(se, field, time_field, time_interval)
 }
 \arguments{
 \item{se}{A
@@ -19,38 +12,36 @@ getTimeDivergence(
 object or
 \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}}
 
-\item{sample_field}{column vector containing the all individuals in
-\code{colData} field}
+\item{field}{a single character value for specifying which grouping
+factor chosen from columns of \code{colData} field.}
 
-\item{sample_id}{character indicating a individual inside of \code{sample_field}}
-
-\item{time_field}{column vector containing the time information
-in \code{colData} field}
+\item{time_field}{a single character value for specifying time series
+vector given in \code{colData} field.}
 
 \item{time_interval}{integer value indicating the increment between the time
-steps. It can be 1 or higher than 1.}
-
-\item{transposed}{logical scalar assigning samples to rows if they are in
-columns. If samples are not in rows, the default value is applied.
-(default: \code{transposed = FALSE})}
+steps. It can be 1 or higher than 1. (default: \code{time_interval = 1})}
 }
 \value{
-a matrix containing the beta diversity and time difference
-between samples in n time steps
+a
+\code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
+or
+\code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
+containing the beta diversity and time difference between samples
+in n time steps
 }
 \description{
-The dissimilarity (beta distance) is calculated in steps of n between the
-samples of subject. "n" can be 1 or greater than 1. The time difference
-between the n points is also calculated.
+The dissimilarity (beta diversity) is calculated in time steps of n, between
+the samples of subject(individuals).Time interval can be 1 or greater than 1.
+The time difference between n points is also calculated. Given input,
+\code{SummarizedExperiment} or \code{TreeSummarizedExperiment} object, returns with
+the calculations inserted in columns of \code{colData} field.
 }
 \examples{
-library(microbiomeDataSets)
-tse <- GrieneisenTSData()
+library(miaTime)
+data(hitchip1006)
 
-BaboonDivergence <- getTimeDivergence(tse, sample_field = "baboon_id",
-                                    sample_id = "Baboon_1" ,
-                                    time_field = "collection_date",
-                                    time_interval = 1,
-                                    transposed = FALSE )
+hitchipTime <- getTimeDivergence(hitchip1006, field = "subject",
+                                   time_interval = 3,
+                                   time_field = "time")
 
 }
