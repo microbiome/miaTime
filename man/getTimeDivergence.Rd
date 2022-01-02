@@ -41,7 +41,7 @@ library(miaTime)
 data(hitchip1006)
 
 hitchipTime <- getTimeDivergence(hitchip1006, field = "subject",
-                                   time_interval = 3,
+                                   time_interval = 1,
                                    time_field = "time")
 
 }
