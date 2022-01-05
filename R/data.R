@@ -6,8 +6,9 @@
 #' @details The data is also available for download from the Data Dryad
 #' \url{http://doi.org/10.5061/dryad.pk75d} and was initially released
 #' as a phyloseq object under the name atlas1006 in \pkg{microbiome} R package.
-#' The current implementation in \pkg{miaTime} provides this as
-#' \code{\link{TreeSummarizedExperiment-class}} object.
+#' The \pkg{miaTime} package provides this as
+#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
+#' object.
 #' Some of the subjects also have short time series.
 #' @docType data
 #' @author Leo Lahti
@@ -16,7 +17,8 @@
 #' Lahti et al. Tipping elements of the human intestinal ecosystem.
 #' Nature Communications 5:4344, 2014. \url{https://doi.org/10.1038/ncomms5344}.
 #' @usage data(hitchip1006)
-#' @format The data set in \code{\link{TreeSummarizedExperiment-class}}
+#' @format The data set in
+#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
 #' format.
 #' @keywords data
 #'
