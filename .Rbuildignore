@@ -1,2 +1,11 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+.gitignore
+
+^\.github$
+^_codecov\.yml$
+^docs$
+^codecov.yml$
+^README.Rmd$
+^_pkgdown\.yml$
+^pkgdown$
