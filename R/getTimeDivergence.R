@@ -24,6 +24,11 @@
 #' containing the beta diversity and time difference between samples
 #' in n time steps
 #'
+#' @importFrom SEtools mergeSEs
+#' @importFrom SummarizedExperiment assay
+#' @importFrom SummarizedExperiment colData
+#' @importFrom SummarizedExperiment colData<-
+#'
 #' @examples
 #' library(miaTime)
 #' data(hitchip1006)
@@ -46,7 +51,7 @@ check_pairwise_dist <- function (x,
                                  time_interval,
                                  new_field,
                                  new_field2,
-                                 time_field) {
+                                 time_field){
 
     mat <- t(assay(x))
 
@@ -92,7 +97,7 @@ se_list <- lapply(seq_along(spl),
                                                    time_field)})
 
 # Merge the objects back into a single SE
-se <- do.call("cbind", se_list)
+se <- mergeSEs(se_list)
 
 return(se)
 

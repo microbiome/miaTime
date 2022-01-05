@@ -21,9 +21,10 @@ Imports:
     TreeSummarizedExperiment,
     dplyr,
     S4Vectors,
-    vegan,
     microbiomeDataSets,
-    mia
+    mia,
+    SEtools,
+    vegan
 Suggests: 
     rmarkdown,
     knitr,
