@@ -188,8 +188,6 @@ as.data.frame(colData(se)[, c("subject", "time", "shifted")]) %>%
 
 ## Estimating divergence and convergence
 
-[@gutMicrobiota] is available for further details.
-
 Calculate divergence from a baseline sample (or another reference sample).
 
 ```{r, eval=FALSE}
