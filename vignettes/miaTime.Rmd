@@ -230,7 +230,7 @@ fun <- function (se) {
   baseline_sample <- rownames(colData(se)[which.min(colData(se)$time),])
   estimateDivergence(se, name = "divergence_from_baseline", 
                      reference = assays(se)$counts[, baseline_sample],
-		     FUN = stats::dist, method = "euclidean")
+		                 FUN = stats::dist, method = "euclidean")
 
 }
 

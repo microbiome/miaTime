@@ -26,11 +26,28 @@ getTimeDivergence(
 )
 }
 \arguments{
+\item{x}{a \linkS4class{SummarizedExperiment} object or
+a \linkS4class{TreeSummarizedExperiment} of an individual with multiple
+samples}
+
+\item{distfun}{a function that uses \code{vegan::vegdist} as the default value to
+calculate beta diversity. (default: \code{distfun = vegan::vegdist})}
+
 \item{time_interval}{integer value indicating the increment between the time
 steps. It can be 1 or higher than 1. (default: \code{time_interval = 1})}
 
+\item{new_field}{a column vector showing beta diversity between samples
+over n time intervals (default: \code{new_field = "time_divergence"})}
+
+\item{new_field2}{a column vector showing the time difference between
+samples used to calculate beta diversity
+(default: \code{new_field2 = "time_difference"})}
+
 \item{time_field}{a single character value for specifying time series
 vector given in \code{colData} field.}
+
+\item{abund_values}{character indicating which abundance values are used in
+the assay of \code{SE} and \code{TSE} (default: \code{abund_values = "counts"})}
 
 \item{se}{A
 \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
@@ -50,8 +67,8 @@ in n time steps
 }
 \description{
 The dissimilarity (beta diversity) is calculated in time steps of n, between
-the samples of subject (individuals).Time interval can be 1 or greater than 1.
-The time difference between n points is also calculated. Given input,
+the samples of subject (individuals).Time interval can be 1 or greater
+than 1. The time difference between n points is also calculated. Given input,
 \code{SummarizedExperiment} or \code{TreeSummarizedExperiment} object, returns with
 the calculations inserted in columns of \code{colData} field.
 }

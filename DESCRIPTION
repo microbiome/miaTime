@@ -15,17 +15,17 @@ License: Artistic-2.0 | file LICENSE
 Depends:
     R (>= 4.1)
 Imports:
-    dplyr,
-    lubridate,
     SummarizedExperiment,
-    TreeSummarizedExperiment,
-    S4Vectors,
-    microbiomeDataSets,
-    mia,
     SEtools,
     vegan
 Suggests: 
+    TreeSummarizedExperiment,
+    dplyr,
+    lubridate,
     rmarkdown,
+    microbiomeDataSets,
+    S4Vectors,
+    mia,
     knitr,
     devtools,
     BiocStyle,
