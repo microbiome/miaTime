@@ -41,7 +41,10 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v1
         with:
-          extra-packages: rcmdcheck
+          extra-packages: |
+              rcmdcheck
+              mia
+              microbiomeDataSets
 
       - name: Check
         env:
