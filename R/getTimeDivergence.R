@@ -16,9 +16,10 @@
 #' vector given in `colData` field.
 #' @param time_interval integer value indicating the increment between the time
 #' steps. It can be 1 or higher than 1. (default: \code{time_interval = 1})
-#' @param x  a \linkS4class{SummarizedExperiment} object or
-#' a \linkS4class{TreeSummarizedExperiment} of an individual with multiple
-#' samples
+#' @param x  a \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
+#' object or a
+#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
+#' of an individual with multiple samples
 #' @param distfun a function that uses `vegan::vegdist` as the default value to
 #' calculate beta diversity. (default: \code{distfun = vegan::vegdist})
 #' @param new_field a column vector showing beta diversity between samples

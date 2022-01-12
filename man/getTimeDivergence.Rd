@@ -26,9 +26,10 @@ getTimeDivergence(
 )
 }
 \arguments{
-\item{x}{a \linkS4class{SummarizedExperiment} object or
-a \linkS4class{TreeSummarizedExperiment} of an individual with multiple
-samples}
+\item{x}{a \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
+object or a
+\code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
+of an individual with multiple samples}
 
 \item{distfun}{a function that uses \code{vegan::vegdist} as the default value to
 calculate beta diversity. (default: \code{distfun = vegan::vegdist})}

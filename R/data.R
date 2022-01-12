@@ -35,7 +35,8 @@ NULL
 #' The data contains 713 fecal samples from 20 Belgian women collected
 #' over six weeks.
 #' The current implementation in \pkg{miaTime} provides this as
-#' \code{\link{TreeSummarizedExperiment-class}} object.
+#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
+#' object.
 #' @docType data
 #' @author Doris Vandeputte
 #' @return Loads the data set in R.
@@ -45,7 +46,8 @@ NULL
 #' research.
 #' Nat Commun 12, 6740 (2021). https://doi.org/10.1038/s41467-021-27098-7
 #' @usage data(temporalMicrobiome20)
-#' @format The data set in \code{\link{TreeSummarizedExperiment-class}}
+#' @format The data set in
+#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
 #' format.
 #' @keywords data
 #'
