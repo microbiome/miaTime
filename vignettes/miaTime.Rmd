@@ -189,6 +189,15 @@ as.data.frame(colData(se)[, c("subject", "time", "shifted")]) %>%
 ## Estimating divergence and convergence
 
 Calculate divergence from a baseline sample (or another reference sample).
+This calculation can be carried out with the  function \link[mia]{estimateDivergence}. The `mia` package can be installed with the following lines. 
+
+```{r eval=FALSE, include=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("mia")
+```
+
 
 ```{r, eval=FALSE}
 # Identify the baseline sample
