@@ -43,8 +43,8 @@ jobs:
         with:
           extra-packages: |
               rcmdcheck
-              mia
-              microbiomeDataSets
+              BiocManager::install("mia")
+              BiocManager::install("microbiomeDataSets")
 
       - name: Check
         env:
