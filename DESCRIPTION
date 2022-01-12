@@ -1,7 +1,7 @@
 Package: miaTime
 Type: Package
 Title: Microbiome Time Series Analysis
-Version: 0.1.2
+Version: 0.1.3
 Authors@R:
      c(person(given = "Leo", family = "Lahti", role = c("aut"),
               email = "leo.lahti@iki.fi",
@@ -13,7 +13,7 @@ Description:
 biocViews: Microbiome, Software, Sequencing, Coverage
 License: Artistic-2.0 | file LICENSE
 Depends:
-    R (>= 4.1)
+    R (>= 4.0)
 Imports:
     SummarizedExperiment,
     SEtools,
