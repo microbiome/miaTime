@@ -167,7 +167,9 @@ jobs:
           # rspm is out of date
           install.packages("matrixStats", repos = "https://cran.rstudio.com/")
           # BiocManager::install("adw96/breakaway")
-
+          
+          BiocManager::install("microbiome/mia")
+          BiocManager::install("microbiome/microbiomeDataSets")
           BiocManager::install("vegandevs/vegan")
           BiocManager::install("fionarhuang/TreeSummarizedExperiment")
 
