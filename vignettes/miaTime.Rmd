@@ -188,9 +188,16 @@ as.data.frame(colData(se)[, c("subject", "time", "shifted")]) %>%
 
 ## Estimating divergence and convergence
 
-[@gutMicrobiota] is available for further details.
-
 Calculate divergence from a baseline sample (or another reference sample).
+This calculation can be carried out with the  function \link[mia]{estimateDivergence}. The `mia` package can be installed with the following lines. 
+
+```{r eval=FALSE, include=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("mia")
+```
+
 
 ```{r, eval=FALSE}
 # Identify the baseline sample
@@ -232,7 +239,7 @@ fun <- function (se) {
   baseline_sample <- rownames(colData(se)[which.min(colData(se)$time),])
   estimateDivergence(se, name = "divergence_from_baseline", 
                      reference = assays(se)$counts[, baseline_sample],
-		     FUN = stats::dist, method = "euclidean")
+		                 FUN = stats::dist, method = "euclidean")
 
 }
 
