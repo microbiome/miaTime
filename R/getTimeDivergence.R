@@ -1,41 +1,36 @@
-#' Beta diversity calculation within individuals in the interval of n time steps
+#' Beta diversity calculation within individuals over time
 #'
-#' The dissimilarity (beta diversity) is calculated in time steps of n, between
-#' the samples of subject (individuals).Time interval can be 1 or greater
-#' than 1. The time difference between n points is also calculated. Given input,
-#' `SummarizedExperiment` or `TreeSummarizedExperiment` object, returns with
-#' the calculations inserted in columns of `colData` field.
+#' This method calculates sample dissimilarity between consecutive time steps
+#' (step size n=1 by default), within a group (subject, reaction chamber,
+#' or similar).
+#' The corresponding time difference is returned as well. The method operates on
+#' `SummarizedExperiment` objects, and the results are stored in `colData`.
 #'
 #' @param se A
 #' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
-#' object or
-#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
-#' @param field a single character value for specifying which grouping
-#' factor chosen from columns of `colData` field.
-#' @param time_field a single character value for specifying time series
-#' vector given in `colData` field.
-#' @param time_interval integer value indicating the increment between the time
-#' steps. It can be 1 or higher than 1. (default: \code{time_interval = 1})
-#' @param x  a \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
-#' object or a
-#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
-#' of an individual with multiple samples
-#' @param distfun a function that uses `vegan::vegdist` as the default value to
-#' calculate beta diversity. (default: \code{distfun = vegan::vegdist})
-#' @param new_field a column vector showing beta diversity between samples
-#' over n time intervals (default: \code{new_field = "time_divergence"})
-#' @param new_field2 a column vector showing the time difference between
+#' object.
+#' @param group a single character value for specifying which grouping
+#' factor is used (name of a `colData` field).
+#' @param time_field a single character value, specifying the name of the
+#' time series field in `colData`.
+#' @param time_interval integer value indicating the increment between time
+#' steps (default: 1)
+#' @param name_divergence a column vector showing beta diversity between samples
+#' over n time intervals (default: \code{name_divergence = "time_divergence"})
+#' @param name_timedifference field name for adding the time difference between
 #' samples used to calculate beta diversity
-#' (default: \code{new_field2 = "time_difference"})
-#' @param abund_values character indicating which abundance values are used in
-#' the assay of `SE` and `TSE` (default: \code{abund_values = "counts"})
+#' (default: \code{name_timedifference = "time_difference"})
+#' @param abund_values character indicating which assay values are used in
+#' the dissimilarity estimation (default: \code{abund_values = "counts"})
+#' @param distfun a function to calculate beta diversity.
+#' (default: \code{distfun = vegan::vegdist})
 #'
 #' @return a
 #' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
 #' or
 #' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
-#' containing the beta diversity and time difference between samples
-#' in n time steps
+#' containing the sample dissimilarity and corresponding time difference between samples
+#' (across n time steps), within each level of the grouping factor.
 #'
 #' @importFrom SEtools mergeSEs
 #' @importFrom SummarizedExperiment assay
@@ -45,80 +40,43 @@
 #' @examples
 #' library(miaTime)
 #' data(hitchip1006)
+#' se <- hitchip1006
 #'
-#' sub_hitchip <- hitchip1006[,800:1151]
-#' hitchipTime_subset <- getTimeDivergence(sub_hitchip, field = "subject",
-#'                                    time_interval = 1,
-#'                                    time_field = "time")
+#' # Subset to speed up example
+#' # Just pick 4 subjects with 1-5 time points
+#' se <- se[, colData(hitchip1006)$subject %in% c("900", "934", "843", "875")]
+#' se2 <- getTimeDivergence(se, group = "subject",
+#'                              time_interval = 1,
+#'                              time_field = "time")
 #'
-#' @rdname getTimeDivergence
-#'
-#' @export
-check_pairwise_dist <- function (x,
-                                distfun,
-                                time_interval,
-                                new_field = "time_divergence",
-                                new_field2 = "time_difference",
-                                time_field,
-                                abund_values){
-
-    mat <- t(assay(x, abund_values = "counts"))
-
-    time <- colData(x)[, time_field]
-
-    ## Add new field to coldata
-    colData(x)[, new_field] <- rep(NA, nrow(mat))
-    colData(x)[, new_field2] <- rep(NA, nrow(mat))
-
-    if (nrow(mat) > time_interval) {
-
-        ##beta diversity calculation
-        n <- sapply((time_interval+1):nrow(mat),
-                function (i) {distfun(mat[c(i, i-time_interval), ])})
-
-        for(i in (time_interval+1):nrow(colData(x))){
-                colData(x)[, new_field][[i]] <- n[[i-time_interval]]
-        }
-
-        ##time difference calculation
-        time <- sapply((time_interval+1):nrow(mat),
-            function (i) {diff(colData(x)[c(i-time_interval, i), time_field])})
-
-        for(i in (time_interval+1):nrow(colData(x))){
-            colData(x)[, new_field2][[i]] <- time[[i-time_interval]]}
-
-        return(x)
-    }
-}
-
 #' @rdname getTimeDivergence
 #' @name getTimeDivergence
 #' @export
 getTimeDivergence <- function(se,
-                            field,
+                            group,
                             time_field,
-                            time_interval,
-                            new_field = "time_divergence",
-                            new_field2 = "time_difference",
-                            abund_values = "counts" ){
+                            time_interval=1,
+                            name_divergence = "time_divergence",
+                            name_timedifference = "time_difference",
+                            abund_values = "counts",
+			    distfun = vegan::vegdist){
 
-    # Split SE into a list, by subject
-    spl <- split(colnames(se), colData(se)[, field])
+    # Split SE into a list, by grouping
+    spl <- split(colnames(se), colData(se)[, group])
 
+    # Separate the groups with multiple time points
     spl_more <- spl[lapply(spl,length)>1]
-
     spl_one <- spl[lapply(spl,length) == 1]
 
     # Manipulate each subobject
     se_more_list <- lapply(seq_along(spl_more),
-                function(i){check_pairwise_dist(x = se[, spl_more[[i]]],
-                                                distfun=vegan::vegdist,
+                function(i){.check_pairwise_dist(x = se[, spl_more[[i]]],
+                                                distfun=distfun,
                                                 time_interval,
-                                                new_field = "time_divergence",
-                                                new_field2 = "time_difference",
+                                                name_divergence = "time_divergence",
+                                                name_timedifference = "time_difference",
                                                 time_field,
                                                 abund_values)})
-
 
     se_one_list <- lapply(seq_along(spl_one), function(i) {
         se[, spl_one[[i]]]}
@@ -128,7 +86,7 @@ getTimeDivergence <- function(se,
     names(se_more_list) <- names(spl_more)
     names(se_one_list) <- names(spl_one)
 
-    #put lists together and put them in order
+    # put lists together and put them in order
     whole_se <- do.call(c, list(se_one_list, se_more_list))
     whole_se <- whole_se[order(as.numeric(names(whole_se)))]
 
@@ -137,4 +95,43 @@ getTimeDivergence <- function(se,
 
     return(se_new)
 
+}
+
+
+
+.check_pairwise_dist <- function (x,
+                                distfun,
+                                time_interval,
+                                name_divergence = "time_divergence",
+                                name_timedifference = "time_difference",
+                                time_field,
+                                abund_values){
+
+    mat <- t(assay(x, abund_values = "counts"))
+
+    time <- colData(x)[, time_field]
+
+    ## Add new field to coldata
+    colData(x)[, name_divergence]     <- rep(NA, nrow(mat))
+    colData(x)[, name_timedifference] <- rep(NA, nrow(mat))
+
+    if (nrow(mat) > time_interval) {
+
+        ##beta diversity calculation
+        n <- sapply((time_interval+1):nrow(mat),
+                function (i) {distfun(mat[c(i, i-time_interval), ])})
+
+        for(i in (time_interval+1):nrow(colData(x))){
+                colData(x)[, name_divergence][[i]] <- n[[i-time_interval]]
+        }
+
+        ##time difference calculation
+        time <- sapply((time_interval+1):nrow(mat),
+            function (i) {diff(colData(x)[c(i-time_interval, i), time_field])})
+
+        for(i in (time_interval+1):nrow(colData(x))){
+            colData(x)[, name_timedifference][[i]] <- time[[i-time_interval]]}
+
+        return(x)
+    }
 }
