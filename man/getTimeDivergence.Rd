@@ -47,8 +47,8 @@ a
 \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
 or
 \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
-containing the sample dissimilarity and corresponding time difference between samples
-(across n time steps), within each level of the grouping factor.
+containing the sample dissimilarity and corresponding time difference between
+samples (across n time steps), within each level of the grouping factor.
 }
 \description{
 This method calculates sample dissimilarity between consecutive time steps
@@ -58,7 +58,7 @@ The corresponding time difference is returned as well. The method operates on
 \code{SummarizedExperiment} objects, and the results are stored in \code{colData}.
 }
 \examples{
-library(miaTime)
+#library(miaTime)
 data(hitchip1006)
 se <- hitchip1006
 

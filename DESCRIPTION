@@ -9,11 +9,12 @@ Authors@R:
        person(given = "Yagmur", family = "Simsek", role = c("aut", "cre"),
               email = "yagmur.simsek@hsrw.org"))
 Description: 
-    The `miaTime` package provides tools for microbiome time series analysis.
+    The `miaTime` package provides tools for microbiome time series analysis
+    based on SummarizedExperiment and TreeSummarizedExperiment infrastructure.
 biocViews: Microbiome, Software, Sequencing, Coverage
 License: Artistic-2.0 | file LICENSE
 Depends:
-    R (>= 4.0)
+    R (>= 4.1)
 Imports:
     SummarizedExperiment,
     SEtools,

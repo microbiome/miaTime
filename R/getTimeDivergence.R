@@ -29,16 +29,17 @@
 #' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
 #' or
 #' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
-#' containing the sample dissimilarity and corresponding time difference between samples
-#' (across n time steps), within each level of the grouping factor.
+#' containing the sample dissimilarity and corresponding time difference between
+#' samples (across n time steps), within each level of the grouping factor.
 #'
 #' @importFrom SEtools mergeSEs
+#' @importFrom vegan vegdist
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment colData<-
 #'
 #' @examples
-#' library(miaTime)
+#' #library(miaTime)
 #' data(hitchip1006)
 #' se <- hitchip1006
 #'
@@ -49,7 +50,6 @@
 #'                              time_interval = 1,
 #'                              time_field = "time")
 #'
-#' @rdname getTimeDivergence
 #' @name getTimeDivergence
 #' @export
 getTimeDivergence <- function(se,
@@ -59,7 +59,7 @@ getTimeDivergence <- function(se,
                             name_divergence = "time_divergence",
                             name_timedifference = "time_difference",
                             abund_values = "counts",
-			    distfun = vegan::vegdist){
+			                      distfun = vegan::vegdist){
 
     # Split SE into a list, by grouping
     spl <- split(colnames(se), colData(se)[, group])
@@ -70,33 +70,48 @@ getTimeDivergence <- function(se,
 
     # Manipulate each subobject
     se_more_list <- lapply(seq_along(spl_more),
-                function(i){.check_pairwise_dist(x = se[, spl_more[[i]]],
-                                                distfun=distfun,
-                                                time_interval,
-                                                name_divergence = "time_divergence",
-                                                name_timedifference = "time_difference",
-                                                time_field,
-                                                abund_values)})
+        function(i){.check_pairwise_dist(x = se[, spl_more[[i]]],
+                                        distfun=distfun,
+                                        time_interval,
+                                        name_divergence = "time_divergence",
+                                        name_timedifference = "time_difference",
+                                        time_field,
+                                        abund_values)})
 
-    se_one_list <- lapply(seq_along(spl_one), function(i) {
-        se[, spl_one[[i]]]}
-    )
+            se_one_list <- lapply(seq_along(spl_one), function(i) {
+                se[, spl_one[[i]]]}
+            )
 
-    # assign the names back to (T)SE objects
-    names(se_more_list) <- names(spl_more)
-    names(se_one_list) <- names(spl_one)
+            for(i in seq_along(se_one_list)){
+                colData(se_one_list[[i]])[, name_timedifference] <- NA
+                colData(se_one_list[[i]])[, name_divergence] <- NA
+            }
 
-    # put lists together and put them in order
-    whole_se <- do.call(c, list(se_one_list, se_more_list))
-    whole_se <- whole_se[order(as.numeric(names(whole_se)))]
+            # assign the names back to (T)SE objects
+            names(se_more_list) <- names(spl_more)
+            names(se_one_list) <- names(spl_one)
 
-    # Merge the objects back into a single SE
-    se_new <- mergeSEs(whole_se)
+            # put lists together and put them in order
+            whole_se <- do.call(c, list(se_one_list, se_more_list))
+            whole_se <- whole_se[order(as.numeric(names(whole_se)))]
 
-    return(se_new)
+            # Merge the objects back into a single SE
+
+            whole_se<-whole_se[!sapply(whole_se,is.null)]
+
+    #  if (class(whole_se[[1]]) == "TreeSummarizedExperiment"){
+    #      data <- cbind(whole_se[[1]], whole_se[[2]])
+
+    #      for( i in 3:length(whole_se)){
+    #          data <- cbind(data, whole_se[[i]])
+    #      }
+    #     return(data)
+    #  }
+
+            se_new <- mergeSEs(whole_se)
+            return(se_new)
 
 }
-
 
 
 .check_pairwise_dist <- function (x,
@@ -130,7 +145,8 @@ getTimeDivergence <- function(se,
             function (i) {diff(colData(x)[c(i-time_interval, i), time_field])})
 
         for(i in (time_interval+1):nrow(colData(x))){
-            colData(x)[, name_timedifference][[i]] <- time[[i-time_interval]]}
+            colData(x)[, name_timedifference][[i]] <- time[[i-time_interval]]
+        }
 
         return(x)
     }
