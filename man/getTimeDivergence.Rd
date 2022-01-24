@@ -59,11 +59,14 @@ The corresponding time difference is returned as well. The method operates on
 }
 \examples{
 #library(miaTime)
+library(SummarizedExperiment)
+
 data(hitchip1006)
 se <- hitchip1006
 
 # Subset to speed up example
-se <- se[,878:1011]
+se <- se[, colData(hitchip1006)$subject \%in\% c("900", "934", "843", "875")]
+
 se2 <- getTimeDivergence(se, group = "subject",
                              time_interval = 1,
                              time_field = "time")
