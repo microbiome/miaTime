@@ -63,8 +63,7 @@ data(hitchip1006)
 se <- hitchip1006
 
 # Subset to speed up example
-# Just pick 4 subjects with 1-5 time points
-se <- se[, colData(hitchip1006)$subject \%in\% c("900", "934", "843", "875")]
+se <- se[,878:1011]
 se2 <- getTimeDivergence(se, group = "subject",
                              time_interval = 1,
                              time_field = "time")

@@ -9,7 +9,7 @@ test_that("getTimeDivergence", {
                                      time_field = "time")
 
   # Input and output classes should match
-  #expect_equal(class(se), class(se2))
+  expect_equal(class(se), class(se2))
 
   # A subject to check time difference calculation
   time2 <- colData(se2)[, "time"][which(colData(se2)[, "subject"] == "843")]

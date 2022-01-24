@@ -44,8 +44,7 @@
 #' se <- hitchip1006
 #'
 #' # Subset to speed up example
-#' # Just pick 4 subjects with 1-5 time points
-#' se <- se[, colData(hitchip1006)$subject %in% c("900", "934", "843", "875")]
+#' se <- se[,878:1011]
 #' se2 <- getTimeDivergence(se, group = "subject",
 #'                              time_interval = 1,
 #'                              time_field = "time")
@@ -99,18 +98,14 @@ getTimeDivergence <- function(se,
 
             whole_se<-whole_se[!sapply(whole_se,is.null)]
 
-    #  if (class(whole_se[[1]]) == "TreeSummarizedExperiment"){
-    #      data <- cbind(whole_se[[1]], whole_se[[2]])
-
-    #      for( i in 3:length(whole_se)){
-    #          data <- cbind(data, whole_se[[i]])
-    #      }
-    #     return(data)
-    #  }
-
             se_new <- mergeSEs(whole_se)
-            return(se_new)
 
+            if(class(whole_se[[1]]) == "TreeSummarizedExperiment"){
+                colData(se) <- colData(se_new)
+                return(se)
+            }
+
+            return(se_new)
 }
 
 
@@ -147,7 +142,7 @@ getTimeDivergence <- function(se,
         for(i in (time_interval+1):nrow(colData(x))){
             colData(x)[, name_timedifference][[i]] <- time[[i-time_interval]]
         }
-
-        return(x)
     }
+    return(x)
+
 }
