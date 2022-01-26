@@ -14,7 +14,7 @@ Description:
 biocViews: Microbiome, Software, Sequencing, Coverage
 License: Artistic-2.0 | file LICENSE
 Depends:
-    R (>= 4.1)
+    R (>= 4.0)
 Imports:
     SummarizedExperiment,
     SEtools,

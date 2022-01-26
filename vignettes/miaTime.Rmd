@@ -274,8 +274,9 @@ colData(se)$time_from_endpoint <- colData(se)[, "time"] -
 
 ```
 
-Sample dissimilarity between consecutive time steps(step size n >= 1) within 
-a group(subject, age, reaction chamber, etc.) can be calculated by  	\code{\link[=getTimeDivergence]{getTimeDivergence}}
+Sample dissimilarity between consecutive time steps(step size n >= 1) within
+a group(subject, age, reaction chamber, etc.) can be calculated by  	`getTimeDivergence`.
+
 ```{r}
 library(miaTime)
 data("hitchip1006")

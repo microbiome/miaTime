@@ -58,7 +58,7 @@ The corresponding time difference is returned as well. The method operates on
 \code{SummarizedExperiment} objects, and the results are stored in \code{colData}.
 }
 \examples{
-#library(miaTime)
+library(miaTime)
 library(SummarizedExperiment)
 
 data(hitchip1006)

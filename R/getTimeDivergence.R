@@ -130,7 +130,7 @@ getTimeDivergence <- function(se,
 
     if (nrow(mat) > time_interval) {
 
-        ##beta diversity calculation
+        ## beta diversity calculation
         n <- sapply((time_interval+1):nrow(mat),
                 function (i) {distfun(mat[c(i, i-time_interval), ])})
 
@@ -138,7 +138,7 @@ getTimeDivergence <- function(se,
                 colData(x)[, name_divergence][[i]] <- n[[i-time_interval]]
         }
 
-        ##time difference calculation
+        ## time difference calculation
         time <- sapply((time_interval+1):nrow(mat),
             function (i) {diff(colData(x)[c(i-time_interval, i), time_field])})
 
