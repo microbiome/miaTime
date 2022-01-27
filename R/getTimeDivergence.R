@@ -43,14 +43,16 @@
 #' library(SummarizedExperiment)
 #'
 #' data(hitchip1006)
-#' se <- hitchip1006
+#' se <- transformSamples(hitchip1006, "relabundance")
 #'
 #' # Subset to speed up example
-#' se <- se[, colData(hitchip1006)$subject %in% c("900", "934", "843", "875")]
+#' se <- se[, colData(se)$subject %in% c("900", "934", "843", "875")]
 #'
 #' se2 <- getTimeDivergence(se, group = "subject",
 #'                              time_interval = 1,
-#'                              time_field = "time")
+#'                              time_field = "time",
+#'                              abund_values="relabundance",
+#'                              distfun = vegan::vegdist)
 #'
 #' @name getTimeDivergence
 #' @export
@@ -61,7 +63,7 @@ getTimeDivergence <- function(se,
                             name_divergence = "time_divergence",
                             name_timedifference = "time_difference",
                             abund_values = "counts",
-			                      distfun = vegan::vegdist){
+			    distfun = vegan::vegdist){
 
     # Split SE into a list, by grouping
     spl <- split(colnames(se), colData(se)[, group])
