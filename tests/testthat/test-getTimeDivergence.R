@@ -3,7 +3,7 @@ test_that("getTimeDivergence", {
   se <- hitchip1006
   # Subset to speed up computing
   # Just pick 4 subjects with 1-5 time points
-  se <- se[, colData(hitchip1006)$subject %in% c("900", "934", "843", "875")]
+  se <- se[, colData(se)$subject %in% c("900", "934", "843", "875")]
   se2 <- getTimeDivergence(se, group = "subject",
                                      time_interval = 1,
                                      time_field = "time")
@@ -38,7 +38,7 @@ test_that("getTimeDivergence", {
   expect_equal(divergence_number, divergence_calculated)
 
   # interval check
-  calculated_diff <- time3[(1+ 2):length(time3)] - time3[1:(length(time3) - 2)]
+  calculated_diff <- time3[(1+ 2):length(time3)] - time3[seq_len(length(time3)-2)]
 
   manual_diff <- c(rep(NA, length(time3) - length(calculated_diff)), calculated_diff)
 

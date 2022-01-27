@@ -58,17 +58,19 @@ The corresponding time difference is returned as well. The method operates on
 \code{SummarizedExperiment} objects, and the results are stored in \code{colData}.
 }
 \examples{
-library(miaTime)
+#library(miaTime)
 library(SummarizedExperiment)
 
 data(hitchip1006)
-se <- hitchip1006
+se <- mia::transformSamples(hitchip1006, method = "relabundance")
 
 # Subset to speed up example
-se <- se[, colData(hitchip1006)$subject \%in\% c("900", "934", "843", "875")]
+se <- se[, colData(se)$subject \%in\% c("900", "934", "843", "875")]
 
 se2 <- getTimeDivergence(se, group = "subject",
                              time_interval = 1,
-                             time_field = "time")
+                             time_field = "time",
+                             abund_values="relabundance",
+                             distfun = vegan::vegdist)
 
 }

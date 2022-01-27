@@ -43,7 +43,7 @@
 #' library(SummarizedExperiment)
 #'
 #' data(hitchip1006)
-#' se <- transformSamples(hitchip1006, "relabundance")
+#' se <- mia::transformSamples(hitchip1006, method = "relabundance")
 #'
 #' # Subset to speed up example
 #' se <- se[, colData(se)$subject %in% c("900", "934", "843", "875")]
@@ -122,7 +122,7 @@ getTimeDivergence <- function(se,
                                 time_field,
                                 abund_values){
 
-    mat <- t(assay(x, abund_values = "counts"))
+    mat <- t(assay(x, abund_values))
 
     time <- colData(x)[, time_field]
 
