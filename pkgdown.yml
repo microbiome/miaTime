@@ -1,7 +1,7 @@
-pandoc: 2.7.3
+pandoc: 2.14.0.3
 pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
   miaTime: miaTime.html
-last_built: 2022-01-28T11:43Z
+last_built: 2022-01-28T11:52Z
 
