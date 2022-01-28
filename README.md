@@ -1,6 +1,3 @@
-# miaTime
-Time Series Manipulation Package
-
 # Microbiome time series manipulation with miaTime
 
 This R package can be used to analyse time series data for microbial
@@ -11,8 +8,13 @@ and is based on the `(Tree)SummarizedExperiment` data container.
  
 The package can be directly installed from R command line.
 
-```
+
+```r
 devtools::install_github("microbiome/miaTime")
+```
+
+```r
+library(miaTime)
 ```
 
 ### Contributions and acknowledgments
@@ -25,15 +27,8 @@ flow kind of approach. Development version should be done against the
 `main` branch and then merged to `release` for release.
 (https://guides.github.com/introduction/flow/)
 
-**Kindly cite this work**. 
-
-```
-  list(title = "miaTime R package", 
-       author = list(
-       list(given = "Yagmur", family = "Simsek", role = NULL, email = "yagmur.simsek.98@gmail.com", comment = NULL), 
-       list(given = "Leo", family = "Lahti", role = NULL, email = NULL, comment = NULL)), url = "microbiome.github.io/miaTime", 
-       note = "Version 0.1.2")
-```
+**Kindly cite this work**. For citation details, see R command
+`r citation("miaTime")`
 
 # Code of conduct
 

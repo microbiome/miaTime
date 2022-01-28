@@ -1,7 +1,7 @@
 Package: miaTime
 Type: Package
 Title: Microbiome Time Series Analysis
-Version: 0.1.3
+Version: 0.1.4
 Authors@R:
      c(person(given = "Leo", family = "Lahti", role = c("aut"),
               email = "leo.lahti@iki.fi",
@@ -9,7 +9,8 @@ Authors@R:
        person(given = "Yagmur", family = "Simsek", role = c("aut", "cre"),
               email = "yagmur.simsek@hsrw.org"))
 Description: 
-    The `miaTime` package provides tools for microbiome time series analysis.
+    The `miaTime` package provides tools for microbiome time series analysis
+    based on SummarizedExperiment and TreeSummarizedExperiment infrastructure.
 biocViews: Microbiome, Software, Sequencing, Coverage
 License: Artistic-2.0 | file LICENSE
 Depends:
@@ -17,7 +18,9 @@ Depends:
 Imports:
     SummarizedExperiment,
     SEtools,
-    vegan
+    vegan,
+    BiocParallel,
+    mia
 Suggests: 
     TreeSummarizedExperiment,
     dplyr,
