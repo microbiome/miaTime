@@ -154,8 +154,6 @@ colData(se) <- colData(se) %>%
    DataFrame()
 ```
 
-
-
 Calculate the difference in time from a given baseline time point.
 
 ```{r}
@@ -183,6 +181,24 @@ colData(se) <- colData(se) %>%
 # Check output
 as.data.frame(colData(se)[, c("subject", "time", "shifted")]) %>%
     filter(subject == "831")
+```
+
+## Subset to baseline samples
+
+```{r}
+#samples with time point 0
+se <- hitchip1006
+sample_time_zero <- colData(se)[which(colData(se)[, "time"] == 0),]
+
+#sample with the smallest time point within each subject
+colData(se) <- colData(se) %>%
+   as.data.frame() %>%
+   group_by(subject) %>%
+   mutate(rank = rank(time, ties.method="average")) %>%
+   DataFrame()
+
+time_within_subject <- colData(se)[which(colData(se)$rank == 1),]
+
 ```
 
 
