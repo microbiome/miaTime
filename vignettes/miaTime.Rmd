@@ -28,7 +28,7 @@ knitr::opts_chunk$set(cache = FALSE,
                       fig.width = 9,
                       dpi=300,
                       dev = "png",
-                      dev.args = list(type = "cairo-png")			
+                      dev.args = list(type = "cairo-png"),
                       message = FALSE,
                       warning = FALSE)
 ```
