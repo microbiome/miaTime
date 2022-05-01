@@ -23,11 +23,18 @@ bibliography: references.bib
 ---
 
 ```{r, echo=FALSE}
+library(Cairo)
 knitr::opts_chunk$set(cache = FALSE,
-                        fig.width = 9,
-                        message = FALSE,
-                        warning = FALSE)
+                      fig.width = 9,
+                      dpi=300,
+                      dev = "png",
+                      dev.args = list(type = "cairo-png")			
+                      message = FALSE,
+                      warning = FALSE)
 ```
+
+
+
 
 # Introduction
 
@@ -156,8 +163,6 @@ colData(tse) <- colData(tse) %>%
 
 
 
-Calculate the difference in time from a given baseline time point.
-
 ```{r}
 # Define baseline function;
 base <- function (x, baseline=min(x)) {x - baseline}
@@ -194,10 +199,48 @@ This calculation can be carried out with the  function \link[mia]{estimateDiverg
 ```{r eval=FALSE, include=FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-
 BiocManager::install("mia")
 ```
 
+
+Calculate the difference in time from the baseline (first) time point, per subject.
+
+```{r}
+# Subset to speed up example
+library(mia)
+tse <- hitchip1006
+set.seed(41287)
+# Just pick two example subjects that have 5 time points each
+selected.samples <- sample(names(which(sort(table(colData(hitchip1006)$subject))==5)), 2)
+tse <- tse[, colData(tse)$subject %in% selected.samples]
+# Add relative abundances
+tse <- transformSamples(tse, abund_values="counts", method="relabundance")
+# Calculate divergence from baseline sample (time point 1)
+tse <- getBaselineDivergence(tse,
+                              group = "subject",
+                              time_field = "time",
+                              name_divergence = "divergence_from_baseline",
+                              name_timedifference = "time_from_baseline",
+                              abund_values="relabundance",
+                              FUN = vegan::vegdist,
+                              method="bray")
+
+# Visualize time difference vs. community divergence (dissimilarity)
+library(dplyr)
+
+# Remove the baseline time points
+df <- as.data.frame(colData(tse)) %>% dplyr::filter(time_from_baseline > 0)
+
+library(ggplot2)
+theme_set(theme_bw(20))
+ggplot(data=df, aes(x=time_from_baseline, y=divergence_from_baseline, group=subject)) +
+    geom_point(aes(color=subject)) +
+    geom_smooth(formula = y ~ x, method="lm")
+```
+
+
+
+Similar example without miaTime. First without subject-wise grouping:
 
 ```{r, eval=FALSE}
 # Identify the baseline sample

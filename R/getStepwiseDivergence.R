@@ -23,8 +23,10 @@
 #' (default: \code{name_timedifference = "time_difference"})
 #' @param abund_values character indicating which assay values are used in
 #' the dissimilarity estimation (default: \code{abund_values = "counts"})
-#' @param distfun a function to calculate beta diversity.
-#' (default: \code{distfun = vegan::vegdist})
+#' @param FUN a \code{function} for dissimilarity calculation. The function must
+#'   expect the input matrix as its first argument. With rows as samples 
+#'   and columns as features. By default, \code{FUN} is
+#'   \code{vegan::vegdist}.   
 #' @param ... Arguments to be passed
 #'
 #' @return a
@@ -56,7 +58,7 @@
 #'                               time_interval = 1,
 #'                               time_field = "time",
 #'                               abund_values="relabundance",
-#'                               distfun = vegan::vegdist)
+#'                               FUN = vegan::vegdist)
 #'
 #' @name getStepwiseDivergence
 #' @export
@@ -67,7 +69,7 @@ getStepwiseDivergence <- function(x,
                             name_divergence = "time_divergence",
                             name_timedifference = "time_difference",
                             abund_values = "counts",
-			    distfun = vegan::vegdist, ...){
+			    FUN = vegan::vegdist, ...){
 
 
     # If group is not given, assume that all samples come from a single group
@@ -75,6 +77,9 @@ getStepwiseDivergence <- function(x,
       spl <- split(seq_len(ncol(x)), rep(1, nrow(x)))
     } else {
       # Split SE into a list, by grouping
+      if (is.factor(colData(x)[, group])) {
+        colData(x)[, group] <- droplevels(colData(x)[, group])
+      }      
       spl <- split(seq_len(ncol(x)), colData(x)[, group])
     }
 
@@ -85,7 +90,7 @@ getStepwiseDivergence <- function(x,
     # Manipulate each subobject
     x_more_list <- lapply(seq_along(spl_more),
         function(i){.check_pairwise_dist(x = x[, spl_more[[i]]],
-                                        distfun=distfun,
+                                        FUN=FUN,
                                         time_interval,
                                         name_divergence = "time_divergence",
                                         name_timedifference = "time_difference",
@@ -111,14 +116,18 @@ getStepwiseDivergence <- function(x,
 
     # Merge the objects back into a single X
     whole_x <- whole_x[!sapply(whole_x,is.null)]
-    x_new <- mergeSEs(whole_x)
 
-    if(class(whole_x[[1]]) == "TreeSummarizedExperiment"){
-        colData(x) <- colData(x_new)
-        return(x)
+    # Return the SE elements in a list
+    if (length(whole_x) > 1) {
+        x_new <- mergeSEs(whole_x)
+    } else {
+        x_new <- whole_x[[1]]
     }
 
-    return(x_new)
+    # Just replace the colData for the original input
+    colData(x) <- colData(x_new)
+    
+    return(x)
 
 }
 
@@ -149,7 +158,7 @@ setMethod("getTimeDivergence",
 
 
 .check_pairwise_dist <- function (x,
-                                distfun,
+                                FUN,
                                 time_interval,
                                 name_divergence = "time_divergence",
                                 name_timedifference = "time_difference",
@@ -168,7 +177,7 @@ setMethod("getTimeDivergence",
 
         ## beta diversity calculation
         n <- sapply((time_interval+1):nrow(mat),
-                function (i) {distfun(mat[c(i, i-time_interval), ])})
+                function (i) {FUN(mat[c(i, i-time_interval), ])})
 
         for(i in (time_interval+1):nrow(colData(x))){
                 colData(x)[, name_divergence][[i]] <- n[[i-time_interval]]

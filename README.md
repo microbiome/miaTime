@@ -22,7 +22,7 @@ devtools::install_github("microbiome/miaTime")
 ```
 
 ```
-##      checking for file ‘/tmp/RtmppTfO9z/remotes910771e97c87/microbiome-miaTime-d3ad218/DESCRIPTION’ ...  ✔  checking for file ‘/tmp/RtmppTfO9z/remotes910771e97c87/microbiome-miaTime-d3ad218/DESCRIPTION’
+##      checking for file ‘/tmp/RtmprfvIlK/remotesc2d4406f3bb3/microbiome-miaTime-d3ad218/DESCRIPTION’ ...  ✔  checking for file ‘/tmp/RtmprfvIlK/remotesc2d4406f3bb3/microbiome-miaTime-d3ad218/DESCRIPTION’
 ##   ─  preparing ‘miaTime’:
 ##      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
 ##   ─  checking for LF line-endings in source and make files and shell scripts

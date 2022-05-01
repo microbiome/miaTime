@@ -18,12 +18,12 @@ Depends:
 Imports:
     SummarizedExperiment,
     SEtools,
+    mia,    
     vegan
 Suggests: 
     TreeSummarizedExperiment,
     dplyr,
     lubridate,
-    mia,
     methods,    
     rmarkdown,
     S4Vectors,
