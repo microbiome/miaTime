@@ -201,6 +201,12 @@ jobs:
           remotes::install_cran("pkgdown")
         shell: Rscript {0}
 
+      - name: Install Cairo
+        if: github.ref == 'refs/heads/master'
+        run: |
+          remotes::install_cran("Cairo")
+        shell: Rscript {0}
+
       - name: Session info
         run: |
           options(width = 100)
