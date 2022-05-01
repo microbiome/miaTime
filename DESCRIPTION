@@ -18,13 +18,13 @@ Depends:
 Imports:
     SummarizedExperiment,
     SEtools,
-    vegan,
-    BiocParallel,
-    mia
+    vegan
 Suggests: 
     TreeSummarizedExperiment,
     dplyr,
     lubridate,
+    mia,
+    methods,    
     rmarkdown,
     S4Vectors,
     knitr,

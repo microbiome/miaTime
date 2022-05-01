@@ -14,8 +14,23 @@ devtools::install_github("microbiome/miaTime")
 ```
 
 ```
-## Skipping install of 'miaTime' from a github remote, the SHA1 (d3ad2183) has not changed since last install.
-##   Use `force = TRUE` to force installation
+## Downloading GitHub repo microbiome/miaTime@HEAD
+```
+
+```
+## Skipping 1 packages ahead of CRAN: mia
+```
+
+```
+##      checking for file ‘/tmp/RtmppTfO9z/remotes910771e97c87/microbiome-miaTime-d3ad218/DESCRIPTION’ ...  ✔  checking for file ‘/tmp/RtmppTfO9z/remotes910771e97c87/microbiome-miaTime-d3ad218/DESCRIPTION’
+##   ─  preparing ‘miaTime’:
+##      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+##   ─  checking for LF line-endings in source and make files and shell scripts
+##   ─  checking for empty or unneeded directories
+## ─  looking to see if a ‘data/datalist’ file should be added
+##   ─  building ‘miaTime_0.1.4.tar.gz’
+##      
+## 
 ```
 
 ```r
