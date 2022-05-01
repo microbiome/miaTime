@@ -166,6 +166,7 @@ jobs:
 
           # rspm is out of date
           install.packages("matrixStats", repos = "https://cran.rstudio.com/")
+          install.packages("Cairo", repos = "https://cran.rstudio.com/")  
           # BiocManager::install("adw96/breakaway")
           
           BiocManager::install("vegandevs/vegan")
@@ -204,12 +205,6 @@ jobs:
         if: github.ref == 'refs/heads/master' && env.run_pkgdown == 'true' && runner.os == 'Linux'
         run: |
           remotes::install_cran("pkgdown")
-        shell: Rscript {0}
-
-      - name: Install Cairo
-        if: github.ref == 'refs/heads/master'
-        run: |
-          remotes::install_cran("Cairo")
         shell: Rscript {0}
 
       - name: Session info
