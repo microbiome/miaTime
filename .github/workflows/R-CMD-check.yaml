@@ -43,6 +43,16 @@ jobs:
         with:
           extra-packages: rcmdcheck
 
+      - name: Install dependencies
+        run: |
+          ## Try installing the package dependencies in steps. First the local
+          ## dependencies, then any remaining dependencies to avoid the
+          ## issues described at
+          ## https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016675.html
+          ## https://github.com/r-lib/remotes/issues/296
+          ## Ideally, all dependencies should get installed in the first pass.
+          install.packages("cluster", repos = "https://cran.rstudio.com/")  
+
       - name: Check
         env:
           _R_CHECK_CRAN_INCOMING_: false
