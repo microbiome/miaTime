@@ -211,7 +211,7 @@ jobs:
         run: |
           remotes::install_cran("Cairo")
         shell: Rscript {0}
-	
+
       - name: Session info
         run: |
           options(width = 100)
