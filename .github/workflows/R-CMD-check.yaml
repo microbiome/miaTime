@@ -51,7 +51,7 @@ jobs:
           ## https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016675.html
           ## https://github.com/r-lib/remotes/issues/296
           ## Ideally, all dependencies should get installed in the first pass.
-          install.packages("cluster", repos = "https://cran.rstudio.com/")  
+          remotes::install_cran("cluster")	  
 
       - name: Check
         env:
