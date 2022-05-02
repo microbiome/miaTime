@@ -18,6 +18,7 @@ Depends:
 Imports:
     SummarizedExperiment,
     SEtools,
+    S4Vectors,
     mia,    
     vegan
 Suggests: 
@@ -26,7 +27,6 @@ Suggests:
     lubridate,
     methods,    
     rmarkdown,
-    S4Vectors,
     knitr,
     devtools,
     BiocStyle,

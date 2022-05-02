@@ -82,7 +82,7 @@ getBaselineDivergence <- function(x,
       spl <- split(seq_len(ncol(x)), colData(x)[, group])
     }
 
-    # Apply the operation per subject
+    # Apply the operation per subject FIXME
     x_list <- lapply(spl, function (s) {
         .calculate_divergence_from_baseline(x[,s], time_field, name_divergence, name_timedifference, abund_values, FUN, method)}
     )
@@ -106,16 +106,18 @@ getBaselineDivergence <- function(x,
 #' @importFrom mia estimateDivergence
 .calculate_divergence_from_baseline <- function (x, time_field, name_divergence, name_timedifference, abund_values, FUN, method) {
 
-    baseline_sample <- rownames(colData(x)[which.min(colData(x)[, time_field]),])
+    # Use the smallest time point as the baseline
+    base.index <- which.min(colData(x)[, time_field])
 
     # Add divergence from baseline
-    base.sample <- as.vector(assay(x, abund_values)[, baseline_sample])
-    x <- estimateDivergence(x, name = name_divergence, 
-                     reference = base.sample,
-                         FUN = FUN, method = method)
+    reference <- as.vector(assay(x, abund_values)[, base.index])
 
-    # Add time difference from baseline
-    colData(x)[, name_timedifference] <- colData(x)[, time_field] - colData(x)[baseline_sample, time_field]
+    # Add beta divergence from baseline info
+    x <- estimateDivergence(x, abund_values, name_divergence, reference, FUN, method)
+
+    # Add time divergence from baseline info
+    values <- list(colData(x)[, time_field] - colData(x)[base.index, time_field])
+    x <- .add_values_to_colData(x, values, name_timedifference)
 
     # Return
     return(x)

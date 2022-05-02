@@ -42,7 +42,7 @@
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment colData<-
 #'
-#' @alias getTimeDivergence
+#' @aliases getTimeDivergence
 #'
 #' @examples
 #' #library(miaTime)
