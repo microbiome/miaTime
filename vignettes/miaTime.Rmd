@@ -199,6 +199,21 @@ colData(se) <- colData(se) %>%
 
 time_within_subject <- colData(se)[which(colData(se)$rank == 1),]
 
+# Add some NAs in the time point data to demonstrate functionality with missing data
+nainds <- sample(seq_len(ncol(se)), 50)
+colData(se)$time[nainds] <- NA
+
+colData(se) <- colData(se) %>%
+   as.data.frame() %>%
+   group_by(subject) %>%
+   mutate(rank = rank(time, ties.method="average")) %>%
+   DataFrame()
+
+time_within_subject <- colData(se)[which(colData(se)$rank == 1),]
+
+#There is still one sample from each subject even if the time information of the sample is missing
+check_time <- data.frame(time_within_subject) %>% select(subject, time, rank)
+
 ```
 
 
@@ -215,7 +230,7 @@ BiocManager::install("mia")
 ```
 
 
-```{r, eval=FALSE}
+```{r eval=FALSE, include=FALSE}
 # Identify the baseline sample
 se <- hitchip1006
 baseline_sample <- colnames(se[, which.min(colData(se)$time)])
@@ -271,7 +286,7 @@ se2 <- do.call(cbind, se_list)
 
 Calculate convergence i.e. divergence from the last sample:
 
-```{r, eval=FALSE}
+```{r eval=FALSE, include=FALSE}
 # Identify the last sample
 se <- hitchip1006
 endpoint_sample <- colnames(se[, which.max(colData(se)$time)])
