@@ -163,7 +163,6 @@ colData(tse) <- colData(tse) %>%
 
 Calculate the difference in time from a given baseline time point.
 
-
 ```{r}
 # Define baseline function;
 base <- function (x, baseline=min(x)) {x - baseline}
@@ -235,7 +234,6 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("mia")
 ```
-
 
 
 Calculate the difference in time from the baseline (first) time point, per subject.
