@@ -230,7 +230,7 @@ BiocManager::install("mia")
 ```
 
 
-```{r eval=FALSE, include=FALSE}
+```{r}
 # Identify the baseline sample
 se <- hitchip1006
 baseline_sample <- colnames(se[, which.min(colData(se)$time)])
@@ -286,7 +286,7 @@ se2 <- do.call(cbind, se_list)
 
 Calculate convergence i.e. divergence from the last sample:
 
-```{r eval=FALSE, include=FALSE}
+```{r}
 # Identify the last sample
 se <- hitchip1006
 endpoint_sample <- colnames(se[, which.max(colData(se)$time)])
