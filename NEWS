@@ -1,1 +1,6 @@
-- First function `addOrderSequence` is ready
+
+
+Changes in version 0.1.5
++ Added function getBaselineDivergence
++ Changed the function name getTimeDivergence (deprecated) into getStepwiseDivergence
++ Added internal utility functions
