@@ -19,7 +19,10 @@
     <loc>/index.html</loc>
   </url>
   <url>
-    <loc>/reference/getTimeDivergence.html</loc>
+    <loc>/reference/getBaselineDivergence.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getStepwiseDivergence.html</loc>
   </url>
   <url>
     <loc>/reference/hitchip1006.html</loc>
