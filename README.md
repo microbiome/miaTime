@@ -18,11 +18,7 @@ devtools::install_github("microbiome/miaTime")
 ```
 
 ```
-## Skipping 1 packages ahead of CRAN: mia
-```
-
-```
-##      checking for file ‘/tmp/RtmpaLPMIE/remotes137b31f2b0ae8/microbiome-miaTime-d3ad218/DESCRIPTION’ ...  ✔  checking for file ‘/tmp/RtmpaLPMIE/remotes137b31f2b0ae8/microbiome-miaTime-d3ad218/DESCRIPTION’
+##      checking for file ‘/tmp/RtmpnMCGdS/remotes7b837698b6ec0/microbiome-miaTime-6ef0d2f/DESCRIPTION’ ...  ✔  checking for file ‘/tmp/RtmpnMCGdS/remotes7b837698b6ec0/microbiome-miaTime-6ef0d2f/DESCRIPTION’
 ##   ─  preparing ‘miaTime’:
 ##      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
 ##   ─  checking for LF line-endings in source and make files and shell scripts

@@ -161,6 +161,7 @@ colData(tse) <- colData(tse) %>%
    DataFrame()
 ```
 
+Calculate the difference in time from a given baseline time point.
 
 
 ```{r}
@@ -190,6 +191,39 @@ as.data.frame(colData(tse)[, c("subject", "time", "shifted")]) %>%
     filter(subject == "831")
 ```
 
+## Subset to baseline samples
+
+```{r}
+#samples with time point 0
+se <- hitchip1006
+sample_time_zero <- colData(se)[which(colData(se)[, "time"] == 0),]
+
+#sample with the smallest time point within each subject
+colData(se) <- colData(se) %>%
+   as.data.frame() %>%
+   group_by(subject) %>%
+   mutate(rank = rank(time, ties.method="average")) %>%
+   DataFrame()
+
+time_within_subject <- colData(se)[which(colData(se)$rank == 1),]
+
+# Add some NAs in the time point data to demonstrate functionality with missing data
+nainds <- sample(seq_len(ncol(se)), 50)
+colData(se)$time[nainds] <- NA
+
+colData(se) <- colData(se) %>%
+   as.data.frame() %>%
+   group_by(subject) %>%
+   mutate(rank = rank(time, ties.method="average")) %>%
+   DataFrame()
+
+time_within_subject <- colData(se)[which(colData(se)$rank == 1),]
+
+#There is still one sample from each subject even if the time information of the sample is missing
+check_time <- data.frame(time_within_subject) %>% select(subject, time, rank)
+
+```
+
 
 ## Estimating divergence and convergence
 
@@ -201,6 +235,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("mia")
 ```
+
 
 
 Calculate the difference in time from the baseline (first) time point, per subject.
@@ -242,7 +277,7 @@ ggplot(data=df, aes(x=time_from_baseline, y=divergence_from_baseline, group=subj
 
 Similar example without miaTime. First without subject-wise grouping:
 
-```{r, eval=FALSE}
+```{r}
 # Identify the baseline sample
 tse <- hitchip1006
 baseline_sample <- colnames(tse[, which.min(colData(tse)$time)])
@@ -298,7 +333,7 @@ tse2 <- do.call(cbind, tse_list)
 
 Calculate convergence i.e. divergence from the last sample:
 
-```{r, eval=FALSE}
+```{r}
 # Identify the last sample
 tse <- hitchip1006
 endpoint_sample <- colnames(tse[, which.max(colData(tse)$time)])
