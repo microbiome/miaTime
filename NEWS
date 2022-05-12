@@ -1,5 +1,9 @@
 
 
+Changes in version 0.1.6
++ Added minimal microbiome data
++ Added Cairo and ggplot2 to suggests
+
 Changes in version 0.1.5
 + Added function getBaselineDivergence
 + Changed the function name getTimeDivergence (deprecated) into getStepwiseDivergence

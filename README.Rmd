@@ -1,7 +1,7 @@
 # Microbiome time series manipulation with miaTime
 
 This R package can be used to analyse time series data for microbial
-communities. The package is part of [miaverse](microbiome.github.io), 
+communities. The package is part of [miaverse](https://microbiome.github.io/), 
 and is based on the `(Tree)SummarizedExperiment` data container.
 
 ## Installation
@@ -24,7 +24,9 @@ flow kind of approach. Development version should be done against the
 (https://guides.github.com/introduction/flow/)
 
 **Kindly cite this work**. For citation details, see R command
-  `r citation("miaTime")`.
+```{R}
+citation("miaTime")  
+```
 
 # Code of conduct
 
