@@ -28,6 +28,7 @@ Suggests:
     dplyr,
     Cairo,
     ggplot2,
+    miaViz,
     lubridate,
     methods,    
     rmarkdown,
