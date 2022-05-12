@@ -1,13 +1,15 @@
 Package: miaTime
 Type: Package
 Title: Microbiome Time Series Analysis
-Version: 0.1.5
+Version: 0.1.6
 Authors@R:
      c(person(given = "Leo", family = "Lahti", role = c("aut"),
               email = "leo.lahti@iki.fi",
               comment = c(ORCID = "0000-0001-5537-637X")),
        person(given = "Yagmur", family = "Simsek", role = c("aut", "cre"),
-              email = "yagmur.simsek@hsrw.org"))
+              email = "yagmur.simsek@hsrw.org"),
+       person(given = "Sudarshan", family = "Shetty", role = c("ctb"),
+              email = "sudarshanshetty9@gmail.com"))
 Description: 
     The `miaTime` package provides tools for microbiome time series analysis
     based on SummarizedExperiment and TreeSummarizedExperiment infrastructure.
@@ -24,6 +26,8 @@ Imports:
 Suggests: 
     TreeSummarizedExperiment,
     dplyr,
+    Cairo,
+    ggplot2,
     lubridate,
     methods,    
     rmarkdown,

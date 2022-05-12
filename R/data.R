@@ -52,3 +52,35 @@ NULL
 #' @keywords data
 #'
 NULL
+
+#' @title Human Gut Minimal Microbiome Profiling Data
+#' @description This time-series data set contains absolute temporal abundances
+#' for 16 human gut species that were assembled in an in vitro gut system. These
+#' were subjected to a variety of disturbances over a period of 20 days. The
+#' sample data includes measurements for Acetate, Butyrate, Propionate, and
+#' optical density.
+#' @name mdbMM16
+#' @details The data is available also on
+#' \url{https://github.com/microsud/syncomR}
+#' The data contains 183 samples from 3 in vitro gut system, 61 per bioreactor
+#' collected three times daily.
+#' The current implementation in \pkg{miaTime} provides this as
+#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
+#' object.
+#' @docType data
+#' @author Sudarshan A. Shetty
+#' @return Loads the data set in R.
+#' @references
+#' Shetty, S.A., Kostopoulos, I., Geerlings, S.Y. et al. Dynamic metabolic
+#' interactions and trophic roles of human gut microbes identified using a
+#' minimal microbiome exhibiting ecological properties.
+#' ISME, (Accepted 2022).
+#' @usage data(mdbMM16)
+#' @format The data set in
+#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
+#' format.
+#' @keywords data
+#'
+NULL
+
+

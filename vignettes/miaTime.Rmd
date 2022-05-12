@@ -369,6 +369,28 @@ tse3 <- getStepwiseDivergence(tse, group = "age",
                            time_field = "time")
 ```
 
+Dense samples of the minimal gut microbiome  
+Visualize samples available for each of the bioreactors.  
+
+```{r fig.width=8, fig.height=2}
+library(miaTime)
+data("mdbMM16")
+tse <- mdbMM16
+# Visualize sampling times available in the experiment 
+colData(tse) |> 
+    as.data.frame() |> 
+    ggplot(aes(as.factor(Time.hr), StudyIdentifier)) +
+    geom_tile(aes(fill=condition_1), color="white") +
+    scale_fill_manual("Condition Sampled", 
+                      values = c("#b2182b", "#2166ac", "#35978f")) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(size=8, angle = 90)) +
+    labs(x="Time (h)", y="")
+    
+```
+
+
+
 # Session info
 
 ```{r}
