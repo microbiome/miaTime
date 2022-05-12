@@ -59,7 +59,7 @@ NULL
 #' were subjected to a variety of disturbances over a period of 20 days. The
 #' sample data includes measurements for Acetate, Butyrate, Propionate, and
 #' optical density.
-#' @name mdbMM16
+#' @name minimalgut
 #' @details The data is available also on
 #' \url{https://github.com/microsud/syncomR}
 #' The data contains 183 samples from 3 in vitro gut system, 61 per bioreactor
@@ -75,7 +75,7 @@ NULL
 #' interactions and trophic roles of human gut microbes identified using a
 #' minimal microbiome exhibiting ecological properties.
 #' ISME, (Accepted 2022).
-#' @usage data(mdbMM16)
+#' @usage data(minimalgut)
 #' @format The data set in
 #' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
 #' format.
