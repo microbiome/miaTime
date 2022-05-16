@@ -26,7 +26,6 @@ Imports:
 Suggests: 
     TreeSummarizedExperiment,
     dplyr,
-    Cairo,
     ggplot2,
     miaViz,
     lubridate,

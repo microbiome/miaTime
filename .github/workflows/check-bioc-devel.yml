@@ -166,12 +166,11 @@ jobs:
 
           # rspm is out of date
           install.packages("matrixStats", repos = "https://cran.rstudio.com/")
-          install.packages("Cairo", repos = "https://cran.rstudio.com/")
           # BiocManager::install("adw96/breakaway")
 
           BiocManager::install("vegandevs/vegan")
           BiocManager::install("fionarhuang/TreeSummarizedExperiment")
-          BiocManager::install("stan-dev/rstantools")  
+          BiocManager::install("stan-dev/rstantools")
           BiocManager::install("cran/reldist")
           BiocManager::install("cran/densEstBayes")
 

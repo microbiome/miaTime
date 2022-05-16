@@ -22,7 +22,7 @@ vignette: >
 bibliography: references.bib
 ---
 
-```{r, echo=FALSE}
+```{r eval=FALSE, include=FALSE}
 library(Cairo)
 knitr::opts_chunk$set(cache = FALSE,
                       fig.width = 9,
