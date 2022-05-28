@@ -11,14 +11,6 @@ The package can be directly installed from R command line.
 
 ```r
 devtools::install_github("microbiome/miaTime")
-```
-
-```
-## Skipping install of 'miaTime' from a github remote, the SHA1 (8b8485ad) has not changed since last install.
-##   Use `force = TRUE` to force installation
-```
-
-```r
 library(miaTime)
 ```
 
