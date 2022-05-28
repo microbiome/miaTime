@@ -402,7 +402,11 @@ colData(tse) |>
 
 
 ## Community dynamics   
-The `minimalgut` dataset, mucus-diet based minimal microbiome (MDbMM-16), consists of 16 species assembled in three bioreactors. We can investigate the succession of mdbMM16 from the start of experiment here hour zero until the end of the experiment.  
+
+The `minimalgut` dataset, mucus-diet based minimal microbiome
+(MDbMM-16), consists of 16 species assembled in three bioreactors. We
+can investigate the succession of mdbMM16 from the start of experiment
+here hour zero until the end of the experiment.
 
 ```{r}
 ## Divergence from baseline i.e from hour zero.
@@ -418,9 +422,10 @@ tse <- getBaselineDivergence(tse,
 
 ```
 
-Visualize the divergence  
-```{r fig.height=4, fig.width=8}
 
+Visualize the divergence
+
+```{r fig.height=4, fig.width=8}
 # First define nice colors for bioreactors
 bioreac_cols <- c(`Bioreactor A`= "#b2182b",
                   `Bioreactor B`="#2166ac",
