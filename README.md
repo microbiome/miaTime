@@ -30,12 +30,38 @@ devtools::install_github("microbiome/miaTime")
 ##  6: scuttle      (1.6.0      -> 1.6.2     ) [CRAN]
 ##  7: V8           (4.1.0      -> 4.2.0     ) [CRAN]
 ##  8: circlize     (0.4.14     -> 0.4.15    ) [CRAN]
-##  9: openssl      (2.0.0      -> 2.0.1     ) [CRAN]
+##  9: openssl      (2.0.0      -> 2.0.2     ) [CRAN]
 ## 10: edgeR        (3.38.0     -> 3.38.1    ) [CRAN]
 ## 11: limma        (3.52.0     -> 3.52.1    ) [CRAN]
 ## 12: RcppArmad... (0.11.0.0.0 -> 0.11.1.1.0) [CRAN]
+## 13: mia          (1.3.24     -> 1.4.0     ) [CRAN]
 ## 
-##      checking for file ‘/tmp/RtmpsTQX5r/remotes9d69c03c6af/microbiome-miaTime-8b8485a/DESCRIPTION’ ...  ✔  checking for file ‘/tmp/RtmpsTQX5r/remotes9d69c03c6af/microbiome-miaTime-8b8485a/DESCRIPTION’
+## GenomeInfoDb (1.32.1     -> 1.32.2    ) [CRAN]
+## BiocParallel (1.30.0     -> 1.30.2    ) [CRAN]
+## scuttle      (1.6.0      -> 1.6.2     ) [CRAN]
+## V8           (4.1.0      -> 4.2.0     ) [CRAN]
+## circlize     (0.4.14     -> 0.4.15    ) [CRAN]
+## openssl      (2.0.0      -> 2.0.2     ) [CRAN]
+## edgeR        (3.38.0     -> 3.38.1    ) [CRAN]
+## limma        (3.52.0     -> 3.52.1    ) [CRAN]
+## RcppArmad... (0.11.0.0.0 -> 0.11.1.1.0) [CRAN]
+## mia          (1.3.24     -> 1.4.0     ) [CRAN]
+```
+
+```
+## Installing 10 packages: GenomeInfoDb, BiocParallel, scuttle, V8, circlize, openssl, edgeR, limma, RcppArmadillo, mia
+```
+
+```
+## Updating HTML index of packages in '.Library'
+```
+
+```
+## Making 'packages.html' ... done
+```
+
+```
+##      checking for file ‘/tmp/Rtmpw1Y8ZI/remotes2826e599bbab0/microbiome-miaTime-8b8485a/DESCRIPTION’ ...  ✔  checking for file ‘/tmp/Rtmpw1Y8ZI/remotes2826e599bbab0/microbiome-miaTime-8b8485a/DESCRIPTION’
 ##   ─  preparing ‘miaTime’:
 ##      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
 ##   ─  checking for LF line-endings in source and make files and shell scripts
