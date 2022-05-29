@@ -8,7 +8,7 @@ and is based on the `(Tree)SummarizedExperiment` data container.
  
 The package can be directly installed from R command line.
 
-```{r, eval=FALSE}
+```{r, eval=FALSE, message=FALSE}
 devtools::install_github("microbiome/miaTime")
 library(miaTime)
 ```
