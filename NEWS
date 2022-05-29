@@ -1,4 +1,6 @@
 
+Changes in version 0.1.8
++ Improved the function getBaselineDivergence
 
 Changes in version 0.1.6
 + Added minimal microbiome data

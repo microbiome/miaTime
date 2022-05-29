@@ -1,7 +1,7 @@
 # Microbiome time series manipulation with miaTime
 
 This R package can be used to analyse time series data for microbial
-communities. The package is part of [miaverse](microbiome.github.io), 
+communities. The package is part of [miaverse](https://microbiome.github.io/), 
 and is based on the `(Tree)SummarizedExperiment` data container.
 
 ## Installation
@@ -11,25 +11,6 @@ The package can be directly installed from R command line.
 
 ```r
 devtools::install_github("microbiome/miaTime")
-```
-
-```
-## Downloading GitHub repo microbiome/miaTime@HEAD
-```
-
-```
-##      checking for file ‘/tmp/RtmpnMCGdS/remotes7b837698b6ec0/microbiome-miaTime-6ef0d2f/DESCRIPTION’ ...  ✔  checking for file ‘/tmp/RtmpnMCGdS/remotes7b837698b6ec0/microbiome-miaTime-6ef0d2f/DESCRIPTION’
-##   ─  preparing ‘miaTime’:
-##      checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
-##   ─  checking for LF line-endings in source and make files and shell scripts
-##   ─  checking for empty or unneeded directories
-## ─  looking to see if a ‘data/datalist’ file should be added
-##   ─  building ‘miaTime_0.1.4.tar.gz’
-##      
-## 
-```
-
-```r
 library(miaTime)
 ```
 
@@ -44,7 +25,27 @@ flow kind of approach. Development version should be done against the
 (https://guides.github.com/introduction/flow/)
 
 **Kindly cite this work**. For citation details, see R command
-  list(title = "miaTime R package", author = list(list(given = "Yagmur", family = "Simsek", role = NULL, email = "yagmur.simsek.98@gmail.com", comment = NULL), list(given = "Leo", family = "Lahti", role = NULL, email = NULL, comment = NULL)), url = "microbiome.github.io/miaTime", note = "Version 0.1.5").
+
+```r
+citation("miaTime")  
+```
+
+```
+## 
+## Kindly cite the miaTime R package as follows:
+## 
+##   (C) Yagmur Simsek and Leo Lahti. miaTime R package Version 0.1.8
+##   Package URL: microbiome.github.io/miaTime
+## 
+## A BibTeX entry for LaTeX users is
+## 
+##   @Misc{,
+##     title = {miaTime R package},
+##     author = {Yagmur Simsek and Leo Lahti},
+##     url = {microbiome.github.io/miaTime},
+##     note = {Version 0.1.8},
+##   }
+```
 
 # Code of conduct
 

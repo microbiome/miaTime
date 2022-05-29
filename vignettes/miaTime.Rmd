@@ -38,8 +38,7 @@ knitr::opts_chunk$set(cache = FALSE,
 
 # Introduction
 
-`miaTime` implements tools for microbiome time series manipulation based
-on the `TreeSummarizedExperiment` [@TSE] data container. Much of the functionality is also applicable to the `SummarizedExperiment` [@SE] data objects.
+`miaTime` implements tools for time series manipulation based on the `TreeSummarizedExperiment` [@TSE] data container. Much of the functionality is also applicable to the `SummarizedExperiment` [@SE] data objects.
 
 
 ## Installation
@@ -236,19 +235,27 @@ BiocManager::install("mia")
 ```
 
 
-Calculate the difference in time from the baseline (first) time point, per subject.
+Calculate the difference in time from the baseline time point per
+subject. The first (smallest) time point is used as the baseline by
+default.
 
 ```{r}
-# Subset to speed up example
-library(mia)
-tse <- hitchip1006
-set.seed(41287)
+library(mia)   # Load the functions
+library(miaTime)   # Load the functions
+set.seed(41287)    # Set random seed
+data(hitchip1006)  # Example data
+tse <- hitchip1006 # Rename data object
+
+# Subset to speed up this example
 # Just pick two example subjects that have 5 time points each
 selected.samples <- sample(names(which(sort(table(colData(hitchip1006)$subject))==5)), 2)
 tse <- tse[, colData(tse)$subject %in% selected.samples]
+
 # Add relative abundances
 tse <- transformSamples(tse, abund_values="counts", method="relabundance")
+
 # Calculate divergence from baseline sample (time point 1)
+library(dplyr)
 tse <- getBaselineDivergence(tse,
                               group = "subject",
                               time_field = "time",
@@ -258,12 +265,10 @@ tse <- getBaselineDivergence(tse,
                               FUN = vegan::vegdist,
                               method="bray")
 
-# Visualize time difference vs. community divergence (dissimilarity)
-library(dplyr)
-
 # Remove the baseline time points
 df <- as.data.frame(colData(tse)) %>% dplyr::filter(time_from_baseline > 0)
 
+# Visualize time difference vs. community divergence (dissimilarity)
 library(ggplot2)
 theme_set(theme_bw(20))
 ggplot(data=df, aes(x=time_from_baseline, y=divergence_from_baseline, group=subject)) +
@@ -273,7 +278,47 @@ ggplot(data=df, aes(x=time_from_baseline, y=divergence_from_baseline, group=subj
 
 
 
+Define the baseline manually for each subject.
+
+```{r}
+# First define the function that calculates divergence for a given data object:
+base <- function (tse) {
+  baseline_sample <- rownames(colData(tse)[which.min(colData(tse)$time),])
+  baseline_sample
+}
+
+# List samples per subject
+spl <- split(colnames(tse), droplevels(tse$subject))
+
+# Find the baseline per subject
+baselines <- sapply(spl, function (s) {base(tse[,s])})
+
+# Calculate divergence from baseline sample (time point 1)
+library(dplyr)
+tse <- getBaselineDivergence(tse,
+                              group = "subject",
+                              time_field = "time",
+                              name_divergence = "divergence_from_baseline",
+                              name_timedifference = "time_from_baseline",
+                              abund_values="relabundance",
+                              FUN = vegan::vegdist,
+                              method="bray",
+			      baseline_sample=baselines)
+
+# Remove the baseline time points
+df <- as.data.frame(colData(tse)) %>% dplyr::filter(time_from_baseline > 0)
+
+# Visualize time difference vs. community divergence (dissimilarity)
+library(ggplot2)
+theme_set(theme_bw(20))
+ggplot(data=df, aes(x=time_from_baseline, y=divergence_from_baseline, group=subject)) +
+    geom_point(aes(color=subject)) +
+    geom_smooth(formula = y ~ x, method="lm")
+```
+
+
 Similar example without miaTime. First without subject-wise grouping:
+
 
 ```{r}
 # Identify the baseline sample
@@ -402,7 +447,11 @@ colData(tse) |>
 
 
 ## Community dynamics   
-The `minimalgut` dataset, mucus-diet based minimal microbiome (MDbMM-16), consists of 16 species assembled in three bioreactors. We can investigate the succession of mdbMM16 from the start of experiment here hour zero until the end of the experiment.  
+
+The `minimalgut` dataset, mucus-diet based minimal microbiome
+(MDbMM-16), consists of 16 species assembled in three bioreactors. We
+can investigate the succession of mdbMM16 from the start of experiment
+here hour zero until the end of the experiment.
 
 ```{r}
 ## Divergence from baseline i.e from hour zero.
@@ -418,9 +467,10 @@ tse <- getBaselineDivergence(tse,
 
 ```
 
-Visualize the divergence  
-```{r fig.height=4, fig.width=8}
 
+Visualize the divergence
+
+```{r fig.height=4, fig.width=8}
 # First define nice colors for bioreactors
 bioreac_cols <- c(`Bioreactor A`= "#b2182b",
                   `Bioreactor B`="#2166ac",

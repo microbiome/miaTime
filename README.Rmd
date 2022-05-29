@@ -8,7 +8,7 @@ and is based on the `(Tree)SummarizedExperiment` data container.
  
 The package can be directly installed from R command line.
 
-```{R}
+```{r, eval=FALSE}
 devtools::install_github("microbiome/miaTime")
 library(miaTime)
 ```
@@ -24,7 +24,7 @@ flow kind of approach. Development version should be done against the
 (https://guides.github.com/introduction/flow/)
 
 **Kindly cite this work**. For citation details, see R command
-```{R}
+```{r}
 citation("miaTime")  
 ```
 
