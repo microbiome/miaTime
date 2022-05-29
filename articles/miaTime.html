@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">miaTime</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.8</span>
       </span>
     </div>
 
@@ -75,7 +75,7 @@ Simsek</h4>
                   <a class="author_email" href="mailto:#"></a><a href="mailto:yagmur.simsek@hsrw.org" class="email">yagmur.simsek@hsrw.org</a>
       
                   
-            <h4 data-toc-skip class="date">2022-05-16</h4>
+            <h4 data-toc-skip class="date">2022-05-29</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/HEAD/vignettes/miaTime.Rmd" class="external-link"><code>vignettes/miaTime.Rmd</code></a></small>
       <div class="hidden name"><code>miaTime.Rmd</code></div>
@@ -87,8 +87,8 @@ Simsek</h4>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p><code>miaTime</code> implements tools for microbiome time series
-manipulation based on the <code>TreeSummarizedExperiment</code> <span class="citation">(Huang 2021)</span> data container. Much of the
+<p><code>miaTime</code> implements tools for time series manipulation
+based on the <code>TreeSummarizedExperiment</code> <span class="citation">(Huang 2021)</span> data container. Much of the
 functionality is also applicable to the
 <code>SummarizedExperiment</code> <span class="citation">(Morgan et al.
 2020)</span> data objects.</p>
@@ -461,11 +461,11 @@ point.</p>
 <p>Calculate divergence from a baseline sample (or another reference
 sample). This calculation can be carried out with the function . The
 <code>mia</code> package can be installed with the following lines.</p>
-<p>Calculate the difference in time from the baseline (first) time
-point, per subject.</p>
+<p>Calculate the difference in time from the baseline time point per
+subject. The first (smallest) time point is used as the baseline by
+default.</p>
 <div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># Subset to speed up example</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/microbiome/mia" class="external-link">mia</a></span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/microbiome/mia" class="external-link">mia</a></span><span class="op">)</span>   <span class="co"># Load the functions</span></code></pre></div>
 <pre><code><span class="co">## Loading required package: SingleCellExperiment</span></code></pre>
 <pre><code><span class="co">## Loading required package: TreeSummarizedExperiment</span></code></pre>
 <pre><code><span class="co">## Loading required package: Biostrings</span></code></pre>
@@ -477,14 +477,21 @@ point, per subject.</p>
 <span class="co">##     strsplit</span></code></pre>
 <pre><code><span class="co">## Loading required package: MultiAssayExperiment</span></code></pre>
 <div class="sourceCode" id="cb72"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">hitchip1006</span>
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">41287</span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/microbiome/miaTime" class="external-link">miaTime</a></span><span class="op">)</span>   <span class="co"># Load the functions</span>
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">41287</span><span class="op">)</span>    <span class="co"># Set random seed</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">hitchip1006</span><span class="op">)</span>  <span class="co"># Example data</span>
+<span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">hitchip1006</span> <span class="co"># Rename data object</span>
+
+<span class="co"># Subset to speed up this example</span>
 <span class="co"># Just pick two example subjects that have 5 time points each</span>
 <span class="va">selected.samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">hitchip1006</span><span class="op">)</span><span class="op">$</span><span class="va">subject</span><span class="op">)</span><span class="op">)</span><span class="op">==</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>
 <span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">tse</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">$</span><span class="va">subject</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">selected.samples</span><span class="op">]</span>
+
 <span class="co"># Add relative abundances</span>
 <span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mia/man/transformCounts.html" class="external-link">transformSamples</a></span><span class="op">(</span><span class="va">tse</span>, abund_values<span class="op">=</span><span class="st">"counts"</span>, method<span class="op">=</span><span class="st">"relabundance"</span><span class="op">)</span>
+
 <span class="co"># Calculate divergence from baseline sample (time point 1)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
 <span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getBaselineDivergence.html">getBaselineDivergence</a></span><span class="op">(</span><span class="va">tse</span>,
                               group <span class="op">=</span> <span class="st">"subject"</span>,
                               time_field <span class="op">=</span> <span class="st">"time"</span>,
@@ -494,21 +501,74 @@ point, per subject.</p>
                               FUN <span class="op">=</span> <span class="fu">vegan</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegdist</a></span>,
                               method<span class="op">=</span><span class="st">"bray"</span><span class="op">)</span>
 
-<span class="co"># Visualize time difference vs. community divergence (dissimilarity)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
-
 <span class="co"># Remove the baseline time points</span>
 <span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">time_from_baseline</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span>
 
+<span class="co"># Visualize time difference vs. community divergence (dissimilarity)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span>
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time_from_baseline</span>, y<span class="op">=</span><span class="va">divergence_from_baseline</span>, group<span class="op">=</span><span class="va">subject</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">subject</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html" class="external-link">geom_smooth</a></span><span class="op">(</span>formula <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, method<span class="op">=</span><span class="st">"lm"</span><span class="op">)</span></code></pre></div>
 <p><img src="miaTime_files/figure-html/unnamed-chunk-14-1.png" width="700"></p>
+<p>Define the baseline manually for each subject.</p>
+<div class="sourceCode" id="cb73"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># First define the function that calculates divergence for a given data object:</span>
+<span class="va">base</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">tse</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">baseline_sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.min</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">$</span><span class="va">time</span><span class="op">)</span>,<span class="op">]</span><span class="op">)</span>
+  <span class="va">baseline_sample</span>
+<span class="op">}</span>
+
+<span class="co"># List samples per subject</span>
+<span class="va">spl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/splitAsList.html" class="external-link">split</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/droplevels.html" class="external-link">droplevels</a></span><span class="op">(</span><span class="va">tse</span><span class="op">$</span><span class="va">subject</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># Find the baseline per subject</span>
+<span class="va">baselines</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">spl</span>, <span class="kw">function</span> <span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="op">{</span><span class="fu"><a href="https://rdrr.io/r/base/base-package.html" class="external-link">base</a></span><span class="op">(</span><span class="va">tse</span><span class="op">[</span>,<span class="va">s</span><span class="op">]</span><span class="op">)</span><span class="op">}</span><span class="op">)</span>
+
+<span class="co"># Calculate divergence from baseline sample (time point 1)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
+<span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getBaselineDivergence.html">getBaselineDivergence</a></span><span class="op">(</span><span class="va">tse</span>,
+                              group <span class="op">=</span> <span class="st">"subject"</span>,
+                              time_field <span class="op">=</span> <span class="st">"time"</span>,
+                              name_divergence <span class="op">=</span> <span class="st">"divergence_from_baseline"</span>,
+                              name_timedifference <span class="op">=</span> <span class="st">"time_from_baseline"</span>,
+                              abund_values<span class="op">=</span><span class="st">"relabundance"</span>,
+                              FUN <span class="op">=</span> <span class="fu">vegan</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegdist</a></span>,
+                              method<span class="op">=</span><span class="st">"bray"</span>,
+                  baseline_sample<span class="op">=</span><span class="va">baselines</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">## Warning: The following values are already present in `colData` and will be</span>
+<span class="co">## overwritten: 'divergence_from_baseline'. Consider using the 'name' argument to</span>
+<span class="co">## specify alternative names.</span></code></pre>
+<pre><code><span class="co">## Warning: The following values are already present in `colData` and will be</span>
+<span class="co">## overwritten: 'time_from_baseline'. Consider using the 'name' argument to specify</span>
+<span class="co">## alternative names.</span></code></pre>
+<pre><code><span class="co">## Warning: The following values are already present in `colData` and will be</span>
+<span class="co">## overwritten: 'divergence_from_baseline'. Consider using the 'name' argument to</span>
+<span class="co">## specify alternative names.</span>
+
+<span class="co">## Warning: The following values are already present in `colData` and will be</span>
+<span class="co">## overwritten: 'divergence_from_baseline'. Consider using the 'name' argument to</span>
+<span class="co">## specify alternative names.</span></code></pre>
+<pre><code><span class="co">## Warning: The following values are already present in `colData` and will be</span>
+<span class="co">## overwritten: 'time_from_baseline'. Consider using the 'name' argument to specify</span>
+<span class="co">## alternative names.</span></code></pre>
+<pre><code><span class="co">## Warning: The following values are already present in `colData` and will be</span>
+<span class="co">## overwritten: 'divergence_from_baseline'. Consider using the 'name' argument to</span>
+<span class="co">## specify alternative names.</span></code></pre>
+<div class="sourceCode" id="cb79"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Remove the baseline time points</span>
+<span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">time_from_baseline</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span>
+
+<span class="co"># Visualize time difference vs. community divergence (dissimilarity)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme_get.html" class="external-link">theme_set</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="fl">20</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time_from_baseline</span>, y<span class="op">=</span><span class="va">divergence_from_baseline</span>, group<span class="op">=</span><span class="va">subject</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">subject</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html" class="external-link">geom_smooth</a></span><span class="op">(</span>formula <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, method<span class="op">=</span><span class="st">"lm"</span><span class="op">)</span></code></pre></div>
+<p><img src="miaTime_files/figure-html/unnamed-chunk-15-1.png" width="700"></p>
 <p>Similar example without miaTime. First without subject-wise
 grouping:</p>
-<div class="sourceCode" id="cb73"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb80"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Identify the baseline sample</span>
 <span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">hitchip1006</span>
 <span class="va">baseline_sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">tse</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.min</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">$</span><span class="va">time</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
@@ -520,10 +580,10 @@ grouping:</p>
 <span class="va">baseline_profile</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assays</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">$</span><span class="va">counts</span><span class="op">[</span>, <span class="va">baseline_sample</span><span class="op">]</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">baseline_profile</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] 130</span></code></pre>
-<div class="sourceCode" id="cb75"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb82"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1]  130 1151</span></code></pre>
-<div class="sourceCode" id="cb77"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb84"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mia/man/estimateDivergence.html" class="external-link">estimateDivergence</a></span><span class="op">(</span><span class="va">tse</span>, name <span class="op">=</span> <span class="st">"divergence_from_baseline"</span>, 
                          reference <span class="op">=</span> <span class="va">baseline_profile</span>,
                          FUN <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/stats/dist.html" class="external-link">dist</a></span>, method <span class="op">=</span> <span class="st">"euclidean"</span><span class="op">)</span>
@@ -540,9 +600,9 @@ grouping:</p>
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">time_from_baseline</span>, y<span class="op">=</span><span class="va">divergence_from_baseline</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html" class="external-link">geom_smooth</a></span><span class="op">(</span>formula <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, method<span class="op">=</span><span class="st">"lm"</span><span class="op">)</span></code></pre></div>
-<p><img src="miaTime_files/figure-html/unnamed-chunk-15-1.png" width="700"></p>
+<p><img src="miaTime_files/figure-html/unnamed-chunk-16-1.png" width="700"></p>
 <p>Divergence from baseline per subject:</p>
-<div class="sourceCode" id="cb78"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb85"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># First define the function that calculates divergence for a given SE object</span>
 <span class="co"># in a desired way:</span>
 <span class="va">fun</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">tse</span><span class="op">)</span> <span class="op">{</span>
@@ -562,7 +622,7 @@ grouping:</p>
 <span class="co"># Combine the TSE elements in the list</span>
 <span class="va">tse2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">cbind</span>, <span class="va">tse_list</span><span class="op">)</span></code></pre></div>
 <p>Calculate convergence i.e. divergence from the last sample:</p>
-<div class="sourceCode" id="cb79"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb86"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Identify the last sample</span>
 <span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">hitchip1006</span>
 <span class="va">endpoint_sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">tse</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">$</span><span class="va">time</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
@@ -581,7 +641,7 @@ grouping:</p>
 <p>Sample dissimilarity between consecutive time steps(step size n &gt;=
 1) within a group(subject, age, reaction chamber, etc.) can be
 calculated by <code>getStepwiseDivergence</code>.</p>
-<div class="sourceCode" id="cb80"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb87"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/microbiome/miaTime" class="external-link">miaTime</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"hitchip1006"</span><span class="op">)</span>
 <span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">hitchip1006</span>
@@ -603,7 +663,7 @@ calculated by <code>getStepwiseDivergence</code>.</p>
 MDb-MM was grown under batch condition and 24 h onwards, continuous
 feeding of media with pulse feeding cycles. This information is stored
 in the <code>colData</code>.</p>
-<div class="sourceCode" id="cb81"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb88"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/microbiome/miaTime" class="external-link">miaTime</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"minimalgut"</span><span class="op">)</span>
 <span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">minimalgut</span>
@@ -616,7 +676,7 @@ in the <code>colData</code>.</p>
 <span class="co">##   Bioreactor C           4        38        19</span></code></pre>
 <p>Visualize samples available for each of the bioreactors. This allows
 to identify if there are any missing samples for specific times.</p>
-<div class="sourceCode" id="cb83"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb90"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span>
 <span class="co"># Visualize sampling times available in the experiment </span>
 <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span> |&gt; 
@@ -629,7 +689,7 @@ to identify if there are any missing samples for specific times.</p>
     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>size<span class="op">=</span><span class="fl">8</span>, angle <span class="op">=</span> <span class="fl">90</span><span class="op">)</span>,
           legend.position <span class="op">=</span> <span class="st">"top"</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"Time (h)"</span>, y<span class="op">=</span><span class="st">""</span><span class="op">)</span></code></pre></div>
-<p><img src="miaTime_files/figure-html/unnamed-chunk-20-1.png" width="700"></p>
+<p><img src="miaTime_files/figure-html/unnamed-chunk-21-1.png" width="700"></p>
 </div>
 <div class="section level3">
 <h3 id="community-dynamics">Community dynamics<a class="anchor" aria-label="anchor" href="#community-dynamics"></a>
@@ -638,7 +698,7 @@ to identify if there are any missing samples for specific times.</p>
 microbiome (MDbMM-16), consists of 16 species assembled in three
 bioreactors. We can investigate the succession of mdbMM16 from the start
 of experiment here hour zero until the end of the experiment.</p>
-<div class="sourceCode" id="cb84"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb91"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">## Divergence from baseline i.e from hour zero.</span>
 <span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu">mia</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mia/man/transformCounts.html" class="external-link">relAbundanceCounts</a></span><span class="op">(</span><span class="va">minimalgut</span><span class="op">)</span> <span class="co"># get relative abundance</span>
 <span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getBaselineDivergence.html">getBaselineDivergence</a></span><span class="op">(</span><span class="va">tse</span>,
@@ -650,7 +710,7 @@ of experiment here hour zero until the end of the experiment.</p>
                              FUN <span class="op">=</span> <span class="fu">vegan</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegdist</a></span>,
                              method<span class="op">=</span><span class="st">"bray"</span><span class="op">)</span></code></pre></div>
 <p>Visualize the divergence</p>
-<div class="sourceCode" id="cb85"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb92"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># First define nice colors for bioreactors</span>
 <span class="va">bioreac_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span>`Bioreactor A`<span class="op">=</span> <span class="st">"#b2182b"</span>,
                   `Bioreactor B`<span class="op">=</span><span class="st">"#2166ac"</span>,
@@ -670,13 +730,13 @@ of experiment here hour zero until the end of the experiment.</p>
     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotate.html" class="external-link">annotate</a></span><span class="op">(</span><span class="st">"text"</span>,x<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">152</span>, <span class="fl">248</span><span class="op">)</span>,y<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.8</span>, <span class="fl">0.8</span><span class="op">)</span>,
              label<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Addition of\nB.hydrogenotrophica"</span>,<span class="st">"Acetate Discontinued"</span><span class="op">)</span>,
              hjust<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.05</span>,<span class="op">-</span><span class="fl">0.05</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="miaTime_files/figure-html/unnamed-chunk-22-1.png" width="768"></p>
+<p><img src="miaTime_files/figure-html/unnamed-chunk-23-1.png" width="768"></p>
 <p>Now visualize abundance of <em>Blautia hydrogenotrophica</em> using
 the <code><a href="https://rdrr.io/pkg/miaViz/man/plotSeries.html" class="external-link">miaViz::plotSeries</a></code> function.</p>
-<div class="sourceCode" id="cb86"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb93"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">miaViz</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## Loading required package: ggraph</span></code></pre>
-<div class="sourceCode" id="cb88"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb95"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/miaViz/man/plotSeries.html" class="external-link">plotSeries</a></span><span class="op">(</span><span class="fu">mia</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mia/man/transformCounts.html" class="external-link">relAbundanceCounts</a></span><span class="op">(</span><span class="va">minimalgut</span><span class="op">)</span>,
            x <span class="op">=</span> <span class="st">"Time.hr"</span>,
            y <span class="op">=</span> <span class="st">"Blautia_hydrogenotrophica"</span>,
@@ -689,13 +749,13 @@ the <code><a href="https://rdrr.io/pkg/miaViz/man/plotSeries.html" class="extern
              hjust<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.05</span>,<span class="op">-</span><span class="fl">0.05</span><span class="op">)</span><span class="op">)</span><span class="op">+</span>
     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x<span class="op">=</span><span class="st">"Time (h)"</span>, y<span class="op">=</span><span class="st">"B.hydrogenotrophica\nRelative Abundance"</span><span class="op">)</span> <span class="op">+</span>
     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span></code></pre></div>
-<p><img src="miaTime_files/figure-html/unnamed-chunk-23-1.png" width="768"></p>
+<p><img src="miaTime_files/figure-html/unnamed-chunk-24-1.png" width="768"></p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb89"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb96"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## R version 4.2.0 (2022-04-22)</span>
 <span class="co">## Platform: x86_64-pc-linux-gnu (64-bit)</span>
@@ -720,21 +780,21 @@ the <code><a href="https://rdrr.io/pkg/miaViz/man/plotSeries.html" class="extern
 <span class="co">## other attached packages:</span>
 <span class="co">##  [1] miaViz_1.5.0                   ggraph_2.0.5                  </span>
 <span class="co">##  [3] ggplot2_3.3.6                  mia_1.5.0                     </span>
-<span class="co">##  [5] MultiAssayExperiment_1.23.0    TreeSummarizedExperiment_2.1.4</span>
+<span class="co">##  [5] MultiAssayExperiment_1.23.1    TreeSummarizedExperiment_2.1.4</span>
 <span class="co">##  [7] Biostrings_2.65.0              XVector_0.37.0                </span>
 <span class="co">##  [9] SingleCellExperiment_1.19.0    dplyr_1.0.9                   </span>
-<span class="co">## [11] SummarizedExperiment_1.27.1    Biobase_2.57.0                </span>
+<span class="co">## [11] SummarizedExperiment_1.27.1    Biobase_2.57.1                </span>
 <span class="co">## [13] GenomicRanges_1.49.0           GenomeInfoDb_1.33.3           </span>
 <span class="co">## [15] IRanges_2.31.0                 S4Vectors_0.35.0              </span>
 <span class="co">## [17] BiocGenerics_0.43.0            MatrixGenerics_1.9.0          </span>
 <span class="co">## [19] matrixStats_0.62.0             lubridate_1.8.0               </span>
-<span class="co">## [21] miaTime_0.1.6                  BiocStyle_2.25.0              </span>
+<span class="co">## [21] miaTime_0.1.8                  BiocStyle_2.25.0              </span>
 <span class="co">## </span>
 <span class="co">## loaded via a namespace (and not attached):</span>
 <span class="co">##   [1] utf8_1.2.2                  tidyselect_1.1.2           </span>
-<span class="co">##   [3] RSQLite_2.2.14              AnnotationDbi_1.59.0       </span>
+<span class="co">##   [3] RSQLite_2.2.14              AnnotationDbi_1.59.1       </span>
 <span class="co">##   [5] grid_4.2.0                  TSP_1.2-0                  </span>
-<span class="co">##   [7] BiocParallel_1.31.3         Rtsne_0.16                 </span>
+<span class="co">##   [7] BiocParallel_1.31.6         Rtsne_0.16                 </span>
 <span class="co">##   [9] munsell_0.5.0               ScaledMatrix_1.5.0         </span>
 <span class="co">##  [11] codetools_0.2-18            ragg_1.2.2                 </span>
 <span class="co">##  [13] withr_2.5.0                 colorspace_2.0-3           </span>
@@ -752,11 +812,11 @@ the <code><a href="https://rdrr.io/pkg/miaViz/man/plotSeries.html" class="extern
 <span class="co">##  [37] cachem_1.0.6                DelayedArray_0.23.0        </span>
 <span class="co">##  [39] scales_1.2.0                SEtools_1.11.0             </span>
 <span class="co">##  [41] beeswarm_0.4.0              gtable_0.3.0               </span>
-<span class="co">##  [43] beachmat_2.13.0             sva_3.45.0                 </span>
+<span class="co">##  [43] beachmat_2.13.1             sva_3.45.0                 </span>
 <span class="co">##  [45] tidygraph_1.2.1             rlang_1.0.2                </span>
 <span class="co">##  [47] genefilter_1.79.0           systemfonts_1.0.4          </span>
 <span class="co">##  [49] GlobalOptions_0.1.2         splines_4.2.0              </span>
-<span class="co">##  [51] lazyeval_0.2.2              BiocManager_1.30.17        </span>
+<span class="co">##  [51] lazyeval_0.2.2              BiocManager_1.30.18        </span>
 <span class="co">##  [53] yaml_2.3.5                  reshape2_1.4.4             </span>
 <span class="co">##  [55] tools_4.2.0                 bookdown_0.26              </span>
 <span class="co">##  [57] ggplotify_0.1.0             ellipsis_0.3.2             </span>
@@ -775,7 +835,7 @@ the <code><a href="https://rdrr.io/pkg/miaViz/man/plotSeries.html" class="extern
 <span class="co">##  [83] XML_3.99-0.9                gridExtra_2.3              </span>
 <span class="co">##  [85] shape_1.4.6                 compiler_4.2.0             </span>
 <span class="co">##  [87] scater_1.25.1               tibble_3.1.7               </span>
-<span class="co">##  [89] V8_4.1.0                    crayon_1.5.1               </span>
+<span class="co">##  [89] V8_4.2.0                    crayon_1.5.1               </span>
 <span class="co">##  [91] htmltools_0.5.2             ggfun_0.0.6                </span>
 <span class="co">##  [93] mgcv_1.8-40                 aplot_0.1.4                </span>
 <span class="co">##  [95] tidyr_1.2.0                 geneplotter_1.75.0         </span>
@@ -795,8 +855,8 @@ the <code><a href="https://rdrr.io/pkg/miaViz/man/plotSeries.html" class="extern
 <span class="co">## [123] DelayedMatrixStats_1.19.0   curl_4.3.2                 </span>
 <span class="co">## [125] rjson_0.2.21                lifecycle_1.0.1            </span>
 <span class="co">## [127] nlme_3.1-157                jsonlite_1.8.0             </span>
-<span class="co">## [129] BiocNeighbors_1.15.0        desc_1.4.1                 </span>
-<span class="co">## [131] viridisLite_0.4.0           limma_3.53.0               </span>
+<span class="co">## [129] BiocNeighbors_1.15.1        desc_1.4.1                 </span>
+<span class="co">## [131] viridisLite_0.4.0           limma_3.53.2               </span>
 <span class="co">## [133] fansi_1.0.3                 pillar_1.7.0               </span>
 <span class="co">## [135] lattice_0.20-45             KEGGREST_1.37.0            </span>
 <span class="co">## [137] fastmap_1.1.0               httr_1.4.3                 </span>
