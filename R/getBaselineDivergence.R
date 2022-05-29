@@ -2,9 +2,9 @@
 #'
 #' Calculates sample dissimilarity between the given baseline and other
 #' time points, optionally within a group (subject, reaction chamber, or
-#' similar). The corresponding
-#' time difference is returned as well. The method operates on
-#' `SummarizedExperiment` objects, and the results are stored in `colData`.
+#' similar). The corresponding time difference is returned as well.
+#' The method operates on `SummarizedExperiment` objects, and the results
+#' are stored in `colData`.
 #'
 #' @param x A
 #' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
@@ -27,8 +27,8 @@
 #' @param method a method that is used to calculate the distance. Method is
 #'   passed to the function that is specified by \code{FUN}. By default,
 #'   \code{method} is \code{"bray"}.
-#' @param baseline_sample Optional. The baseline sample to be used. A vector, or a named list if the
-#' "group" argument is given. 
+#' @param baseline_sample Optional. A character vector specifying the baseline sample(s) to be used. If the
+#'   "group" argument is given, this must be a named vector; one element per group.
 #'
 #' @return a
 #' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
@@ -39,12 +39,17 @@
 #'
 #' @details
 #' The group argument allows calculating divergence per group. Otherwise, this is done across all samples at once.
+#'
+#' The baseline sample/s always need to belong to the data object i.e. they can be merged into it before
+#' applying this function. The reason is that they need to have comparable sample data, at least some time point
+#' information for calculating time differences w.r.t. baseline sample.
 #' 
 #' The baseline time point is by default defined as the smallest time point (per group). Alternatively,
 #' the user can provide the baseline vector, or a list of baseline vectors per group (named list per group).
 #'
 #' @importFrom SEtools mergeSEs
 #' @importFrom dplyr %>%
+#' @importFrom dplyr select
 #' @importFrom vegan vegdist
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
@@ -94,7 +99,7 @@ getBaselineDivergence <- function(x,
 
     # Store the original data object
     xorig <- x
-
+    
     if (is.null(colnames(x))) {
         colnames(x) <- as.character(seq_len(ncol(x)))	
     }
@@ -105,85 +110,123 @@ getBaselineDivergence <- function(x,
 
     # If group is not given, assume that all samples come from a single group
     if (is.null(group)) {
-        colData(x)$group <- rep(1, nrow=nrow(x))
+        colData(x)$tmp_group_for_groupwise_splitting <- rep(1, nrow=nrow(x))
+    } else if (is.character(group)) {
+        colData(x)$tmp_group_for_groupwise_splitting <- as.character(colData(x)[[group]])
     } else {
-        colData(x)$group <- as.character(colData(x)[[group]])
+        stop("The group argument in getBaselineDivergence should be NULL or a character i.e. name of a colData grouping field.")
     }
 
     # Split SE into a list, by grouping
-    spl <- split(seq_len(ncol(x)), colData(x)$group)
+    spl <- split(seq_len(ncol(x)), colData(x)$tmp_group_for_groupwise_splitting)
 
     # Sample with the smallest time point within each subject
     # Use the smallest time point as the baseline
     if (is.null(baseline_sample)) {
         colData(x)$sample <- colnames(x)
         baseline <- colData(x) %>% as.data.frame() %>%
-            group_by(group) %>%
+            group_by(tmp_group_for_groupwise_splitting) %>%
             mutate(rank = rank(time, ties.method="first")) %>%
 	    filter(rank==1) %>%	
-            select(sample, group)
+            select(sample, tmp_group_for_groupwise_splitting)
          baseline_sample <- baseline$sample
-         names(baseline_sample) <- baseline$group
+         names(baseline_sample) <- baseline$tmp_group_for_groupwise_splitting
 	 nams <- names(baseline_sample)
-      	 baseline_sample <- lapply(nams, function (g) {x[, baseline_sample[[g]]]})
+      	 baseline_sample <- vapply(nams, function (g) {baseline_sample[[g]]}, "a")
 	 names(baseline_sample) <- nams
-    } else if (is.character(baseline_sample)) {
+    }
+
+    # Then make sure that the baseline is an SE object
+    if (is.character(baseline_sample)) {
          if (length(baseline_sample)==1) {
-             baseline_sample <- list(x[, baseline_sample])
-	 } else if (length(baseline_sample)>1) {
-	     nams <- names(baseline_sample)
-      	     baseline_sample <- lapply(nams, function (g) {x[, baseline_sample[[g]]]})
-	     names(baseline_sample) <- nams
-         }
-    } else if (!class(baseline_sample)=="list") {
-        baseline_sample <- list(baseline_sample)
+             baseline <- x[, baseline_sample]
+         } else {
+             if (is.null(names(baseline_sample))) {stop("Baseline sample has to be a named vector per group if it contains group-wise elements.")}
+             # Just make sure that the given baseline samples are in the same order than the grouping variable
+             baseline <- x[, baseline_sample[unique(colData(x)$tmp_group_for_groupwise_splitting)]]
+
+	 }
+    } else if (is(baseline_sample, "SummarizedExperiment")) {
+        baseline <- baseline_sample
+    } else {
+        stop("Baseline sample not recognized in getBaselineDivergence. Should be NULL or a (named) character vector.")
     }
 
     # Apply the operation per group; with group-specific baselines
-    if (length(baseline_sample) == 1) {
-        x_list <- lapply(names(spl), function (g) {
-            .calculate_divergence_from_baseline(x[,spl[[g]]], baseline_sample[[1]],
+    if (ncol(baseline) == 1) {
+        xli <- lapply(names(spl), function (g) {
+            .calculate_divergence_from_baseline(x[,spl[[g]]], baseline,
 	        time_field, name_divergence, name_timedifference, abund_values, FUN, method)})
     } else {
-        x_list <- lapply(names(spl), function (g) {
-            .calculate_divergence_from_baseline(x[,spl[[g]]], baseline_sample[[g]],
+        xli <- lapply(names(spl), function (g) {
+            .calculate_divergence_from_baseline(x[,spl[[g]]], baseline[, baseline_sample[[g]]],
 	        time_field, name_divergence, name_timedifference, abund_values, FUN, method)})
     }
 
-    # Return the SE elements in a list
-    if (length(x_list) > 1) {
-        x2 <- mergeSEs(x_list)
+    # Return the elements in a list
+    # FIXME: use SummarizedExperiment merge here
+    if (length(xli) > 1) {
+        x2 <- xli[[1]]
+        for (i in seq(2, length(xli), 1)) {
+            x2 <- TreeSummarizedExperiment::cbind(x2, xli[[i]])
+	}
+
+        #x2 <- mergeSEs(xli)
+	# The mergeSEs returns SE, not TreeSE.
+        # But the row tree is shared in this case as all objects have been
+        # splitted from the same object. Add the row tree back.	
+        # The column tree, metadata, altExps might also cause problems; to be fixed later.
+        ## Convert to TreeSE
+        #x2 <- TreeSummarizedExperiment(x2)
+        ## Add rowTree
+        #if (!is.null(rowTree(xorig))) {
+        #    rowTree(x2) <- rowTree(xorig)
+        #}
     } else {
-        x2 <- x_list[[1]]
+        x2 <- xli[[1]]
     }
 
-    # Add the new fields (and only the new fields) into colData for the original input
-    # Matching has to be done for cases that miss colnames. To be polished later.
-    colData(xorig) <- cbind(colData(xorig), colData(x2)[match(original.names, colnames(x2)), c(name_timedifference, name_divergence)])
-
-    xorig <- .add_values_to_colData(xorig, list(colData(x2)[match(original.names, colnames(x2)), name_timedifference]), name_timedifference)
-    xorig <- .add_values_to_colData(xorig, list(colData(x2)[match(original.names, colnames(x2)), name_divergence]), name_divergence)    
+    # FIXME: reimplement the splitting so that we do not need intermediate variable like this
+    colData(x2)$tmp_group_for_groupwise_splitting <- NULL
 
     # Return
-    return(xorig)
+    return(x2)
 
 }
 
 
 # First define the function that calculates divergence for a given SE object
 #' @importFrom mia estimateDivergence
-.calculate_divergence_from_baseline <- function (x, baseline, time_field, name_divergence, name_timedifference, abund_values, FUN, method, g) {
+.calculate_divergence_from_baseline <- function (x, baseline, time_field, name_divergence, name_timedifference, abund_values, FUN, method) {
 
-    # Reference vector
-    reference <- as.vector(assay(baseline, abund_values))
+    # If baseline is SE object then just ensure it has exactly one sample (well-defined baseline).
+    # Otherwise, split the baseline from the data object.
+    # Baseline is either an SE object with the same time field than x
+    # or baseline specifies one sample from x
+    if (is(baseline, "SummarizedExperiment")) {
+        if (ncol(baseline)>1) {
+            stop("If baseline is an SE object it should have a single sample.")
+        } else {
+            reference <- baseline
+        }
+    } else if (is.character(baseline) || is.numeric(baseline)) {
+        reference <- x[, baseline]
+    } else {
+        stop("Baseline must be character or numeric vector specifying the SE sample; or it must be an SE object.")
+    }
 
-    # Add beta divergence from baseline info
-    x <- estimateDivergence(x, abund_values, name_divergence, reference, FUN, method)
+    # Add beta divergence from baseline info; note this has to be a list
+    d <- estimateDivergence(x, abund_values,
+                               name_divergence,
+			       reference = as.vector(assay(reference, abund_values)),
+			       FUN, method)    
+    divergencevalues <- list(unname(colData(d)[, name_divergence]))
 
-    # Add time divergence from baseline info
-    values <- list(colData(x)[, time_field] - colData(baseline)[, time_field])
+    # Add time divergence from baseline info; note this has to be a list    
+    timevalues <- list(colData(x)[, time_field] - colData(reference)[, time_field])
 
-    x <- .add_values_to_colData(x, values, name_timedifference)
+    x <- .add_values_to_colData(x, timevalues, name_timedifference)
+    x <- .add_values_to_colData(x, divergencevalues, name_divergence)    
 
     # Return
     return(x)

@@ -46,8 +46,8 @@ and columns as features. By default, \code{FUN} is
 passed to the function that is specified by \code{FUN}. By default,
 \code{method} is \code{"bray"}.}
 
-\item{baseline_sample}{Optional. The baseline sample to be used. A vector, or a named list if the
-"group" argument is given.}
+\item{baseline_sample}{Optional. A character vector specifying the baseline sample(s) to be used. If the
+"group" argument is given, this must be a named vector; one element per group.}
 }
 \value{
 a
@@ -60,12 +60,16 @@ samples (across n time steps), within each level of the grouping factor.
 \description{
 Calculates sample dissimilarity between the given baseline and other
 time points, optionally within a group (subject, reaction chamber, or
-similar). The corresponding
-time difference is returned as well. The method operates on
-\code{SummarizedExperiment} objects, and the results are stored in \code{colData}.
+similar). The corresponding time difference is returned as well.
+The method operates on \code{SummarizedExperiment} objects, and the results
+are stored in \code{colData}.
 }
 \details{
 The group argument allows calculating divergence per group. Otherwise, this is done across all samples at once.
+
+The baseline sample/s always need to belong to the data object i.e. they can be merged into it before
+applying this function. The reason is that they need to have comparable sample data, at least some time point
+information for calculating time differences w.r.t. baseline sample.
 
 The baseline time point is by default defined as the smallest time point (per group). Alternatively,
 the user can provide the baseline vector, or a list of baseline vectors per group (named list per group).

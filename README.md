@@ -34,7 +34,7 @@ citation("miaTime")
 ## 
 ## Kindly cite the miaTime R package as follows:
 ## 
-##   (C) Yagmur Simsek and Leo Lahti. miaTime R package Version 0.1.7
+##   (C) Yagmur Simsek and Leo Lahti. miaTime R package Version 0.1.8
 ##   Package URL: microbiome.github.io/miaTime
 ## 
 ## A BibTeX entry for LaTeX users is
@@ -43,7 +43,7 @@ citation("miaTime")
 ##     title = {miaTime R package},
 ##     author = {Yagmur Simsek and Leo Lahti},
 ##     url = {microbiome.github.io/miaTime},
-##     note = {Version 0.1.7},
+##     note = {Version 0.1.8},
 ##   }
 ```
 

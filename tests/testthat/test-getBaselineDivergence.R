@@ -39,9 +39,9 @@ test_that("getBaselineDivergence", {
   # Just pick 1 subject with many time points
   tse <- tse[, colData(tse)$subject == "843"] # The baseline time point 0 is Sample-843
   
-  # Should now work also without the "group" argument because there is just a single group
+  # Should now work also without the "group" argument because there is just a single group (subject)
   tse2a <- getBaselineDivergence(tse, time_field = "time")
-  tse2b <- getBaselineDivergence(tse, group=1, time_field = "time")
+  tse2b <- getBaselineDivergence(tse, group="subject", time_field = "time")
   expect_identical(tse2a, tse2b)
 
   # Define the baseline sample manually
