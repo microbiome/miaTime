@@ -19,7 +19,6 @@ vignette: >
     %\VignetteIndexEntry{miaTime}
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
-bibliography: references.bib
 ---
 
 ```{r eval=FALSE, include=FALSE}
