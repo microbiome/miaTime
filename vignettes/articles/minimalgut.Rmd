@@ -1,0 +1,147 @@
+---
+title: "miaTime: Time Series Divergence"
+date: "`r Sys.Date()`"
+author:
+- name: Sudarshan Shetty
+- name: Leo Lahti
+package: 
+    miaTime
+output: 
+    BiocStyle::html_document:
+        fig_height: 7
+        fig_width: 10
+        toc: yes
+        toc_depth: 2
+        number_sections: true
+vignette: >
+    %\VignetteIndexEntry{miaTime}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+bibliography: references.bib
+---
+
+```{r eval=FALSE, include=FALSE}
+library(Cairo)
+knitr::opts_chunk$set(cache = FALSE,
+                      fig.width = 9,
+                      dpi=300,
+                      dev = "png",
+                      dev.args = list(type = "cairo-png"),
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+```{r loadhide, message=FALSE, warning=FALSE, echo=FALSE}
+library(mia)
+library(miaTime)
+library(dplyr)
+library(lubridate)
+library(SummarizedExperiment)
+```
+
+
+# Minimal gut microbiome
+
+Dense samples of the minimal gut microbiome. In the initial hours, MDb-MM was grown under batch condition and 24 h onwards, continuous feeding of media with pulse feeding cycles. This information is stored in the `colData`.   
+
+```{r fig.width=8, fig.height=3}
+library(miaTime)
+data("minimalgut")
+tse <- minimalgut
+# quick check of number of samples 
+table(colData(tse)$StudyIdentifier,colData(tse)$condition_1)
+```
+
+Visualize samples available for each of the bioreactors. This allows
+to identify if there are any missing samples for specific times.
+
+
+```{r}
+library(ggplot2)
+# Visualize sampling times available in the experiment 
+colData(tse) |> 
+    as.data.frame() |> 
+    ggplot(aes(as.factor(Time.hr), StudyIdentifier)) +
+    geom_tile(aes(fill=condition_1), color="white") +
+    scale_fill_manual("Condition Sampled", 
+                      values = c("#ff006e", "#e07a5f", "#457b9d")) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(size=8, angle = 90),
+          legend.position = "top") +
+    labs(x="Time (h)", y="")
+```
+
+
+## Community dynamics   
+
+The `minimalgut` dataset, mucus-diet based minimal microbiome
+(MDbMM-16), consists of 16 species assembled in three bioreactors. We
+can investigate the succession of mdbMM16 from the start of experiment
+here hour zero until the end of the experiment.
+
+```{r}
+## Divergence from baseline i.e from hour zero.
+tse <- mia::relAbundanceCounts(minimalgut) # get relative abundance
+tse <- getBaselineDivergence(tse,
+                             group = "StudyIdentifier",
+                             time_field = "Time.hr",
+                             name_divergence = "divergence_from_baseline",
+                             name_timedifference = "time_from_baseline",
+                             abund_values="relabundance",
+                             FUN = vegan::vegdist,
+                             method="bray")
+
+```
+
+
+Visualize the divergence
+
+```{r fig.height=4, fig.width=8}
+# First define nice colors for bioreactors
+bioreac_cols <- c(`Bioreactor A`= "#b2182b",
+                  `Bioreactor B`="#2166ac",
+                  `Bioreactor C` = "#35978f")
+
+colData(tse) |>
+    as.data.frame() |>
+    ggplot(aes(x=Time.hr, y=divergence_from_baseline))+
+    geom_point(aes(color=StudyIdentifier), size=2, alpha=0.5) +
+    geom_line(aes(color=StudyIdentifier)) +
+    theme_minimal() +
+    scale_color_manual(values = bioreac_cols) +
+    labs(x="Time (h)", y="Divergence \nfrom baseline") +
+    # highlight specific timepoints
+    geom_vline(xintercept = 152, lty=2, color="#991720") + 
+    geom_vline(xintercept = 248, lty=2, color= "#0963bd")+
+    annotate("text",x=c(152, 248),y=c(0.8, 0.8),
+             label=c("Addition of\nB.hydrogenotrophica","Acetate Discontinued"),
+             hjust=c(1.05,-0.05))
+```
+
+Now visualize abundance of *Blautia hydrogenotrophica* using the `miaViz::plotSeries` function.
+
+```{r fig.height=4, fig.width=8}
+library(miaViz)
+plotSeries(mia::relAbundanceCounts(minimalgut),
+           x = "Time.hr",
+           y = "Blautia_hydrogenotrophica",
+           colour_by = "Species",
+           abund_values = "relabundance")+
+    geom_vline(xintercept = 152, lty=2, color="#991720") + 
+    geom_vline(xintercept = 248, lty=2, color= "#0963bd")+
+    annotate("text",x=c(152, 248),y=c(0.2, 0.15),
+             label=c("Addition of\nB.hydrogenotrophica","Acetate Discontinued"),
+             hjust=c(1.05,-0.05))+
+    labs(x="Time (h)", y="B.hydrogenotrophica\nRelative Abundance") +
+    theme(legend.position = "none")
+    
+```
+
+
+
+
+# Session info
+
+```{r}
+sessionInfo()
+```
