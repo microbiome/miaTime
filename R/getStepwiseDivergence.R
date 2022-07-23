@@ -71,8 +71,14 @@ getStepwiseDivergence <- function(x,
                             abund_values = "counts",
 			    FUN = vegan::vegdist, ...){
 
+    # Store the original x
+    xorig <- x
+
+    # Temporary sample ID
+    x$tmp_sample_identifier_for_getStepwiseDivergence <- paste("SampleID", 1:ncol(x), sep="-")
 
     # If group is not given, assume that all samples come from a single group
+    # TODO: switch to mia::splitOn    
     if (is.null(group)) {
       spl <- split(seq_len(ncol(x)), rep(1, nrow(x)))
     } else {
@@ -92,8 +98,8 @@ getStepwiseDivergence <- function(x,
         function(i){.check_pairwise_dist(x = x[, spl_more[[i]]],
                                         FUN=FUN,
                                         time_interval,
-                                        name_divergence = "time_divergence",
-                                        name_timedifference = "time_difference",
+                                        name_divergence = name_divergence,
+                                        name_timedifference = name_timedifference,
                                         time_field,
                                         abund_values)})
 
@@ -124,14 +130,24 @@ getStepwiseDivergence <- function(x,
         x_new <- whole_x[[1]]
     }
 
+    # Ensure that sample sorting matches between the input and output data
+    inds <- match(x$tmp_sample_identifier_for_getStepwiseDivergence, x_new$tmp_sample_identifier_for_getStepwiseDivergence)
+    x_new <- x_new[, inds]
+
+    # Add the new fields to colData
     # Just replace the colData for the original input
-    colData(x) <- colData(x_new)
-    
-    return(x)
+    # colData(xorig) <- colData(x_new)
+
+    # Add beta divergence from baseline info; note this has to be a list
+    timevalues <- list(colData(x_new)[, name_timedifference])
+    divergencevalues <- list(colData(x_new)[, name_divergence])
+
+    xorig <- .add_values_to_colData(xorig, timevalues, name_timedifference)
+    xorig <- .add_values_to_colData(xorig, divergencevalues, name_divergence)    
+
+    return(xorig)
 
 }
-
-
 
 
 #' @rdname getStepwiseDivergence
