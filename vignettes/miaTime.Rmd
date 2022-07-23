@@ -37,8 +37,7 @@ knitr::opts_chunk$set(cache = FALSE,
 
 # Introduction
 
-`miaTime` implements tools for time series manipulation based on the `TreeSummarizedExperiment` data container. Much of the functionality is also applicable to the `SummarizedExperiment` data objects as well.
-
+`miaTime` implements tools for time series manipulation based on the `TreeSummarizedExperiment` data container.
 
 ## Installation
 

@@ -2,7 +2,7 @@
 
 This R package can be used to analyse time series data for microbial
 communities. The package is part of [miaverse](https://microbiome.github.io/), 
-and is based on the `(Tree)SummarizedExperiment` data container.
+and is based on the `TreeSummarizedExperiment` data container.
 
 See the [package homepage](https://microbiome.github.io/miaTime) for
 example workflows.

@@ -1,5 +1,5 @@
 ---
-title: "miaTime: Time Series Divergence"
+title: "Minimal gut bioreactor examples"
 date: "`r Sys.Date()`"
 author:
 - name: Sudarshan Shetty
@@ -36,7 +36,7 @@ library(mia)
 library(miaTime)
 library(dplyr)
 library(lubridate)
-library(SummarizedExperiment)
+library(TreeSummarizedExperiment)
 ```
 
 
@@ -142,6 +142,10 @@ plotSeries(mia::relAbundanceCounts(minimalgut),
 
 ## Visualize the rate (slope) of divergence 
 
+Sample dissimilarity between consecutive time steps(step size n >= 1) within
+a group(subject, age, reaction chamber, etc.) can be calculated by `getStepwiseDivergence`. If we normalize this by the time interval, this gives an approximate slope for the change.
+
+
 ```{r getStepwiseDivergence, fig.height=4, fig.width=8}
 # Load libraries
 library(miaTime)
@@ -221,7 +225,7 @@ p <- ggplot(as.data.frame(colData(tse)),
 print(p)
 ```
 
-# ------------------------------------------------------------------------------------------------
+
 
 ## Error bars
 
@@ -296,6 +300,7 @@ p <- ggplot(df,
      geom_hline(aes(yintercept=0), linetype=2)
 print(p)
 ```
+
 
 
 # Session info

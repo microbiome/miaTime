@@ -2,7 +2,7 @@
 
 This R package can be used to analyse time series data for microbial
 communities. The package is part of [miaverse](https://microbiome.github.io/), 
-and is based on the `(Tree)SummarizedExperiment` data container.
+and is based on the `TreeSummarizedExperiment` data container.
 
 See the [package homepage](https://microbiome.github.io/miaTime) for
 example workflows.
@@ -37,7 +37,7 @@ citation("miaTime")
 ## 
 ## Kindly cite the miaTime R package as follows:
 ## 
-##   (C) Yagmur Simsek and Leo Lahti. miaTime R package Version 0.1.10
+##   (C) Yagmur Simsek and Leo Lahti. miaTime R package Version 0.1.11
 ##   Package URL: microbiome.github.io/miaTime
 ## 
 ## A BibTeX entry for LaTeX users is
@@ -46,7 +46,7 @@ citation("miaTime")
 ##     title = {miaTime R package},
 ##     author = {Yagmur Simsek and Leo Lahti},
 ##     url = {microbiome.github.io/miaTime},
-##     note = {Version 0.1.10},
+##     note = {Version 0.1.11},
 ##   }
 ```
 
