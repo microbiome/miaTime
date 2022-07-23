@@ -1,8 +1,10 @@
-pandoc: 2.17.1.1
-pkgdown: 2.0.3
+pandoc: 2.9.2.1
+pkgdown: 2.0.5
 pkgdown_sha: ~
 articles:
+  divergence: divergence.html
   manipulation: manipulation.html
+  minimalgut: minimalgut.html
   miaTime: miaTime.html
-last_built: 2022-05-29T14:56Z
+last_built: 2022-07-23T15:19Z
 

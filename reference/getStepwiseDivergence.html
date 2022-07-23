@@ -20,7 +20,7 @@ SummarizedExperiment objects, and the results are stored in colData."><!-- mathj
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">miaTime</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.10</span>
       </span>
     </div>
 
@@ -38,7 +38,13 @@ SummarizedExperiment objects, and the results are stored in colData."><!-- mathj
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
+      <a href="../articles/divergence.html">miaTime: Time Series Divergence</a>
+    </li>
+    <li>
       <a href="../articles/manipulation.html">Time Series Manipulation</a>
+    </li>
+    <li>
+      <a href="../articles/minimalgut.html">miaTime: Time Series Divergence</a>
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
@@ -69,22 +75,22 @@ time difference is returned as well. The method operates on
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">getStepwiseDivergence</span><span class="op">(</span>
-  <span class="va">x</span>,
-  group <span class="op">=</span> <span class="cn">NULL</span>,
-  <span class="va">time_field</span>,
-  time_interval <span class="op">=</span> <span class="fl">1</span>,
-  name_divergence <span class="op">=</span> <span class="st">"time_divergence"</span>,
-  name_timedifference <span class="op">=</span> <span class="st">"time_difference"</span>,
-  abund_values <span class="op">=</span> <span class="st">"counts"</span>,
-  FUN <span class="op">=</span> <span class="fu">vegan</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegdist</a></span>,
-  <span class="va">...</span>
-<span class="op">)</span>
-
-<span class="fu">getTimeDivergence</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S4 method for ANY</span>
-<span class="fu">getTimeDivergence</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">getStepwiseDivergence</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">time_field</span>,</span>
+<span>  time_interval <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  name_divergence <span class="op">=</span> <span class="st">"time_divergence"</span>,</span>
+<span>  name_timedifference <span class="op">=</span> <span class="st">"time_difference"</span>,</span>
+<span>  abund_values <span class="op">=</span> <span class="st">"counts"</span>,</span>
+<span>  FUN <span class="op">=</span> <span class="fu">vegan</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegdist</a></span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">getTimeDivergence</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for ANY</span></span>
+<span><span class="fu">getTimeDivergence</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -93,60 +99,85 @@ time difference is returned as well. The method operates on
 <dd><p>A
 <code><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></code>
 object.</p></dd>
+
+
 <dt>group</dt>
 <dd><p>optional; a single character value for specifying the grouping
 factor (name of a <code>colData</code> field). If given, the divergence is calculated
 per group.  e.g. subject, chamber, group etc.).</p></dd>
+
+
 <dt>time_field</dt>
 <dd><p>a single character value, specifying the name of the
 time series field in <code>colData</code>.</p></dd>
+
+
 <dt>time_interval</dt>
 <dd><p>integer value indicating the increment between time
 steps (default: 1). If you need to take every second, every third, or so, time step only, then
 increase this accordingly.</p></dd>
+
+
 <dt>name_divergence</dt>
 <dd><p>a column vector showing beta diversity between samples
 over n time intervals (default: <code>name_divergence = "time_divergence"</code>)</p></dd>
+
+
 <dt>name_timedifference</dt>
 <dd><p>field name for adding the time difference between
 samples used to calculate beta diversity
 (default: <code>name_timedifference = "time_difference"</code>)</p></dd>
+
+
 <dt>abund_values</dt>
 <dd><p>character indicating which assay values are used in
 the dissimilarity estimation (default: <code>abund_values = "counts"</code>)</p></dd>
+
+
 <dt>FUN</dt>
 <dd><p>a <code>function</code> for dissimilarity calculation. The function must
 expect the input matrix as its first argument. With rows as samples
 and columns as features. By default, <code>FUN</code> is
 <code><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegan::vegdist</a></code>.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Arguments to be passed</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>a
-<code><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></code>or
-<code><a href="https://rdrr.io/pkg/TreeSummarizedExperiment/man/TreeSummarizedExperiment-class.html" class="external-link">TreeSummarizedExperiment</a></code>containing the sample dissimilarity and corresponding time difference between
+    
+
+<p>a
+<code><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">SummarizedExperiment</a></code></p>
+
+
+<p>or
+<code><a href="https://rdrr.io/pkg/TreeSummarizedExperiment/man/TreeSummarizedExperiment-class.html" class="external-link">TreeSummarizedExperiment</a></code></p>
+
+
+<p>containing the sample dissimilarity and corresponding time difference between
 samples (across n time steps), within each level of the grouping factor.</p>
     </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co">#library(miaTime)</span></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">TreeSummarizedExperiment</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">hitchip1006</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu">mia</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mia/man/transformCounts.html" class="external-link">transformSamples</a></span><span class="op">(</span><span class="va">hitchip1006</span>, method <span class="op">=</span> <span class="st">"relabundance"</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Subset to speed up example</span></span>
-<span class="r-in"><span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">tse</span><span class="op">[</span>, <span class="fu">colData</span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">$</span><span class="va">subject</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Vector-class.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"900"</span>, <span class="st">"934"</span>, <span class="st">"843"</span>, <span class="st">"875"</span><span class="op">)</span><span class="op">]</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">tse2</span> <span class="op">&lt;-</span> <span class="fu">getStepwiseDivergence</span><span class="op">(</span><span class="va">tse</span>, group <span class="op">=</span> <span class="st">"subject"</span>,</span>
-<span class="r-in">                              time_interval <span class="op">=</span> <span class="fl">1</span>,</span>
-<span class="r-in">                              time_field <span class="op">=</span> <span class="st">"time"</span>,</span>
-<span class="r-in">                              abund_values<span class="op">=</span><span class="st">"relabundance"</span>,</span>
-<span class="r-in">                              FUN <span class="op">=</span> <span class="fu">vegan</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegdist</a></span><span class="op">)</span></span>
-<span class="r-in"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">#library(miaTime)</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">TreeSummarizedExperiment</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">hitchip1006</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu">mia</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mia/man/transformCounts.html" class="external-link">transformSamples</a></span><span class="op">(</span><span class="va">hitchip1006</span>, method <span class="op">=</span> <span class="st">"relabundance"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Subset to speed up example</span></span></span>
+<span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">tse</span><span class="op">[</span>, <span class="fu">colData</span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">$</span><span class="va">subject</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"900"</span>, <span class="st">"934"</span>, <span class="st">"843"</span>, <span class="st">"875"</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">tse2</span> <span class="op">&lt;-</span> <span class="fu">getStepwiseDivergence</span><span class="op">(</span><span class="va">tse</span>, group <span class="op">=</span> <span class="st">"subject"</span>,</span></span>
+<span class="r-in"><span>                              time_interval <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>                              time_field <span class="op">=</span> <span class="st">"time"</span>,</span></span>
+<span class="r-in"><span>                              abund_values<span class="op">=</span><span class="st">"relabundance"</span>,</span></span>
+<span class="r-in"><span>                              FUN <span class="op">=</span> <span class="fu">vegan</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegdist</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -161,7 +192,7 @@ samples (across n time steps), within each level of the grouping factor.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
       </footer></div>
