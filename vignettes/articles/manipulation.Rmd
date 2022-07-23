@@ -62,6 +62,18 @@ library(miaTime)
 ```
 
 
+## Sorting samples 
+
+The _tidySingleCellExperiment_ package provides handy functions for (Tree)SE manipulation.
+
+```{r sort samples, message=FALSE, warning=FALSE}
+library("tidySingleCellExperiment")
+data("hitchip1006")
+tse <- hitchip1006
+tse2 <- tse %>% tidySingleCellExperiment::arrange(subject, time)
+```
+
+
 ## Storing time information with Period class
 
 `miaTime` utilizes the functions available in the package `lubridate`

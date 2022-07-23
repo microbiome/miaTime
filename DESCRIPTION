@@ -1,7 +1,7 @@
 Package: miaTime
 Type: Package
 Title: Microbiome Time Series Analysis
-Version: 0.1.9
+Version: 0.1.10
 Authors@R:
      c(person(given = "Leo", family = "Lahti", role = c("aut"),
               email = "leo.lahti@iki.fi",
@@ -27,6 +27,7 @@ Imports:
     vegan
 Suggests: 
     TreeSummarizedExperiment,
+    tidySingleCellExperiment,
     ggplot2,
     miaViz,
     lubridate,
