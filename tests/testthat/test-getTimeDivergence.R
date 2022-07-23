@@ -12,13 +12,9 @@ test_that("getStepwiseDivergence", {
   expect_equal(class(tse), class(tse2))
 
   # A subject to check time difference calculation
-  time2 <- colData(tse2)[, "time"][which(colData(tse2)[, "subject"] == "843")]
-
-  time_diff_2 <- colData(tse2)[, "time_difference"][which(colData(tse2)[, "subject"] == "843")]
-
-  diff_vector <- c(NA,diff(time2))
-
-  expect_equal(time_diff_2, diff_vector)
+  obs_diff <- colData(tse2)[which(colData(tse2)[, "subject"] == "843"), "time_difference"]
+  exp_diff <- c(NA,diff(colData(tse)[which(colData(tse)[, "subject"] == "843"), "time"]))
+  expect_equal(obs_diff, exp_diff)
 
   # n > 1
   tse3 <- getStepwiseDivergence(tse, group = "subject",

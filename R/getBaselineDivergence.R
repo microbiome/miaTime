@@ -49,6 +49,9 @@
 #'
 #' @importFrom SEtools mergeSEs
 #' @importFrom dplyr %>%
+#' @importFrom dplyr filter
+#' @importFrom dplyr group_by
+#' @importFrom dplyr mutate
 #' @importFrom dplyr select
 #' @importFrom vegan vegdist
 #' @importFrom SummarizedExperiment assay
@@ -105,10 +108,18 @@ getBaselineDivergence <- function(x,
     }
     original.names <- colnames(x)
 
-    # Add time
-    colData(x)$time <- colData(x)[[time_field]]
+    # global vars
+    is <- NULL    
+    group_by <- NULL
+    tmp_group_for_groupwise_splitting <- NULL
+    time <- NULL
+    filter <- NULL
 
-    # If group is not given, assume that all samples come from a single group
+    # Add time
+    # colData(x)$time <- colData(x)[[time_field]]
+    x <- .add_values_to_colData(x, list(colData(x)[[time_field]]), "time")
+    
+    # If group is not given, assume that all samples come from a single group    
     if (is.null(group)) {
         colData(x)$tmp_group_for_groupwise_splitting <- rep(1, nrow=nrow(x))
     } else if (is.character(group)) {
@@ -118,6 +129,7 @@ getBaselineDivergence <- function(x,
     }
 
     # Split SE into a list, by grouping
+    # TODO: switch to mia::splitOn
     spl <- split(seq_len(ncol(x)), colData(x)$tmp_group_for_groupwise_splitting)
 
     # Sample with the smallest time point within each subject
@@ -164,7 +176,7 @@ getBaselineDivergence <- function(x,
     }
 
     # Return the elements in a list
-    # FIXME: use SummarizedExperiment merge here
+    # FIXME: use SummarizedExperiment merge here or the new TreeSE merge thing
     if (length(xli) > 1) {
         x2 <- xli[[1]]
         for (i in seq(2, length(xli), 1)) {
@@ -197,7 +209,11 @@ getBaselineDivergence <- function(x,
 
 # First define the function that calculates divergence for a given SE object
 #' @importFrom mia estimateDivergence
+#' @importFrom methods is
 .calculate_divergence_from_baseline <- function (x, baseline, time_field, name_divergence, name_timedifference, abund_values, FUN, method) {
+
+    # Global vars
+    is <- NULL
 
     # If baseline is SE object then just ensure it has exactly one sample (well-defined baseline).
     # Otherwise, split the baseline from the data object.
@@ -217,14 +233,14 @@ getBaselineDivergence <- function(x,
 
     # Add beta divergence from baseline info; note this has to be a list
     d <- estimateDivergence(x, abund_values,
-                               name_divergence,
+                               name = name_divergence,
 			       reference = as.vector(assay(reference, abund_values)),
-			       FUN, method)    
+			       FUN = FUN, method)    
     divergencevalues <- list(unname(colData(d)[, name_divergence]))
 
     # Add time divergence from baseline info; note this has to be a list    
     timevalues <- list(colData(x)[, time_field] - colData(reference)[, time_field])
-
+    
     x <- .add_values_to_colData(x, timevalues, name_timedifference)
     x <- .add_values_to_colData(x, divergencevalues, name_divergence)    
 
