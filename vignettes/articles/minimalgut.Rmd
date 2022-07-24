@@ -36,6 +36,7 @@ library(mia)
 library(miaTime)
 library(dplyr)
 library(lubridate)
+library(knitr)
 library(TreeSummarizedExperiment)
 ```
 
@@ -48,8 +49,9 @@ Dense samples of the minimal gut microbiome. In the initial hours, MDb-MM was gr
 library(miaTime)
 data("minimalgut")
 tse <- minimalgut
+
 # quick check of number of samples 
-table(colData(tse)$StudyIdentifier,colData(tse)$condition_1)
+kable(table(colData(tse)$StudyIdentifier,colData(tse)$condition_1))
 ```
 
 Visualize samples available for each of the bioreactors. This allows
@@ -58,9 +60,8 @@ to identify if there are any missing samples for specific times.
 
 ```{r}
 library(ggplot2)
-# Visualize sampling times available in the experiment 
-colData(tse) |> 
-    as.data.frame() |> 
+library(tidySummarizedExperiment)
+tse |> 
     ggplot(aes(as.factor(Time.hr), StudyIdentifier)) +
     geom_tile(aes(fill=condition_1), color="white") +
     scale_fill_manual("Condition Sampled", 
@@ -87,7 +88,7 @@ tse <- getBaselineDivergence(tse,
                              time_field = "Time.hr",
                              name_divergence = "divergence_from_baseline",
                              name_timedifference = "time_from_baseline",
-                             abund_values="relabundance",
+                             assay_name="relabundance",
                              FUN = vegan::vegdist,
                              method="bray")
 
@@ -99,11 +100,10 @@ Visualize the divergence
 ```{r fig.height=4, fig.width=8}
 # First define nice colors for bioreactors
 bioreac_cols <- c(`Bioreactor A`= "#b2182b",
-                  `Bioreactor B`="#2166ac",
+                  `Bioreactor B`= "#2166ac",
                   `Bioreactor C` = "#35978f")
 
-colData(tse) |>
-    as.data.frame() |>
+tse |>
     ggplot(aes(x=Time.hr, y=divergence_from_baseline))+
     geom_point(aes(color=StudyIdentifier), size=2, alpha=0.5) +
     geom_line(aes(color=StudyIdentifier)) +
@@ -128,7 +128,7 @@ plotSeries(mia::relAbundanceCounts(minimalgut),
            x = "Time.hr",
            y = "Blautia_hydrogenotrophica",
            colour_by = "Species",
-           abund_values = "relabundance")+
+           assay_name = "relabundance")+
     geom_vline(xintercept = 152, lty=2, color="#991720") + 
     geom_vline(xintercept = 248, lty=2, color= "#0963bd")+
     annotate("text",x=c(152, 248),y=c(0.2, 0.15),
@@ -146,7 +146,7 @@ Sample dissimilarity between consecutive time steps(step size n >= 1) within
 a group(subject, age, reaction chamber, etc.) can be calculated by `getStepwiseDivergence`. If we normalize this by the time interval, this gives an approximate slope for the change.
 
 
-```{r getStepwiseDivergence, fig.height=4, fig.width=8}
+```{r getStepwiseDivergence, fig.height=4, fig.width=8, warning=FALSE}
 # Load libraries
 library(miaTime)
 library(dplyr)
@@ -158,11 +158,11 @@ tse <- tse[, order(colData(tse)$Time_hr_num)]
 tse <- getStepwiseDivergence(tse, group = "StudyIdentifier",
                                time_interval = 1,
                                time_field = "Time_hr_num",
-			       name_divergence = "divergence_from_previous_step",
+                               name_divergence = "divergence_from_previous_step",
                                name_timedifference = "time_from_previous_step",
-                               abund_values="relabundance",
+                               assay_name="relabundance",
                                FUN = vegan::vegdist,
-			       method="bray")
+                               method="bray")
 
 # We have now new fields added in the colData:
 # time_from_previous_step, divergence_from_previous_step
@@ -170,11 +170,10 @@ tse <- getStepwiseDivergence(tse, group = "StudyIdentifier",
 
 # Visualize the slope of dissimilarity between consecutive time points as a function of time (from baseline)
 library(ggplot2)
-theme_set(theme_bw(20))
-p <- ggplot(as.data.frame(colData(tse)),
-         aes(x=time_from_baseline,
-	     y=divergence_from_previous_step/time_from_previous_step,
-	     color=StudyIdentifier)) +
+theme_set(theme_bw(10))
+p <- tse |> ggplot(aes(x=time_from_baseline,
+	               y=divergence_from_previous_step/time_from_previous_step,
+	               color=StudyIdentifier)) +
        geom_point() +
        geom_line() +
        labs(x="Time (hours)", y="Slope of dissimilarity (Bray-Curtis)") +
@@ -189,7 +188,7 @@ print(p)
 
 This shows how to calculate and plot moving average for the variable of interest (here: slope).
 
-```{r rollmean, fig.height=4, fig.width=8}
+```{r rollmean, fig.height=4, fig.width=8, warning=FALSE}
 # Add slope explicitly in colData
 colData(tse)$slope <- colData(tse)$divergence_from_previous_step / colData(tse)$time_from_previous_step
 
@@ -216,8 +215,10 @@ tselist2 <- lapply(tselist, function (x) {addmean(x, k=3, field = "slope", field
 tse <- SEtools::mergeSEs(tselist2)
 
 # Visualize
-p <- ggplot(as.data.frame(colData(tse)),
-         aes(x = time_from_baseline, y = sliding_average, color=StudyIdentifier)) +
+theme_set(theme_bw(10))
+p <- tse |> ggplot(aes(x = time_from_baseline,
+	               y = sliding_average,
+	               color=StudyIdentifier)) +
      geom_point() +
      geom_line() +
      labs(x="Time (hours)", y="Mean slope of dissimilarity (Bray-Curtis)") +
@@ -233,14 +234,15 @@ This shows how to visualize error bars on top of time series. In this
 example we create artificial replicates and variation for a brief example.
 
 
-```{r errorbars, fig.height=4, fig.width=8}
+```{r errorbars, fig.height=4, fig.width=8, warning=FALSE, message=FALSE}
 ## Source: https://www.geeksforgeeks.org/adding-error-bars-to-a-line-graph-with-ggplot2-in-r/
-## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).
-##   data: a data frame.
-##   measurevar: the name of a column that contains the variable to be summariezed
-##   groupvars: a vector containing names of columns that contain grouping variables
-##   na.rm: a boolean that indicates whether to ignore NA's
-##   conf.interval: the percent range of the confidence interval (default is 95%)
+## Gives count, mean, standard deviation, standard error of the mean,
+## and confidence interval (default 95%).
+## data: a data frame.
+## measurevar: the name of a column that contains the variable to be summariezed
+## groupvars: a vector containing names of columns that contain grouping variables
+## na.rm: a boolean that indicates whether to ignore NA's
+## conf.interval: the percent range of the confidence interval (default is 95%)
 summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
                       conf.interval=.95, .drop=TRUE) {
     library(plyr)
@@ -290,6 +292,7 @@ df <- bind_rows(list(df1, df2, df3))
 df <- summarySE(df, measurevar="sliding_average", groupvars=c("StudyIdentifier", "time_from_baseline"))
 
 # Visualize
+theme_set(theme_bw(10))
 p <- ggplot(df,
          aes(x = time_from_baseline, y = sliding_average, color=StudyIdentifier)) +
      geom_point() +

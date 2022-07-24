@@ -177,66 +177,25 @@ colData(tse) <- colData(tse) %>%
    DataFrame()
 ```
 
-Calculate the difference in time from a given baseline time point.
-
-```{r}
-# Define baseline function;
-base <- function (x, baseline=min(x)) {x - baseline}
-filter <- dplyr::filter
-
-# Use time 1 as the baseline
-colData(tse) <- colData(tse) %>%
-    as.data.frame() %>%
-    group_by(subject) %>%
-    mutate(shifted = base(time, baseline=1)) %>%
-    DataFrame()
-# Check output
-as.data.frame(colData(tse)[, c("subject", "time", "shifted")]) %>%
-    filter(subject == "831")
-
-# Use the minimum time point per subject as the baseline:
-colData(tse) <- colData(tse) %>%
-    as.data.frame() %>%
-    group_by(subject) %>%
-    mutate(shifted = base(time)) %>%
-    DataFrame()
-
-# Check output
-as.data.frame(colData(tse)[, c("subject", "time", "shifted")]) %>%
-    filter(subject == "831")
-```
 
 ## Subset to baseline samples
 
 ```{r}
-#samples with time point 0
-se <- hitchip1006
-sample_time_zero <- colData(se)[which(colData(se)[, "time"] == 0),]
+library(tidySummarizedExperiment)
 
-#sample with the smallest time point within each subject
-colData(se) <- colData(se) %>%
+# Pick samples with time point 0
+tse <- hitchip1006 |> filter(time == 0)
+# Or: tse <- tse[, tse$time==0]
+
+# Sample with the smallest time point within each subject
+colData(tse) <- colData(tse) %>%
    as.data.frame() %>%
    group_by(subject) %>%
    mutate(rank = rank(time, ties.method="average")) %>%
-   DataFrame()
+   DataFrame
 
-time_within_subject <- colData(se)[which(colData(se)$rank == 1),]
-
-# Add some NAs in the time point data to demonstrate functionality with missing data
-nainds <- sample(seq_len(ncol(se)), 50)
-colData(se)$time[nainds] <- NA
-
-colData(se) <- colData(se) %>%
-   as.data.frame() %>%
-   group_by(subject) %>%
-   mutate(rank = rank(time, ties.method="average")) %>%
-   DataFrame()
-
-time_within_subject <- colData(se)[which(colData(se)$rank == 1),]
-
-#There is still one sample from each subject even if the time information of the sample is missing
-check_time <- data.frame(time_within_subject) %>% select(subject, time, rank)
-
+# Pick the subset including first time point per subject
+tse1 <- tse[, tse$rank == 1]
 ```
 
 
