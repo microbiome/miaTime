@@ -28,6 +28,7 @@ Imports:
 Suggests: 
     TreeSummarizedExperiment,
     tidySingleCellExperiment,
+    tidySummarizedExperiment,
     ggplot2,
     miaViz,
     lubridate,
