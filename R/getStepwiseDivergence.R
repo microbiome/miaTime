@@ -21,8 +21,8 @@
 #' @param name_timedifference field name for adding the time difference between
 #' samples used to calculate beta diversity
 #' (default: \code{name_timedifference = "time_difference"})
-#' @param abund_values character indicating which assay values are used in
-#' the dissimilarity estimation (default: \code{abund_values = "counts"})
+#' @param assay_name character indicating which assay values are used in
+#' the dissimilarity estimation (default: \code{assay_name = "counts"})
 #' @param FUN a \code{function} for dissimilarity calculation. The function must
 #'   expect the input matrix as its first argument. With rows as samples 
 #'   and columns as features. By default, \code{FUN} is
@@ -57,7 +57,7 @@
 #' tse2 <- getStepwiseDivergence(tse, group = "subject",
 #'                               time_interval = 1,
 #'                               time_field = "time",
-#'                               abund_values="relabundance",
+#'                               assay_name="relabundance",
 #'                               FUN = vegan::vegdist)
 #'
 #' @name getStepwiseDivergence
@@ -68,7 +68,7 @@ getStepwiseDivergence <- function(x,
                             time_interval=1,
                             name_divergence = "time_divergence",
                             name_timedifference = "time_difference",
-                            abund_values = "counts",
+                            assay_name = "counts",
 			    FUN = vegan::vegdist, ...){
 
     # Store the original x
@@ -101,7 +101,7 @@ getStepwiseDivergence <- function(x,
                                         name_divergence = name_divergence,
                                         name_timedifference = name_timedifference,
                                         time_field,
-                                        abund_values)})
+                                        assay_name)})
 
     x_one_list <- lapply(seq_along(spl_one), function(i) {
         x[, spl_one[[i]]]}
@@ -179,9 +179,9 @@ setMethod("getTimeDivergence",
                                 name_divergence = "time_divergence",
                                 name_timedifference = "time_difference",
                                 time_field,
-                                abund_values){
+                                assay_name){
 
-    mat <- t(assay(x, abund_values))
+    mat <- t(assay(x, assay_name))
 
     time <- colData(x)[, time_field]
 

@@ -18,8 +18,8 @@
 #' @param name_timedifference field name for adding the time difference between
 #' samples used to calculate beta diversity
 #' (default: \code{name_timedifference = "time_difference"})
-#' @param abund_values character indicating which assay values are used in
-#' the dissimilarity estimation (default: \code{abund_values = "counts"})
+#' @param assay_name character indicating which assay values are used in
+#' the dissimilarity estimation (default: \code{assay_name = "counts"})
 #' @param FUN a \code{function} for dissimilarity calculation. The function must
 #'   expect the input matrix as its first argument. With rows as samples 
 #'   and columns as features. By default, \code{FUN} is
@@ -74,7 +74,7 @@
 #'                               time_field = "time",
 #'                               name_divergence = "divergence_from_baseline",
 #'                               name_timedifference = "time_from_baseline",
-#'                               abund_values="relabundance",
+#'                               assay_name="relabundance",
 #'                               FUN = vegan::vegdist,
 #'                               method="bray")
 #'
@@ -84,7 +84,7 @@
 #'                               time_field = "time",
 #'                               name_divergence = "divergence_from_baseline",
 #'                               name_timedifference = "time_from_baseline",
-#'                               abund_values="relabundance",
+#'                               assay_name="relabundance",
 #'                               FUN = vegan::vegdist,
 #'                               method="bray")
 #'
@@ -95,7 +95,7 @@ getBaselineDivergence <- function(x,
                             time_field,
                             name_divergence = "divergence_from_baseline",
                             name_timedifference = "time_from_baseline",			    
-                            abund_values = "counts",
+                            assay_name = "counts",
 			    FUN = vegan::vegdist,
 			    method="bray",
 			    baseline_sample=NULL){
@@ -168,11 +168,11 @@ getBaselineDivergence <- function(x,
     if (ncol(baseline) == 1) {
         xli <- lapply(names(spl), function (g) {
             .calculate_divergence_from_baseline(x[,spl[[g]]], baseline,
-	        time_field, name_divergence, name_timedifference, abund_values, FUN, method)})
+	        time_field, name_divergence, name_timedifference, assay_name, FUN, method)})
     } else {
         xli <- lapply(names(spl), function (g) {
             .calculate_divergence_from_baseline(x[,spl[[g]]], baseline[, baseline_sample[[g]]],
-	        time_field, name_divergence, name_timedifference, abund_values, FUN, method)})
+	        time_field, name_divergence, name_timedifference, assay_name, FUN, method)})
     }
 
     # Return the elements in a list
@@ -210,7 +210,7 @@ getBaselineDivergence <- function(x,
 # First define the function that calculates divergence for a given SE object
 #' @importFrom mia estimateDivergence
 #' @importFrom methods is
-.calculate_divergence_from_baseline <- function (x, baseline, time_field, name_divergence, name_timedifference, abund_values, FUN, method) {
+.calculate_divergence_from_baseline <- function (x, baseline, time_field, name_divergence, name_timedifference, assay_name, FUN, method) {
 
     # Global vars
     is <- NULL
@@ -232,9 +232,9 @@ getBaselineDivergence <- function(x,
     }
 
     # Add beta divergence from baseline info; note this has to be a list
-    d <- estimateDivergence(x, abund_values,
+    d <- estimateDivergence(x, assay_name,
                                name = name_divergence,
-			       reference = as.vector(assay(reference, abund_values)),
+			       reference = as.vector(assay(reference, assay_name)),
 			       FUN = FUN, method)    
     divergencevalues <- list(unname(colData(d)[, name_divergence]))
 
