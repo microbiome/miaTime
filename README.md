@@ -1,4 +1,4 @@
-# Microbiome time series manipulation with miaTime
+# Microbiome time series manipulation with miaTime <img src="man/figures/mia_logo.png" align="right" width="120" />
 
 This R package can be used to analyse time series data for microbial
 communities. The package is part of [miaverse](https://microbiome.github.io/), 
