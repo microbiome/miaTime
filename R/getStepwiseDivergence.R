@@ -135,7 +135,8 @@ getStepwiseDivergence <- function(x,
     }
 
     # Ensure that sample sorting matches between the input and output data
-    inds <- match(x$tmp_sample_identifier_for_getStepwiseDivergence, x_new$tmp_sample_identifier_for_getStepwiseDivergence)
+    inds <- match(x$tmp_sample_identifier_for_getStepwiseDivergence,
+                  x_new$tmp_sample_identifier_for_getStepwiseDivergence)
     x_new <- x_new[, inds]
 
     # Add the new fields to colData
@@ -184,7 +185,7 @@ setMethod("getTimeDivergence",
                                 name_timedifference = "time_difference",
                                 time_field,
                                 assay_name,
-				...){
+                                ...){
 
     mat <- t(assay(x, assay_name))
 
@@ -197,18 +198,18 @@ setMethod("getTimeDivergence",
     if (nrow(mat) > time_interval) {
 
         ## beta diversity calculation
-        n <- sapply((time_interval+1):nrow(mat),
-                function (i) {FUN(mat[c(i, i-time_interval), ], ...)})
+        n <- sapply(seq((time_interval+1), nrow(mat)),
+            function (i) {FUN(mat[c(i, i-time_interval), ], ...)})
 
-        for(i in (time_interval+1):nrow(colData(x))){
-                colData(x)[, name_divergence][[i]] <- n[[i-time_interval]]
+        for(i in seq((time_interval+1), ncol(x))){
+            colData(x)[, name_divergence][[i]] <- n[[i-time_interval]]
         }
 
         ## time difference calculation
         time <- sapply((time_interval+1):nrow(mat),
             function (i) {diff(colData(x)[c(i-time_interval, i), time_field])})
 
-        for(i in (time_interval+1):nrow(colData(x))){
+        for(i in seq((time_interval+1), nrow(colData(x)))){
             colData(x)[, name_timedifference][[i]] <- time[[i-time_interval]]
         }
     }
