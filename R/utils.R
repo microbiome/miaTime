@@ -26,7 +26,7 @@
         warning("The following values are already present in `colData` and ",
                 "will be overwritten: '",
                 paste(colnames(colData(x))[f], collapse = "', '"),
-                "'. Consider using the 'name' argument to specify alternative ",
+                "'. Consider using the 'name' argument(s) to specify alternative ",
                 "names.",
                 call. = FALSE)
     }
