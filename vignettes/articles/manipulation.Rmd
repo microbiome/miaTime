@@ -45,6 +45,7 @@ library(SummarizedExperiment)
 
 `miaTime` implements tools for time series manipulation based on the `TreeSummarizedExperiment` [@TSE] data container. Much of the functionality is also applicable to the `SummarizedExperiment` [@SE] data objects. This tutorial shows how to use `miaTime` methods as well as the broader R/Bioconductor ecosystem to manipulate time series data.
 
+Check also the related package [TimeSeriesExperiment](https://github.com/nlhuong/TimeSeriesExperiment).
 
 ## Installation
 

@@ -17,7 +17,7 @@
 #' steps (default: 1). If you need to take every second, every third, or so, time step only, then
 #' increase this accordingly.
 #' @param name_divergence a column vector showing beta diversity between samples
-#' over n time intervals (default: \code{name_divergence = "time_divergence"})
+#' (default: \code{name_divergence = "time_divergence"})
 #' @param name_timedifference field name for adding the time difference between
 #' samples used to calculate beta diversity
 #' (default: \code{name_timedifference = "time_difference"})
@@ -26,7 +26,10 @@
 #' @param FUN a \code{function} for dissimilarity calculation. The function must
 #'   expect the input matrix as its first argument. With rows as samples 
 #'   and columns as features. By default, \code{FUN} is
-#'   \code{vegan::vegdist}.   
+#'   \code{vegan::vegdist}.
+#' @param method a method that is used to calculate the distance. Method is
+#'   passed to the function that is specified by \code{FUN}. By default,
+#'   \code{method} is \code{"bray"}.
 #' @param ... Arguments to be passed
 #'
 #' @return a
@@ -54,11 +57,15 @@
 #' # Subset to speed up example
 #' tse <- tse[, colData(tse)$subject %in% c("900", "934", "843", "875")]
 #'
+#' # Using vegdist for divergence calculation, one can pass
+#' # the dissimilarity method from the vegan::vegdist options
+#' # via the "method" argument
 #' tse2 <- getStepwiseDivergence(tse, group = "subject",
 #'                               time_interval = 1,
 #'                               time_field = "time",
 #'                               assay_name="relabundance",
-#'                               FUN = vegan::vegdist)
+#'                               FUN = vegan::vegdist,
+#'                               method="bray")
 #'
 #' @name getStepwiseDivergence
 #' @export
@@ -69,7 +76,8 @@ getStepwiseDivergence <- function(x,
                             name_divergence = "time_divergence",
                             name_timedifference = "time_difference",
                             assay_name = "counts",
-			    FUN = vegan::vegdist, ...){
+			    FUN = vegan::vegdist,
+			    method="bray", ...){
 
     # Store the original x
     xorig <- x
@@ -101,7 +109,8 @@ getStepwiseDivergence <- function(x,
                                         name_divergence = name_divergence,
                                         name_timedifference = name_timedifference,
                                         time_field,
-                                        assay_name)})
+                                        assay_name,
+					method)})
 
     x_one_list <- lapply(seq_along(spl_one), function(i) {
         x[, spl_one[[i]]]}
@@ -131,7 +140,8 @@ getStepwiseDivergence <- function(x,
     }
 
     # Ensure that sample sorting matches between the input and output data
-    inds <- match(x$tmp_sample_identifier_for_getStepwiseDivergence, x_new$tmp_sample_identifier_for_getStepwiseDivergence)
+    inds <- match(x$tmp_sample_identifier_for_getStepwiseDivergence,
+                  x_new$tmp_sample_identifier_for_getStepwiseDivergence)
     x_new <- x_new[, inds]
 
     # Add the new fields to colData
@@ -179,7 +189,9 @@ setMethod("getTimeDivergence",
                                 name_divergence = "time_divergence",
                                 name_timedifference = "time_difference",
                                 time_field,
-                                assay_name){
+                                assay_name,
+				method,
+                                ...){
 
     mat <- t(assay(x, assay_name))
 
@@ -192,18 +204,18 @@ setMethod("getTimeDivergence",
     if (nrow(mat) > time_interval) {
 
         ## beta diversity calculation
-        n <- sapply((time_interval+1):nrow(mat),
-                function (i) {FUN(mat[c(i, i-time_interval), ])})
+        n <- sapply(seq((time_interval+1), nrow(mat)),
+            function (i) {FUN(mat[c(i, i-time_interval), ], method=method, ...)})
 
-        for(i in (time_interval+1):nrow(colData(x))){
-                colData(x)[, name_divergence][[i]] <- n[[i-time_interval]]
+        for(i in seq((time_interval+1), ncol(x))){
+            colData(x)[, name_divergence][[i]] <- n[[i-time_interval]]
         }
 
         ## time difference calculation
         time <- sapply((time_interval+1):nrow(mat),
             function (i) {diff(colData(x)[c(i-time_interval, i), time_field])})
 
-        for(i in (time_interval+1):nrow(colData(x))){
+        for(i in seq((time_interval+1), nrow(colData(x)))){
             colData(x)[, name_timedifference][[i]] <- time[[i-time_interval]]
         }
     }
