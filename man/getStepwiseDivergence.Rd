@@ -15,6 +15,7 @@ getStepwiseDivergence(
   name_timedifference = "time_difference",
   assay_name = "counts",
   FUN = vegan::vegdist,
+  method = "bray",
   ...
 )
 
@@ -39,7 +40,7 @@ steps (default: 1). If you need to take every second, every third, or so, time s
 increase this accordingly.}
 
 \item{name_divergence}{a column vector showing beta diversity between samples
-over n time intervals (default: \code{name_divergence = "time_divergence"})}
+(default: \code{name_divergence = "time_divergence"})}
 
 \item{name_timedifference}{field name for adding the time difference between
 samples used to calculate beta diversity
@@ -52,6 +53,10 @@ the dissimilarity estimation (default: \code{assay_name = "counts"})}
 expect the input matrix as its first argument. With rows as samples
 and columns as features. By default, \code{FUN} is
 \code{vegan::vegdist}.}
+
+\item{method}{a method that is used to calculate the distance. Method is
+passed to the function that is specified by \code{FUN}. By default,
+\code{method} is \code{"bray"}.}
 
 \item{...}{Arguments to be passed}
 }
@@ -79,10 +84,14 @@ tse <- mia::transformSamples(hitchip1006, method = "relabundance")
 # Subset to speed up example
 tse <- tse[, colData(tse)$subject \%in\% c("900", "934", "843", "875")]
 
+# Using vegdist for divergence calculation, one can pass
+# the dissimilarity method from the vegan::vegdist options
+# via the "method" argument
 tse2 <- getStepwiseDivergence(tse, group = "subject",
                               time_interval = 1,
                               time_field = "time",
                               assay_name="relabundance",
-                              FUN = vegan::vegdist)
+                              FUN = vegan::vegdist,
+                              method="bray")
 
 }

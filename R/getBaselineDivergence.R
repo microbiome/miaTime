@@ -99,7 +99,7 @@ getBaselineDivergence <- function(x,
     # Add time
     # colData(x)$time <- colData(x)[[time_field]]
     x <- .add_values_to_colData(x, list(colData(x)[[time_field]]), "time")
-    
+
     # If group is not given, assume that all samples come from a single group    
     if (is.null(group)) {
         colData(x)$tmp_group_for_groupwise_splitting <- rep(1, nrow=nrow(x))
@@ -163,18 +163,6 @@ getBaselineDivergence <- function(x,
         for (i in seq(2, length(xli), 1)) {
             x2 <- TreeSummarizedExperiment::cbind(x2, xli[[i]])
 	}
-
-        #x2 <- mergeSEs(xli)
-	# The mergeSEs returns SE, not TreeSE.
-        # But the row tree is shared in this case as all objects have been
-        # splitted from the same object. Add the row tree back.	
-        # The column tree, metadata, altExps might also cause problems; to be fixed later.
-        ## Convert to TreeSE
-        #x2 <- TreeSummarizedExperiment(x2)
-        ## Add rowTree
-        #if (!is.null(rowTree(xorig))) {
-        #    rowTree(x2) <- rowTree(xorig)
-        #}
     } else {
         x2 <- xli[[1]]
     }
