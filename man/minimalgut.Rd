@@ -35,7 +35,7 @@ object.
 Shetty, S.A., Kostopoulos, I., Geerlings, S.Y. et al. Dynamic metabolic
 interactions and trophic roles of human gut microbes identified using a
 minimal microbiome exhibiting ecological properties.
-ISME, (Accepted 2022).
+ISME, 16, 2144–2159 (2022). https://doi.org/10.1038/s41396-022-01255-2.
 }
 \author{
 Sudarshan A. Shetty

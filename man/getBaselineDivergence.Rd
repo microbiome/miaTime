@@ -13,7 +13,8 @@ getBaselineDivergence(
   assay_name = "counts",
   FUN = vegan::vegdist,
   method = "bray",
-  baseline_sample = NULL
+  baseline_sample = NULL,
+  ...
 )
 }
 \arguments{
@@ -21,14 +22,15 @@ getBaselineDivergence(
 \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
 object.}
 
-\item{group}{a single character value for specifying which grouping
-factor is used (name of a \code{colData} field). Optional.}
+\item{group}{optional; a single character value for specifying the grouping
+factor (name of a \code{colData} field). If given, the divergence is calculated
+per group.  e.g. subject, chamber, group etc.).}
 
 \item{time_field}{a single character value, specifying the name of the
 time series field in \code{colData}.}
 
 \item{name_divergence}{a column vector showing beta diversity between samples
-over n time intervals (default: \code{name_divergence = "time_divergence"})}
+(default: \code{name_divergence = "time_divergence"})}
 
 \item{name_timedifference}{field name for adding the time difference between
 samples used to calculate beta diversity
@@ -48,6 +50,8 @@ passed to the function that is specified by \code{FUN}. By default,
 
 \item{baseline_sample}{Optional. A character vector specifying the baseline sample(s) to be used. If the
 "group" argument is given, this must be a named vector; one element per group.}
+
+\item{...}{Arguments to be passed}
 }
 \value{
 a

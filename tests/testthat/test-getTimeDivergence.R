@@ -8,6 +8,11 @@ test_that("getStepwiseDivergence", {
                                      time_interval = 1,
                                      time_field = "time")
 
+  # Trying to add new coldata field with the same name
+  expect_warning(tse2 <- getStepwiseDivergence(tse2, group = "subject",
+                                     time_interval = 1,
+                                     time_field = "time"))
+
   # Input and output classes should match
   expect_equal(class(tse), class(tse2))
 
@@ -47,5 +52,28 @@ test_that("getStepwiseDivergence", {
                                       time_field = "time")
 
   expect_true(all(is.na(colData(subset)[, "time_divergence"][which(duplicated(colData(subset)[, "subject"]) == FALSE)])))
+
+
+  # Test vegan distances
+  tse2 <- getStepwiseDivergence(tse, group = "subject",
+                                     time_interval = 1,
+                                     time_field = "time",
+				     FUN=vegan::vegdist,
+				     method="bray",
+				     name_timedifference="timedifference",
+			             name_divergence="timedivergence")
+  # Test vegan distances
+  tse2 <- getStepwiseDivergence(tse2, group = "subject",
+                                     time_interval = 1,
+                                     time_field = "time",
+				     FUN=vegan::vegdist,
+				     method="euclidean",
+				     name_timedifference="timedifference2",
+			             name_divergence="timedivergence2")				     
+				     
+  # Time differences should still match
+  expect_true(identical(tse2$timedifference, tse2$timedifference2))
+  # ... but divergences should be different (bray vs. euclid)
+  expect_true(!identical(tse2$timedivergence, tse2$timedivergence2))
 
 })
