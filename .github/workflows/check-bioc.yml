@@ -122,7 +122,7 @@ jobs:
           sysreqs=$(Rscript -e 'cat("apt-get update -y && apt-get install -y", paste(gsub("apt-get install -y ", "", remotes::system_requirements("ubuntu", "20.04")), collapse = " "))')
           echo $sysreqs
           sudo -s eval "$sysreqs"
-          sudo apt-get install -y libcurl4-openssl-dev libglpk-dev	  
+          sudo apt-get install -y libcurl4-openssl-dev libglpk-dev  
 
       - name: Install macOS system dependencies
         if: matrix.config.os == 'macOS-latest'
@@ -162,8 +162,8 @@ jobs:
         shell: Rscript {0}
 
       - name: Install dependencies pass 1
-        run: |      
-          ## Try installing the package dependencies in steps. First the local
+        run: |     
+          ## Try installing the package dependencies in steps. First the local 
           ## dependencies, then any remaining dependencies to avoid the
           ## issues described at
           ## https://stat.ethz.ch/pipermail/bioc-devel/2020-April/016675.html
@@ -175,7 +175,7 @@ jobs:
           BiocManager::install("stan-dev/rstantools")
           BiocManager::install("cran/reldist")
           BiocManager::install("cran/densEstBayes")
-	  BiocManager::install("SEtools")
+          BiocManager::install("SEtools")
 
           ## Set the repos source depending on the OS
           ## Alternatively use https://storage.googleapis.com/bioconductor_docker/packages/
