@@ -6,27 +6,7 @@
 #' The method operates on `SummarizedExperiment` objects, and the results
 #' are stored in `colData`.
 #'
-#' @param x A
-#' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
-#' object.
-#' @param group a single character value for specifying which grouping
-#' factor is used (name of a `colData` field). Optional.
-#' @param time_field a single character value, specifying the name of the
-#' time series field in `colData`.
-#' @param name_divergence a column vector showing beta diversity between samples
-#' over n time intervals (default: \code{name_divergence = "time_divergence"})
-#' @param name_timedifference field name for adding the time difference between
-#' samples used to calculate beta diversity
-#' (default: \code{name_timedifference = "time_difference"})
-#' @param assay_name character indicating which assay values are used in
-#' the dissimilarity estimation (default: \code{assay_name = "counts"})
-#' @param FUN a \code{function} for dissimilarity calculation. The function must
-#'   expect the input matrix as its first argument. With rows as samples 
-#'   and columns as features. By default, \code{FUN} is
-#'   \code{vegan::vegdist}.   
-#' @param method a method that is used to calculate the distance. Method is
-#'   passed to the function that is specified by \code{FUN}. By default,
-#'   \code{method} is \code{"bray"}.
+#' @inheritParams getStepwiseDivergence
 #' @param baseline_sample Optional. A character vector specifying the baseline sample(s) to be used. If the
 #'   "group" argument is given, this must be a named vector; one element per group.
 #'
@@ -98,7 +78,8 @@ getBaselineDivergence <- function(x,
                             assay_name = "counts",
 			    FUN = vegan::vegdist,
 			    method="bray",
-			    baseline_sample=NULL){
+			    baseline_sample=NULL,
+			    ...){
 
     # Store the original data object
     xorig <- x
@@ -168,11 +149,11 @@ getBaselineDivergence <- function(x,
     if (ncol(baseline) == 1) {
         xli <- lapply(names(spl), function (g) {
             .calculate_divergence_from_baseline(x[,spl[[g]]], baseline,
-	        time_field, name_divergence, name_timedifference, assay_name, FUN, method)})
+	        time_field, name_divergence, name_timedifference, assay_name, FUN, method, ...)})
     } else {
         xli <- lapply(names(spl), function (g) {
             .calculate_divergence_from_baseline(x[,spl[[g]]], baseline[, baseline_sample[[g]]],
-	        time_field, name_divergence, name_timedifference, assay_name, FUN, method)})
+	        time_field, name_divergence, name_timedifference, assay_name, FUN, method, ...)})
     }
 
     # Return the elements in a list
