@@ -54,11 +54,15 @@
 #' # Subset to speed up example
 #' tse <- tse[, colData(tse)$subject %in% c("900", "934", "843", "875")]
 #'
+#' # Using vegdist for divergence calculation, one can pass
+#' # the dissimilarity method from the vegan::vegdist options
+#' # via the "method" argument
 #' tse2 <- getStepwiseDivergence(tse, group = "subject",
 #'                               time_interval = 1,
 #'                               time_field = "time",
 #'                               assay_name="relabundance",
-#'                               FUN = vegan::vegdist)
+#'                               FUN = vegan::vegdist,
+#'                               method="bray")
 #'
 #' @name getStepwiseDivergence
 #' @export
@@ -101,7 +105,7 @@ getStepwiseDivergence <- function(x,
                                         name_divergence = name_divergence,
                                         name_timedifference = name_timedifference,
                                         time_field,
-                                        assay_name)})
+                                        assay_name, ...)})
 
     x_one_list <- lapply(seq_along(spl_one), function(i) {
         x[, spl_one[[i]]]}
@@ -179,7 +183,8 @@ setMethod("getTimeDivergence",
                                 name_divergence = "time_divergence",
                                 name_timedifference = "time_difference",
                                 time_field,
-                                assay_name){
+                                assay_name,
+				...){
 
     mat <- t(assay(x, assay_name))
 
@@ -193,7 +198,7 @@ setMethod("getTimeDivergence",
 
         ## beta diversity calculation
         n <- sapply((time_interval+1):nrow(mat),
-                function (i) {FUN(mat[c(i, i-time_interval), ])})
+                function (i) {FUN(mat[c(i, i-time_interval), ], ...)})
 
         for(i in (time_interval+1):nrow(colData(x))){
                 colData(x)[, name_divergence][[i]] <- n[[i-time_interval]]
