@@ -47,6 +47,7 @@
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment colData<-
 #' @importFrom SummarizedExperiment assayNames
+#' @importFrom SingleCellExperiment reducedDim
 #' @importFrom SingleCellExperiment reducedDimNames
 #'
 #' @aliases getTimeDivergence
