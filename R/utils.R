@@ -1,4 +1,10 @@
 ################################################################################
+# internal methods loaded from other packages
+
+.is_non_empty_character <- mia:::.is_non_empty_character
+.is_non_empty_string <- mia:::.is_non_empty_string
+
+################################################################################
 # internal wrappers for getter/setter
 
 #' @importFrom SummarizedExperiment colData colData<-

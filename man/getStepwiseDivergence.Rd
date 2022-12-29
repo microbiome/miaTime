@@ -47,7 +47,9 @@ samples used to calculate beta diversity
 (default: \code{name_timedifference = "time_difference"})}
 
 \item{assay_name}{character indicating which assay values are used in
-the dissimilarity estimation (default: \code{assay_name = "counts"})}
+the dissimilarity estimation (default: \code{assay_name = "counts"}).
+It could also be used for \code{reducedDims} entries. Yet, the ones present in
+\code{assays} are the priority.}
 
 \item{FUN}{a \code{function} for dissimilarity calculation. The function must
 expect the input matrix as its first argument. With rows as samples

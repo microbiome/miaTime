@@ -75,5 +75,30 @@ test_that("getStepwiseDivergence", {
   expect_true(identical(tse2$timedifference, tse2$timedifference2))
   # ... but divergences should be different (bray vs. euclid)
   expect_true(!identical(tse2$timedivergence, tse2$timedivergence2))
-
+  
+  # Test with ordination values
+  tse <- scater::runMDS(tse, FUN = vegan::vegdist, method = "bray",
+                        name = "PCoA_BC", exprs_values = "counts",
+                        na.rm = TRUE)
+  tse4 <- getStepwiseDivergence(tse, group = "subject",
+                                time_interval = 1,
+                                time_field = "time",
+                                name_timedifference="timedifference_ord",
+                                name_divergence="timedivergence_ord",
+                                assay_name = "PCoA_BC",
+                                FUN=vegan::vegdist,
+                                method="euclidean",)
+  expect_false(all(is.na(colData(tse4)$timedifference_ord)))
+  expect_false(all(is.na(colData(tse4)$timedivergence_ord)))
+  # testing when assay_name are present in both assay and reducedDims
+  reducedDimNames(tse4) <- c("counts")
+  # multiple errors are thrown (.check_pairwise_dist in a loop),
+  # we test for a joint match of the three keywords below: 
+  expect_true(
+      any(grepl("(?=.*assay)(?=.*and)(?=.*reducedDim)",
+                capture_warnings(tse4 <- getStepwiseDivergence(tse4, group = "subject",
+                                                               time_interval = 1,
+                                                               time_field = "time",
+                                                               assay_name = "counts")),
+                perl = TRUE)))
 })

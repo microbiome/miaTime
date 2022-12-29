@@ -22,7 +22,9 @@
 #' samples used to calculate beta diversity
 #' (default: \code{name_timedifference = "time_difference"})
 #' @param assay_name character indicating which assay values are used in
-#' the dissimilarity estimation (default: \code{assay_name = "counts"})
+#' the dissimilarity estimation (default: \code{assay_name = "counts"}).
+#' It could also be used for `reducedDims` entries. Yet, the ones present in 
+#' `assays` are the priority.
 #' @param FUN a \code{function} for dissimilarity calculation. The function must
 #'   expect the input matrix as its first argument. With rows as samples 
 #'   and columns as features. By default, \code{FUN} is
@@ -44,6 +46,8 @@
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment colData<-
+#' @importFrom SummarizedExperiment assayNames
+#' @importFrom SingleCellExperiment reducedDimNames
 #'
 #' @aliases getTimeDivergence
 #'
@@ -193,7 +197,7 @@ setMethod("getTimeDivergence",
 				method,
                                 ...){
 
-    mat <- t(assay(x, assay_name))
+    mat <- .get_mat_from_se(x, assay_name)
 
     time <- colData(x)[, time_field]
 
@@ -221,4 +225,32 @@ setMethod("getTimeDivergence",
     }
     return(x)
 
+}
+
+############################ HELPER FUNCTION(S) ################################
+
+.get_mat_from_se <- function (x, assay_name) {
+    # non-empty string
+    if(!.is_non_empty_string(assay_name)){
+        stop("'assay_name' must be a non-empty single character value.",
+             call. = FALSE)
+    }
+    mat <- NULL
+    if (assay_name %in% assayNames(x)) {
+        mat <- t(assay(x, assay_name))
+    }
+    if (assay_name %in% reducedDimNames(x)) {
+        if (!is.null(mat))
+            # if present in both assay() and reducedDim()
+            warning("'assay_name' was present in assay() and reducedDim(). ",
+                    "'assay_name' is picked from assay().",
+                    call. = FALSE)
+        else
+            mat <- reducedDim(x, assay_name)
+    }
+    # not present otherwise
+    if (is.null(mat))
+        stop("'assay_name' is not present.",
+             call. = FALSE)
+    return(mat)
 }
