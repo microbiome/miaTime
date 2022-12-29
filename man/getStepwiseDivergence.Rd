@@ -16,6 +16,7 @@ getStepwiseDivergence(
   assay_name = "counts",
   FUN = vegan::vegdist,
   method = "bray",
+  altexp = NULL,
   ...
 )
 
@@ -59,6 +60,9 @@ and columns as features. By default, \code{FUN} is
 \item{method}{a method that is used to calculate the distance. Method is
 passed to the function that is specified by \code{FUN}. By default,
 \code{method} is \code{"bray"}.}
+
+\item{altexp}{String or integer scalar specifying an alternative experiment
+containing the input data.}
 
 \item{...}{Arguments to be passed}
 }
