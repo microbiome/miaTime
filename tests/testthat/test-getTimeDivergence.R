@@ -91,7 +91,7 @@ test_that("getStepwiseDivergence", {
   expect_false(all(is.na(colData(tse4)$timedifference_ord)))
   expect_false(all(is.na(colData(tse4)$timedivergence_ord)))
   # testing when assay_name are present in both assay and reducedDims
-  reducedDimNames(tse4) <- c("counts")
+  SingleCellExperiment::reducedDimNames(tse4) <- c("counts")
   # multiple errors are thrown (.check_pairwise_dist in a loop),
   # we test for a joint match of the three keywords below: 
   expect_true(

@@ -247,7 +247,7 @@ setMethod("getTimeDivergence",
                     "'assay_name' is picked from assay().",
                     call. = FALSE)
         else
-            mat <- reducedDim(x, assay_name)
+            mat <- SingleCellExperiment::reducedDim(x, assay_name)
     }
     # not present otherwise
     if (is.null(mat))
