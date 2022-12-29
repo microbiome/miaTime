@@ -24,6 +24,7 @@ Imports:
     S4Vectors,            
     SEtools,
     SummarizedExperiment,
+    SingleCellExperiment,
     vegan
 Suggests: 
     TreeSummarizedExperiment,
