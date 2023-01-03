@@ -23,8 +23,6 @@
 #' (default: \code{name_timedifference = "time_difference"})
 #' @param assay_name character indicating which assay values are used in
 #' the dissimilarity estimation (default: \code{assay_name = "counts"}).
-#' It could also be used for `reducedDims` entries. Yet, the ones present in 
-#' `assays` are the priority.
 #' @param FUN a \code{function} for dissimilarity calculation. The function must
 #'   expect the input matrix as its first argument. With rows as samples 
 #'   and columns as features. By default, \code{FUN} is
@@ -32,8 +30,12 @@
 #' @param method a method that is used to calculate the distance. Method is
 #'   passed to the function that is specified by \code{FUN}. By default,
 #'   \code{method} is \code{"bray"}.
-#' @param altexp String or integer scalar specifying an alternative experiment 
+#' @param altexp String or integer scalar specifying the alternative experiment 
 #' containing the input data.
+#' @param dimred A string or integer scalar indicating the reduced dimension
+#' result in `reducedDims` to use in the estimation.
+#' @param n_dimred Integer scalar or vector specifying the dimensions to use if
+#' \code{dimred} is specified.
 #' @param ... Arguments to be passed
 #'
 #' @return a
@@ -48,9 +50,6 @@
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment colData<-
-#' @importFrom SummarizedExperiment assayNames
-#' @importFrom SingleCellExperiment reducedDim
-#' @importFrom SingleCellExperiment reducedDimNames
 #' @importFrom SingleCellExperiment altExp
 #'
 #' @aliases getTimeDivergence
@@ -84,12 +83,21 @@ getStepwiseDivergence <- function(x,
                             name_divergence = "time_divergence",
                             name_timedifference = "time_difference",
                             assay_name = "counts",
-			    FUN = vegan::vegdist,
-			    method="bray",
-			    altexp = NULL, ...){
+			                FUN = vegan::vegdist,
+            			    method="bray",
+            			    altexp = NULL,
+			                dimred = NULL,
+			                n_dimred = NULL,
+			                ...){
 
     # Store the original x
     xorig <- x
+    
+    # Use altExp if mentioned and available
+    if (!is.null(altexp)) {
+        .check_altExp_present(altexp, x)
+        x <- altExp(x, altexp)
+    }
 
     # Temporary sample ID
     x$tmp_sample_identifier_for_getStepwiseDivergence <- paste("SampleID", 1:ncol(x), sep="-")
@@ -120,7 +128,9 @@ getStepwiseDivergence <- function(x,
                                         time_field,
                                         assay_name,
                                         method,
-                                        altexp)})
+                                        altexp,
+                                        dimred,
+                                        n_dimred)})
 
     x_one_list <- lapply(seq_along(spl_one), function(i) {
         x[, spl_one[[i]]]}
@@ -202,10 +212,14 @@ setMethod("getTimeDivergence",
                                 assay_name,
                                 method,
                                 altexp,
+                                dimred,
+                                n_dimred,
                                 ...){
 
-    mat <- .get_mat_from_se(x, assay_name, altexp)
-
+    mat <- .get_mat_from_sce(x, assay_name, dimred, n_dimred)
+    ## transposing mat if taken from assay 
+    if (is.null(dimred)) mat <- t(mat)
+    
     time <- colData(x)[, time_field]
 
     ## Add new field to coldata
@@ -232,37 +246,4 @@ setMethod("getTimeDivergence",
     }
     return(x)
 
-}
-
-############################ HELPER FUNCTION(S) ################################
-
-.get_mat_from_se <- function (x, assay_name, altexp) {
-    # non-empty string
-    if(!.is_non_empty_string(assay_name)){
-        stop("'assay_name' must be a non-empty single character value.",
-             call. = FALSE)
-    }
-    if (!is.null(altexp)) {
-        x <- altExp(x, altexp)
-    }
-    mat <- NULL
-    if (assay_name %in% assayNames(x)) {
-        mat <- t(assay(x, assay_name))
-    }
-    # x has to be an instance of SingleCellExperiment to have a reducedDim slot
-    if (is(x, "SingleCellExperiment") && assay_name %in% reducedDimNames(x)) {
-        if (!is.null(mat))
-            # if present in both assay and reducedDim
-            warning("'assay_name' was present in assay and reducedDim. ",
-                    "'assay_name' is picked from assay.",
-                    call. = FALSE)
-        else
-            # if not present in assay but in reducedDim
-            mat <- SingleCellExperiment::reducedDim(x, assay_name)
-    }
-    # not present otherwise
-    if (is.null(mat))
-        stop("'assay_name' is not present.",
-             call. = FALSE)
-    return(mat)
 }

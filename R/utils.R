@@ -1,8 +1,8 @@
 ################################################################################
 # internal methods loaded from other packages
 
-.is_non_empty_character <- mia:::.is_non_empty_character
-.is_non_empty_string <- mia:::.is_non_empty_string
+.check_altExp_present <- mia:::.check_altExp_present
+.get_mat_from_sce <- scater:::.get_mat_from_sce
 
 ################################################################################
 # internal wrappers for getter/setter

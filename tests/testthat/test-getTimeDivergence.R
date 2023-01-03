@@ -76,45 +76,50 @@ test_that("getStepwiseDivergence", {
   # ... but divergences should be different (bray vs. euclid)
   expect_true(!identical(tse2$timedivergence, tse2$timedivergence2))
   
-  # Test with ordination values
-  tse2 <- scater::runMDS(tse, FUN = vegan::vegdist, method = "bray",
+  ## Test with ordination values
+  tse2 <- scater::runMDS(tse2, FUN = vegan::vegdist, method = "bray",
                         name = "PCoA_BC", exprs_values = "counts",
-                        na.rm = TRUE)
+                        na.rm = TRUE, ncomponents=4)
+  # testing with all ordination components; n_dimred=NULL --> all 4 components
   tse2 <- getStepwiseDivergence(tse2, group = "subject",
                                 time_interval = 1,
                                 time_field = "time",
-                                name_timedifference="timedifference_ord",
-                                name_divergence="timedivergence_ord",
-                                assay_name = "PCoA_BC",
+                                name_timedifference="timedifference_ord_4",
+                                name_divergence="timedivergence_ord_4",
+                                dimred = "PCoA_BC",
                                 FUN=vegan::vegdist,
                                 method="euclidean")
-  # ordination based divergence values should not be equal to the ones on counts 
-  expect_true(!identical(tse2$timedifference_ord, tse2$timedifference))
-  expect_true(!identical(tse2$timedivergence_ord, tse2$timedivergence))
-  # testing when assay_name are present in both assay and reducedDims
-  library(SingleCellExperiment)
-  reducedDimNames(tse2) <- c("counts")
-  # multiple errors are thrown (.check_pairwise_dist in a loop),
-  # we test for a joint match of the three keywords below: 
-  expect_true(
-      any(grepl("(?=.*assay)(?=.*and)(?=.*reducedDim)",
-                capture_warnings(tse2 <- getStepwiseDivergence(tse2, group = "subject",
-                                                               time_interval = 1,
-                                                               time_field = "time",
-                                                               assay_name = "counts",
-                                                               name_timedifference="timedifference_warn",
-                                                               name_divergence="timedivergence_warn")),
-                perl = TRUE)))
-  # testing with altExp
-  altExp(tse2, "Family") <- mia::agglomerateByRank(tse2, rank="Family")
+  # Time differences should still match
+  expect_true(identical(tse2$timedifference_ord_4, tse2$timedifference))
+  # ordination based divergence values should not be equal to the ones on counts
+  expect_true(!identical(tse2$timedivergence_ord_4, tse2$timedivergence))
+  
+  # testing with 2 ordination components
+  tse2 <- getStepwiseDivergence(tse2, group = "subject",
+                                time_interval = 1,
+                                time_field = "time",
+                                name_timedifference="timedifference_ord_2",
+                                name_divergence="timedivergence_ord_2",
+                                dimred = "PCoA_BC",
+                                n_dimred = 2,
+                                FUN=vegan::vegdist,
+                                method="euclidean")
+  # Time differences should still match
+  expect_true(identical(tse2$timedifference_ord_2, tse2$timedifference_ord_4))
+  # not same values as using 4 components
+  expect_true(!identical(tse2$timedivergence_ord_2, tse2$timedivergence_ord_4))
+  
+  ## testing with altExp
+  SingleCellExperiment::altExp(tse2, "Family") <- mia::agglomerateByRank(tse2, rank="Family")
   tse2 <- getStepwiseDivergence(tse2, group = "subject",
                                 time_interval = 1,
                                 time_field = "time",
                                 altexp="Family",
                                 name_timedifference="timedifference_Fam",
                                 name_divergence="timedivergence_Fam")
+  # Time differences should still match
+  expect_true(identical(tse2$timedifference_Fam, tse2$timedifference))
   # divergence values based on Family rank counts should not be equal to the
-  # ones with Genus counts 
-  expect_true(!identical(tse2$timedifference_Fam, tse2$timedifference))
+  # ones with Genus counts
   expect_true(!identical(tse2$timedivergence_Fam, tse2$timedivergence))
 })
