@@ -16,6 +16,9 @@ getStepwiseDivergence(
   assay_name = "counts",
   FUN = vegan::vegdist,
   method = "bray",
+  altexp = NULL,
+  dimred = NULL,
+  n_dimred = NULL,
   ...
 )
 
@@ -47,7 +50,7 @@ samples used to calculate beta diversity
 (default: \code{name_timedifference = "time_difference"})}
 
 \item{assay_name}{character indicating which assay values are used in
-the dissimilarity estimation (default: \code{assay_name = "counts"})}
+the dissimilarity estimation (default: \code{assay_name = "counts"}).}
 
 \item{FUN}{a \code{function} for dissimilarity calculation. The function must
 expect the input matrix as its first argument. With rows as samples
@@ -57,6 +60,15 @@ and columns as features. By default, \code{FUN} is
 \item{method}{a method that is used to calculate the distance. Method is
 passed to the function that is specified by \code{FUN}. By default,
 \code{method} is \code{"bray"}.}
+
+\item{altexp}{String or integer scalar specifying the alternative experiment
+containing the input data.}
+
+\item{dimred}{A string or integer scalar indicating the reduced dimension
+result in \code{reducedDims} to use in the estimation.}
+
+\item{n_dimred}{Integer scalar or vector specifying the dimensions to use if
+\code{dimred} is specified.}
 
 \item{...}{Arguments to be passed}
 }

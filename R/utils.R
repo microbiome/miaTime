@@ -1,4 +1,10 @@
 ################################################################################
+# internal methods loaded from other packages
+
+.check_altExp_present <- mia:::.check_altExp_present
+.get_mat_from_sce <- scater:::.get_mat_from_sce
+
+################################################################################
 # internal wrappers for getter/setter
 
 #' @importFrom SummarizedExperiment colData colData<-

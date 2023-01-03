@@ -22,7 +22,7 @@
 #' samples used to calculate beta diversity
 #' (default: \code{name_timedifference = "time_difference"})
 #' @param assay_name character indicating which assay values are used in
-#' the dissimilarity estimation (default: \code{assay_name = "counts"})
+#' the dissimilarity estimation (default: \code{assay_name = "counts"}).
 #' @param FUN a \code{function} for dissimilarity calculation. The function must
 #'   expect the input matrix as its first argument. With rows as samples 
 #'   and columns as features. By default, \code{FUN} is
@@ -30,6 +30,12 @@
 #' @param method a method that is used to calculate the distance. Method is
 #'   passed to the function that is specified by \code{FUN}. By default,
 #'   \code{method} is \code{"bray"}.
+#' @param altexp String or integer scalar specifying the alternative experiment 
+#' containing the input data.
+#' @param dimred A string or integer scalar indicating the reduced dimension
+#' result in `reducedDims` to use in the estimation.
+#' @param n_dimred Integer scalar or vector specifying the dimensions to use if
+#' \code{dimred} is specified.
 #' @param ... Arguments to be passed
 #'
 #' @return a
@@ -44,6 +50,7 @@
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment colData<-
+#' @importFrom SingleCellExperiment altExp
 #'
 #' @aliases getTimeDivergence
 #'
@@ -76,11 +83,21 @@ getStepwiseDivergence <- function(x,
                             name_divergence = "time_divergence",
                             name_timedifference = "time_difference",
                             assay_name = "counts",
-			    FUN = vegan::vegdist,
-			    method="bray", ...){
+                            FUN = vegan::vegdist,
+                            method="bray",
+                            altexp = NULL,
+                            dimred = NULL,
+                            n_dimred = NULL,
+                            ...){
 
     # Store the original x
     xorig <- x
+    
+    # Use altExp if mentioned and available
+    if (!is.null(altexp)) {
+        .check_altExp_present(altexp, x)
+        x <- altExp(x, altexp)
+    }
 
     # Temporary sample ID
     x$tmp_sample_identifier_for_getStepwiseDivergence <- paste("SampleID", 1:ncol(x), sep="-")
@@ -110,7 +127,10 @@ getStepwiseDivergence <- function(x,
                                         name_timedifference = name_timedifference,
                                         time_field,
                                         assay_name,
-					method)})
+                                        method,
+                                        altexp,
+                                        dimred,
+                                        n_dimred)})
 
     x_one_list <- lapply(seq_along(spl_one), function(i) {
         x[, spl_one[[i]]]}
@@ -190,11 +210,16 @@ setMethod("getTimeDivergence",
                                 name_timedifference = "time_difference",
                                 time_field,
                                 assay_name,
-				method,
+                                method,
+                                altexp,
+                                dimred,
+                                n_dimred,
                                 ...){
 
-    mat <- t(assay(x, assay_name))
-
+    mat <- .get_mat_from_sce(x, assay_name, dimred, n_dimred)
+    ## transposing mat if taken from assay 
+    if (is.null(dimred)) mat <- t(mat)
+    
     time <- colData(x)[, time_field]
 
     ## Add new field to coldata
