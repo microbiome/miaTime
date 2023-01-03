@@ -83,12 +83,12 @@ getStepwiseDivergence <- function(x,
                             name_divergence = "time_divergence",
                             name_timedifference = "time_difference",
                             assay_name = "counts",
-			                FUN = vegan::vegdist,
-            			    method="bray",
-            			    altexp = NULL,
-			                dimred = NULL,
-			                n_dimred = NULL,
-			                ...){
+                            FUN = vegan::vegdist,
+                            method="bray",
+                            altexp = NULL,
+                            dimred = NULL,
+                            n_dimred = NULL,
+                            ...){
 
     # Store the original x
     xorig <- x
