@@ -14,6 +14,9 @@ getBaselineDivergence(
   FUN = vegan::vegdist,
   method = "bray",
   baseline_sample = NULL,
+  altexp = NULL,
+  dimred = NULL,
+  n_dimred = NULL,
   ...
 )
 }
@@ -50,6 +53,15 @@ passed to the function that is specified by \code{FUN}. By default,
 
 \item{baseline_sample}{Optional. A character vector specifying the baseline sample(s) to be used. If the
 "group" argument is given, this must be a named vector; one element per group.}
+
+\item{altexp}{String or integer scalar specifying the alternative experiment
+containing the input data.}
+
+\item{dimred}{A string or integer scalar indicating the reduced dimension
+result in \code{reducedDims} to use in the estimation.}
+
+\item{n_dimred}{Integer scalar or vector specifying the dimensions to use if
+\code{dimred} is specified.}
 
 \item{...}{Arguments to be passed}
 }

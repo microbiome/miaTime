@@ -75,4 +75,45 @@ test_that("getBaselineDivergence", {
   expect_identical(colData(tse2i)["Sample-1075", "time_from_baseline"], colData(tse2g)["Sample-1075", "time_from_baseline"])
   expect_identical(colData(tse2i)["Sample-843", "time_from_baseline"] + 0.7, colData(tse2g)["Sample-1075", "time_from_baseline"])  
   
+  ## Test with ordination values
+  tse <- scater::runMDS(tse, FUN = vegan::vegdist, method = "bray",
+                         name = "PCoA_BC", exprs_values = "counts",
+                         na.rm = TRUE, ncomponents=4)
+  # testing with all ordination components; n_dimred=NULL --> all 4 components
+  tse2 <- getBaselineDivergence(tse, group = "subject",
+                                time_field = "time",
+                                name_timedifference="time_from_baseline_ord_4",
+                                name_divergence="divergence_from_baseline_ord_4",
+                                dimred = "PCoA_BC",
+                                FUN=vegan::vegdist,
+                                method="euclidean")
+  # Time differences should still match
+  expect_true(identical(tse2$time_from_baseline_ord_4, tse2f$time_from_baseline))
+  # ordination based divergence values should not be equal to the ones on counts
+  expect_false(identical(tse2$divergence_from_baseline_ord_4, tse2f$divergence_from_baseline))
+  # testing with 2 ordination components
+  tse2 <- getBaselineDivergence(tse2, group = "subject",
+                                time_field = "time",
+                                name_timedifference="time_from_baseline_ord_2",
+                                name_divergence="divergence_from_baseline_ord_2",
+                                dimred = "PCoA_BC",
+                                n_dimred = 2,
+                                FUN=vegan::vegdist,
+                                method="euclidean")
+  # Time differences should still match
+  expect_true(identical(tse2$time_from_baseline_ord_4, tse2$time_from_baseline_ord_2))
+  # ordination based divergence values should not be equal to the ones on counts
+  expect_false(identical(tse2$divergence_from_baseline_ord_4, tse2$divergence_from_baseline_ord_2))
+  ## testing with altExp
+  SingleCellExperiment::altExp(tse2, "Family") <- mia::agglomerateByRank(tse2, rank="Family")
+  tse2 <- getBaselineDivergence(tse2, group = "subject",
+                                time_field = "time",
+                                altexp="Family",
+                                name_timedifference="time_from_baseline_Fam",
+                                name_divergence="divergence_from_baseline_Fam")
+  # Time differences should still match
+  expect_true(identical(tse2$time_from_baseline_Fam, tse2f$time_from_baseline))
+  # divergence values based on Family rank counts should not be equal to the
+  # ones with Genus counts
+  expect_false(identical(tse2$divergence_from_baseline_Fam, tse2f$divergence_from_baseline))
 })

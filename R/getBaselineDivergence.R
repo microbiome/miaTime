@@ -37,6 +37,7 @@
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment colData<-
+#' @importFrom SingleCellExperiment altExp
 #'
 #' @examples
 #' #library(miaTime)
@@ -76,13 +77,22 @@ getBaselineDivergence <- function(x,
                             name_divergence = "divergence_from_baseline",
                             name_timedifference = "time_from_baseline",			    
                             assay_name = "counts",
-			    FUN = vegan::vegdist,
-			    method="bray",
-			    baseline_sample=NULL,
-			    ...){
+                            FUN = vegan::vegdist,
+                            method="bray",
+                            baseline_sample=NULL,
+                            altexp = NULL,
+                            dimred = NULL,
+                            n_dimred = NULL,
+                            ...){
 
     # Store the original data object
     xorig <- x
+    
+    # Use altExp if mentioned and available
+    if (!is.null(altexp)) {
+        .check_altExp_present(altexp, x)
+        x <- altExp(x, altexp)
+    }
     
     if (is.null(colnames(x))) {
         colnames(x) <- as.character(seq_len(ncol(x)))	
@@ -149,11 +159,13 @@ getBaselineDivergence <- function(x,
     if (ncol(baseline) == 1) {
         xli <- lapply(names(spl), function (g) {
             .calculate_divergence_from_baseline(x[,spl[[g]]], baseline,
-	        time_field, name_divergence, name_timedifference, assay_name, FUN, method, ...)})
+	        time_field, name_divergence, name_timedifference, assay_name, FUN,
+	        method, dimred, n_dimred, ...)})
     } else {
         xli <- lapply(names(spl), function (g) {
             .calculate_divergence_from_baseline(x[,spl[[g]]], baseline[, baseline_sample[[g]]],
-	        time_field, name_divergence, name_timedifference, assay_name, FUN, method, ...)})
+	        time_field, name_divergence, name_timedifference, assay_name, FUN,
+	        method, dimred, n_dimred, ...)})
     }
 
     # Return the elements in a list
@@ -179,7 +191,10 @@ getBaselineDivergence <- function(x,
 # First define the function that calculates divergence for a given SE object
 #' @importFrom mia estimateDivergence
 #' @importFrom methods is
-.calculate_divergence_from_baseline <- function (x, baseline, time_field, name_divergence, name_timedifference, assay_name, FUN, method) {
+.calculate_divergence_from_baseline <- function (x, baseline, time_field,
+                                                 name_divergence, name_timedifference,
+                                                 assay_name, FUN, method,
+                                                 dimred, n_dimred) {
 
     # Global vars
     is <- NULL
@@ -200,18 +215,22 @@ getBaselineDivergence <- function(x,
         stop("Baseline must be character or numeric vector specifying the SE sample; or it must be an SE object.")
     }
 
-    # Add beta divergence from baseline info; note this has to be a list
-    d <- estimateDivergence(x, assay_name,
-                               name = name_divergence,
-			       reference = as.vector(assay(reference, assay_name)),
-			       FUN = FUN, method)    
-    divergencevalues <- list(unname(colData(d)[, name_divergence]))
+    # Getting corresponding matrices, to calculate divergence 
+    mat <- .get_mat_from_sce(x, assay_name, dimred, n_dimred)
+    ref_mat <- .get_mat_from_sce(reference, assay_name, dimred, n_dimred)
+    
+    # transposing mat if taken from reducedDim 
+    if (!is.null(dimred)) mat <- t(mat)
+    
+    # Beta divergence from baseline info
+    divergencevalues <- .calc_reference_dist(mat, as.vector(ref_mat),
+                                             FUN = FUN, method)
 
     # Add time divergence from baseline info; note this has to be a list    
     timevalues <- list(colData(x)[, time_field] - colData(reference)[, time_field])
     
     x <- .add_values_to_colData(x, timevalues, name_timedifference)
-    x <- .add_values_to_colData(x, divergencevalues, name_divergence)    
+    x <- .add_values_to_colData(x, list(divergencevalues), name_divergence)    
 
     # Return
     return(x)
