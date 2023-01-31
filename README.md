@@ -1,4 +1,4 @@
-# Microbiome time series manipulation with miaTime <img src="man/figures/mia_logo.png" align="right" width="120" />
+# Microbiome time series manipulation with miaTime
 
 This R package can be used to analyse time series data for microbial
 communities. The package is part of [miaverse](https://microbiome.github.io/), 
@@ -37,7 +37,7 @@ citation("miaTime")
 ## 
 ## Kindly cite the miaTime R package as follows:
 ## 
-##   (C) Yagmur Simsek and Leo Lahti. miaTime R package Version 0.1.16
+##   (C) Yagmur Simsek and Leo Lahti. miaTime R package Version 0.1.18
 ##   Package URL: microbiome.github.io/miaTime
 ## 
 ## A BibTeX entry for LaTeX users is
@@ -46,7 +46,7 @@ citation("miaTime")
 ##     title = {miaTime R package},
 ##     author = {Yagmur Simsek and Leo Lahti},
 ##     url = {microbiome.github.io/miaTime},
-##     note = {Version 0.1.16},
+##     note = {Version 0.1.18},
 ##   }
 ```
 
