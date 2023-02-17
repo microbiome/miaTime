@@ -55,7 +55,7 @@
 #'                               time_field = "time",
 #'                               name_divergence = "divergence_from_baseline",
 #'                               name_timedifference = "time_from_baseline",
-#'                               assay_name="relabundance",
+#'                               assay.type="relabundance",
 #'                               FUN = vegan::vegdist,
 #'                               method="bray")
 #'
@@ -65,7 +65,7 @@
 #'                               time_field = "time",
 #'                               name_divergence = "divergence_from_baseline",
 #'                               name_timedifference = "time_from_baseline",
-#'                               assay_name="relabundance",
+#'                               assay.type="relabundance",
 #'                               FUN = vegan::vegdist,
 #'                               method="bray")
 #'
@@ -76,7 +76,7 @@ getBaselineDivergence <- function(x,
                             time_field,
                             name_divergence = "divergence_from_baseline",
                             name_timedifference = "time_from_baseline",			    
-                            assay_name = "counts",
+                            assay.type = "counts",
                             FUN = vegan::vegdist,
                             method="bray",
                             baseline_sample=NULL,
@@ -159,12 +159,12 @@ getBaselineDivergence <- function(x,
     if (ncol(baseline) == 1) {
         xli <- lapply(names(spl), function (g) {
             .calculate_divergence_from_baseline(x[,spl[[g]]], baseline,
-	        time_field, name_divergence, name_timedifference, assay_name, FUN,
+	        time_field, name_divergence, name_timedifference, assay.type, FUN,
 	        method, dimred, n_dimred, ...)})
     } else {
         xli <- lapply(names(spl), function (g) {
             .calculate_divergence_from_baseline(x[,spl[[g]]], baseline[, baseline_sample[[g]]],
-	        time_field, name_divergence, name_timedifference, assay_name, FUN,
+	        time_field, name_divergence, name_timedifference, assay.type, FUN,
 	        method, dimred, n_dimred, ...)})
     }
 
@@ -193,7 +193,7 @@ getBaselineDivergence <- function(x,
 #' @importFrom methods is
 .calculate_divergence_from_baseline <- function (x, baseline, time_field,
                                                  name_divergence, name_timedifference,
-                                                 assay_name, FUN, method,
+                                                 assay.type, FUN, method,
                                                  dimred, n_dimred) {
 
     # Global vars
@@ -216,8 +216,8 @@ getBaselineDivergence <- function(x,
     }
 
     # Getting corresponding matrices, to calculate divergence 
-    mat <- .get_mat_from_sce(x, assay_name, dimred, n_dimred)
-    ref_mat <- .get_mat_from_sce(reference, assay_name, dimred, n_dimred)
+    mat <- .get_mat_from_sce(x, assay.type, dimred, n_dimred)
+    ref_mat <- .get_mat_from_sce(reference, assay.type, dimred, n_dimred)
     
     # transposing mat if taken from reducedDim 
     if (!is.null(dimred)) mat <- t(mat)
