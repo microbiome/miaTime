@@ -1,4 +1,7 @@
 
+Changes in version 0.1.19
++ changed assay_name to assay.type
+
 Changes in version 0.1.8
 + Improved the function getBaselineDivergence
 

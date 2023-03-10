@@ -10,7 +10,7 @@ getBaselineDivergence(
   time_field,
   name_divergence = "divergence_from_baseline",
   name_timedifference = "time_from_baseline",
-  assay_name = "counts",
+  assay.type = "counts",
   FUN = vegan::vegdist,
   method = "bray",
   baseline_sample = NULL,
@@ -39,8 +39,8 @@ time series field in \code{colData}.}
 samples used to calculate beta diversity
 (default: \code{name_timedifference = "time_difference"})}
 
-\item{assay_name}{character indicating which assay values are used in
-the dissimilarity estimation (default: \code{assay_name = "counts"}).}
+\item{assay.type}{character indicating which assay values are used in
+the dissimilarity estimation (default: \code{assay.type = "counts"}).}
 
 \item{FUN}{a \code{function} for dissimilarity calculation. The function must
 expect the input matrix as its first argument. With rows as samples
@@ -106,7 +106,7 @@ tse2 <- getBaselineDivergence(tse,
                               time_field = "time",
                               name_divergence = "divergence_from_baseline",
                               name_timedifference = "time_from_baseline",
-                              assay_name="relabundance",
+                              assay.type="relabundance",
                               FUN = vegan::vegdist,
                               method="bray")
 
@@ -116,7 +116,7 @@ tse2 <- getBaselineDivergence(tse,
                               time_field = "time",
                               name_divergence = "divergence_from_baseline",
                               name_timedifference = "time_from_baseline",
-                              assay_name="relabundance",
+                              assay.type="relabundance",
                               FUN = vegan::vegdist,
                               method="bray")
 

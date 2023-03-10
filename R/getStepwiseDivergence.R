@@ -21,8 +21,8 @@
 #' @param name_timedifference field name for adding the time difference between
 #' samples used to calculate beta diversity
 #' (default: \code{name_timedifference = "time_difference"})
-#' @param assay_name character indicating which assay values are used in
-#' the dissimilarity estimation (default: \code{assay_name = "counts"}).
+#' @param assay.type character indicating which assay values are used in
+#' the dissimilarity estimation (default: \code{assay.type = "counts"}).
 #' @param FUN a \code{function} for dissimilarity calculation. The function must
 #'   expect the input matrix as its first argument. With rows as samples 
 #'   and columns as features. By default, \code{FUN} is
@@ -70,7 +70,7 @@
 #' tse2 <- getStepwiseDivergence(tse, group = "subject",
 #'                               time_interval = 1,
 #'                               time_field = "time",
-#'                               assay_name="relabundance",
+#'                               assay.type="relabundance",
 #'                               FUN = vegan::vegdist,
 #'                               method="bray")
 #'
@@ -82,7 +82,7 @@ getStepwiseDivergence <- function(x,
                             time_interval=1,
                             name_divergence = "time_divergence",
                             name_timedifference = "time_difference",
-                            assay_name = "counts",
+                            assay.type = "counts",
                             FUN = vegan::vegdist,
                             method="bray",
                             altexp = NULL,
@@ -126,7 +126,7 @@ getStepwiseDivergence <- function(x,
                                         name_divergence = name_divergence,
                                         name_timedifference = name_timedifference,
                                         time_field,
-                                        assay_name,
+                                        assay.type,
                                         method,
                                         altexp,
                                         dimred,
@@ -209,14 +209,14 @@ setMethod("getTimeDivergence",
                                 name_divergence = "time_divergence",
                                 name_timedifference = "time_difference",
                                 time_field,
-                                assay_name,
+                                assay.type,
                                 method,
                                 altexp,
                                 dimred,
                                 n_dimred,
                                 ...){
 
-    mat <- .get_mat_from_sce(x, assay_name, dimred, n_dimred)
+    mat <- .get_mat_from_sce(x, assay.type, dimred, n_dimred)
     ## transposing mat if taken from assay 
     if (is.null(dimred)) mat <- t(mat)
     

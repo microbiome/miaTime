@@ -13,7 +13,7 @@ getStepwiseDivergence(
   time_interval = 1,
   name_divergence = "time_divergence",
   name_timedifference = "time_difference",
-  assay_name = "counts",
+  assay.type = "counts",
   FUN = vegan::vegdist,
   method = "bray",
   altexp = NULL,
@@ -49,8 +49,8 @@ increase this accordingly.}
 samples used to calculate beta diversity
 (default: \code{name_timedifference = "time_difference"})}
 
-\item{assay_name}{character indicating which assay values are used in
-the dissimilarity estimation (default: \code{assay_name = "counts"}).}
+\item{assay.type}{character indicating which assay values are used in
+the dissimilarity estimation (default: \code{assay.type = "counts"}).}
 
 \item{FUN}{a \code{function} for dissimilarity calculation. The function must
 expect the input matrix as its first argument. With rows as samples
@@ -102,7 +102,7 @@ tse <- tse[, colData(tse)$subject \%in\% c("900", "934", "843", "875")]
 tse2 <- getStepwiseDivergence(tse, group = "subject",
                               time_interval = 1,
                               time_field = "time",
-                              assay_name="relabundance",
+                              assay.type="relabundance",
                               FUN = vegan::vegdist,
                               method="bray")
 
