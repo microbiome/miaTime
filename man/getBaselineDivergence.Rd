@@ -96,7 +96,7 @@ library(TreeSummarizedExperiment)
 library(dplyr)
 
 data(hitchip1006)
-tse <- mia::transformSamples(hitchip1006, method = "relabundance")
+tse <- mia::transformCounts(hitchip1006, method = "relabundance")
 
 # Subset to speed up example
 tse <- tse[, colData(tse)$subject \%in\% c("900", "934", "843", "875")]
