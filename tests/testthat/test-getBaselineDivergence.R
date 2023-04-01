@@ -1,7 +1,7 @@
 test_that("getBaselineDivergence", {
 
   library(dplyr)
-  data("hitchip1006")
+  data(hitchip1006)
   tse <- hitchip1006
   # Subset to speed up computing
   # Just pick 4 subjects with 1-5 time points
@@ -34,7 +34,7 @@ test_that("getBaselineDivergence", {
 
   # devtools::load_all("~/Rpackages/microbiome/miaverse/miaTime/")
 
-  data("hitchip1006")
+  data(hitchip1006)
   tse <- hitchip1006
   # Just pick 1 subject with many time points
   tse <- tse[, colData(tse)$subject == "843"] # The baseline time point 0 is Sample-843

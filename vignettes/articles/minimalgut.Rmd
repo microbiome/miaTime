@@ -47,7 +47,7 @@ Dense samples of the minimal gut microbiome. In the initial hours, MDb-MM was gr
 
 ```{r fig.width=8, fig.height=3}
 library(miaTime)
-data("minimalgut")
+data(minimalgut)
 tse <- minimalgut
 
 # quick check of number of samples 

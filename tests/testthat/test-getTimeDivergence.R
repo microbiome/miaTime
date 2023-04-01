@@ -1,5 +1,5 @@
 test_that("getStepwiseDivergence", {
-  data("hitchip1006")
+  data(hitchip1006)
   tse <- hitchip1006
   # Subset to speed up computing
   # Just pick 4 subjects with 1-5 time points
