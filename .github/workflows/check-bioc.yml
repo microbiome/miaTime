@@ -175,7 +175,6 @@ jobs:
           BiocManager::install("stan-dev/rstantools")
           BiocManager::install("cran/reldist")
           BiocManager::install("cran/densEstBayes")
-          BiocManager::install("SEtools")
 
           ## Set the repos source depending on the OS
           ## Alternatively use https://storage.googleapis.com/bioconductor_docker/packages/
