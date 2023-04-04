@@ -69,7 +69,7 @@ The _tidySingleCellExperiment_ package provides handy functions for (Tree)SE man
 
 ```{r sort samples, message=FALSE, warning=FALSE}
 library("tidySingleCellExperiment")
-data("hitchip1006")
+data(hitchip1006)
 tse <- hitchip1006
 tse2 <- tse %>% tidySingleCellExperiment::arrange(subject, time)
 ```
@@ -126,7 +126,7 @@ colData(tse)
 
 ## Calculating time differences 
 
-The \link[lubridate]{as.duration} function helps to specify time points as durations.
+The \link[lubridate]{as.duration} function helps to specify time points as duration.
 
 ```{r}
 Duration <- as.duration(Seconds)
