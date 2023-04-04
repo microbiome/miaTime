@@ -22,7 +22,6 @@ Imports:
     methods,    
     mia,
     S4Vectors,            
-    SEtools,
     SummarizedExperiment,
     SingleCellExperiment,
     vegan

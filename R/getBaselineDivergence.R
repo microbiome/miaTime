@@ -27,7 +27,7 @@
 #' The baseline time point is by default defined as the smallest time point (per group). Alternatively,
 #' the user can provide the baseline vector, or a list of baseline vectors per group (named list per group).
 #'
-#' @importFrom SEtools mergeSEs
+#' @importFrom mia mergeSEs
 #' @importFrom dplyr %>%
 #' @importFrom dplyr filter
 #' @importFrom dplyr group_by
