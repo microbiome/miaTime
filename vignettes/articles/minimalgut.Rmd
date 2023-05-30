@@ -212,7 +212,7 @@ addmean <- function (x, k, field, field_name) {
 tselist2 <- lapply(tselist, function (x) {addmean(x, k=3, field = "slope", field_name = "sliding_average")})
 
 # Merge back
-tse <- SEtools::mergeSEs(tselist2)
+tse <- mia::mergeSEs(tselist2)
 
 # Visualize
 theme_set(theme_bw(10))

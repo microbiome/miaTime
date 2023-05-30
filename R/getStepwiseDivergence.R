@@ -45,7 +45,7 @@
 #' containing the sample dissimilarity and corresponding time difference between
 #' samples (across n time steps), within each level of the grouping factor.
 #'
-#' @importFrom SEtools mergeSEs
+#' @importFrom mia mergeSEs
 #' @importFrom vegan vegdist
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
