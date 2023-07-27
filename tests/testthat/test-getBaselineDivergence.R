@@ -105,7 +105,7 @@ test_that("getBaselineDivergence", {
   # ordination based divergence values should not be equal to the ones on counts
   expect_false(identical(tse2$divergence_from_baseline_ord_4, tse2$divergence_from_baseline_ord_2))
   ## testing with altExp
-  SingleCellExperiment::altExp(tse2, "Family") <- mia::agglomerateByRank(tse2, rank="Family")
+  SingleCellExperiment::altExp(tse2, "Family") <- mia::mergeFeaturesByRank(tse2, rank="Family")
   tse2 <- getBaselineDivergence(tse2, group = "subject",
                                 time_field = "time",
                                 altexp="Family",

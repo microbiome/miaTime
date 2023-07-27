@@ -110,7 +110,7 @@ test_that("getStepwiseDivergence", {
   expect_true(!identical(tse2$timedivergence_ord_2, tse2$timedivergence_ord_4))
   
   ## testing with altExp
-  SingleCellExperiment::altExp(tse2, "Family") <- mia::agglomerateByRank(tse2, rank="Family")
+  SingleCellExperiment::altExp(tse2, "Family") <- mia::mergeFeaturesByRank(tse2, rank="Family")
   tse2 <- getStepwiseDivergence(tse2, group = "subject",
                                 time_interval = 1,
                                 time_field = "time",
