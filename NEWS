@@ -1,3 +1,5 @@
+Changes in version 0.1.22
++ changed agglomerateByRank to mergeFeaturesByRank
 
 Changes in version 0.1.19
 + changed assay_name to assay.type
