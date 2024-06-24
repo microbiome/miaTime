@@ -9,7 +9,7 @@ coverage](https://codecov.io/gh/microbiome/miaTime/branch/master/graph/badge.svg
 
 <!-- badges: end -->
 
-
+# miaTime
 This R package can be used to analyse time series data for microbial
 communities. The package is part of [miaverse](https://microbiome.github.io/), 
 and is based on the `TreeSummarizedExperiment` data container.
