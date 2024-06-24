@@ -1,3 +1,13 @@
+# miaTime <img src="man/figures/mia_logo.png" align="right" width="120" />
+
+<!-- badges: start -->
+
+[![R-CMD-check-bioc-devel](https://github.com/microbiome/miaTime/workflows/R-CMD-check-bioc-devel/badge.svg)](https://github.com/microbiome/miaTime/actions)
+<!--[![R-CMD-check-bioc](https://github.com/microbiome/mia/actions/workflows/check-bioc.yml/badge.svg)](https://github.com/microbiome/mia/actions/workflows/check-bioc.yml)-->
+[![Codecov test
+coverage](https://codecov.io/gh/microbiome/miaTime/branch/master/graph/badge.svg)](https://codecov.io/gh/microbiome/miaTime?branch=master)
+
+<!-- badges: end -->
 # Microbiome time series manipulation with miaTime
 
 This R package can be used to analyse time series data for microbial
