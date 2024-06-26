@@ -24,7 +24,8 @@ Imports:
     S4Vectors,
     SummarizedExperiment,
     SingleCellExperiment,
-    vegan
+    vegan,
+    scater
 Suggests: 
     TreeSummarizedExperiment,
     tidySingleCellExperiment,
