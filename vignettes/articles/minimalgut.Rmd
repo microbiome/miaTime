@@ -88,7 +88,7 @@ tse <- getBaselineDivergence(tse,
                              time_field = "Time.hr",
                              name_divergence = "divergence_from_baseline",
                              name_timedifference = "time_from_baseline",
-                             assay_name="relabundance",
+                             assay.type="relabundance",
                              FUN = vegan::vegdist,
                              method="bray")
 
@@ -128,7 +128,7 @@ plotSeries(mia::relAbundanceCounts(minimalgut),
            x = "Time.hr",
            y = "Blautia_hydrogenotrophica",
            colour_by = "Species",
-           assay_name = "relabundance")+
+           assay.type = "relabundance")+
     geom_vline(xintercept = 152, lty=2, color="#991720") + 
     geom_vline(xintercept = 248, lty=2, color= "#0963bd")+
     annotate("text",x=c(152, 248),y=c(0.2, 0.15),
@@ -160,7 +160,7 @@ tse <- getStepwiseDivergence(tse, group = "StudyIdentifier",
                                time_field = "Time_hr_num",
                                name_divergence = "divergence_from_previous_step",
                                name_timedifference = "time_from_previous_step",
-                               assay_name="relabundance",
+                               assay.type ="relabundance",
                                FUN = vegan::vegdist,
                                method="bray")
 
