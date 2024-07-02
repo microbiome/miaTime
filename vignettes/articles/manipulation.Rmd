@@ -71,7 +71,7 @@ The _tidySingleCellExperiment_ package provides handy functions for (Tree)SE man
 library("tidySingleCellExperiment")
 data(hitchip1006)
 tse <- hitchip1006
-tse2 <- tse %>% tidySingleCellExperiment::arrange(subject, time)
+tse2 <- tse %>% arrange(subject, time)
 ```
 
 
