@@ -1,48 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/articles/manipulation.html</loc>
-  </url>
-  <url>
-    <loc>/articles/miaTime.html</loc>
-  </url>
-  <url>
-    <loc>/articles/minimalgut.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/SilvermanAGutData.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getBaselineDivergence.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getStepwiseDivergence.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hitchip1006.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/minimalgut.html</loc>
-  </url>
-  <url>
-    <loc>/reference/temporalMicrobiome20.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/articles/index.html</loc></url>
+<url><loc>/articles/manipulation.html</loc></url>
+<url><loc>/articles/miaTime.html</loc></url>
+<url><loc>/articles/minimalgut.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/reference/SilvermanAGutData.html</loc></url>
+<url><loc>/reference/getBaselineDivergence.html</loc></url>
+<url><loc>/reference/getStepwiseDivergence.html</loc></url>
+<url><loc>/reference/hitchip1006.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/minimalgut.html</loc></url>
+<url><loc>/reference/temporalMicrobiome20.html</loc></url>
 </urlset>
+
