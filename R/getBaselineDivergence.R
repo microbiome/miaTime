@@ -189,7 +189,7 @@ getBaselineDivergence <- function(x,
 
 
 # First define the function that calculates divergence for a given SE object
-#' @importFrom mia estimateDivergence
+#' @importFrom mia addDivergence
 #' @importFrom methods is
 .calculate_divergence_from_baseline <- function (x, baseline, time_field,
                                                  name_divergence, name_timedifference,
