@@ -7,8 +7,8 @@
 #' are stored in `colData`.
 #'
 #' @inheritParams getStepwiseDivergence
-#' @param baseline_sample Optional. A character vector specifying the baseline sample(s) to be used. If the
-#'   "group" argument is given, this must be a named vector; one element per group.
+#' @param baseline_sample \code{Character vector}. Specifies the baseline sample(s) to be used. If the
+#'   "group" argument is given, this must be a named vector; one element per group. (Default: \code{NULL})
 #'
 #' @return a
 #' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
