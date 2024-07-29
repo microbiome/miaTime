@@ -25,43 +25,40 @@ getBaselineDivergence(
 \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
 object.}
 
-\item{group}{optional; a single character value for specifying the grouping
+\item{group}{\code{Character scalar}. Specifies the grouping
 factor (name of a \code{colData} field). If given, the divergence is calculated
-per group.  e.g. subject, chamber, group etc.).}
+per group.  e.g. subject, chamber, group etc.). (Default: \code{NULL})}
 
-\item{time_field}{a single character value, specifying the name of the
+\item{time_field}{\code{Character scalar}. Specifies the name of the
 time series field in \code{colData}.}
 
-\item{name_divergence}{a column vector showing beta diversity between samples
-(default: \code{name_divergence = "time_divergence"})}
+\item{name_divergence}{\code{Character scalar}. Shows beta diversity between samples.
+(Default: \code{"time_divergence"})}
 
-\item{name_timedifference}{field name for adding the time difference between
-samples used to calculate beta diversity
-(default: \code{name_timedifference = "time_difference"})}
+\item{name_timedifference}{\code{Character scalar}. Field name for adding the time difference between
+samples used to calculate beta diversity. (Default: \code{"time_difference"})}
 
-\item{assay.type}{character indicating which assay values are used in
-the dissimilarity estimation (default: \code{assay.type = "counts"}).}
+\item{assay.type}{\code{Character scalar}. Specifies which assay values are used in
+the dissimilarity estimation. (Default: \code{"counts"})}
 
-\item{FUN}{a \code{function} for dissimilarity calculation. The function must
+\item{FUN}{\code{Function} for dissimilarity calculation. The function must
 expect the input matrix as its first argument. With rows as samples
-and columns as features. By default, \code{FUN} is
-\code{vegan::vegdist}.}
+and columns as features. (Default: \code{vegan::vegdist})}
 
-\item{method}{a method that is used to calculate the distance. Method is
-passed to the function that is specified by \code{FUN}. By default,
-\code{method} is \code{"bray"}.}
+\item{method}{\code{Character scalar}. Used to calculate the distance. Method is
+passed to the function that is specified by \code{FUN}. (Default: \code{"bray"})}
 
-\item{baseline_sample}{Optional. A character vector specifying the baseline sample(s) to be used. If the
-"group" argument is given, this must be a named vector; one element per group.}
+\item{baseline_sample}{\code{Character vector}. Specifies the baseline sample(s) to be used. If the
+"group" argument is given, this must be a named vector; one element per group. (Default: \code{NULL})}
 
-\item{altexp}{String or integer scalar specifying the alternative experiment
-containing the input data.}
+\item{altexp}{\code{Character scalar} or \code{integer scalar}. Specifies the alternative experiment
+containing the input data. (Default: \code{NULL})}
 
-\item{dimred}{A string or integer scalar indicating the reduced dimension
-result in \code{reducedDims} to use in the estimation.}
+\item{dimred}{\code{Character scalar} or \code{integer scalar}. indicates the reduced dimension
+result in \code{reducedDims} to use in the estimation. (Default: \code{NULL})}
 
-\item{n_dimred}{Integer scalar or vector specifying the dimensions to use if
-\code{dimred} is specified.}
+\item{n_dimred}{\code{Integer vector}. Specifies the dimensions to use if
+\code{dimred} is specified. (Default: \code{NULL})}
 
 \item{...}{Arguments to be passed}
 }
