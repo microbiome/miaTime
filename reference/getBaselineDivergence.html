@@ -61,7 +61,7 @@ are stored in colData."><!-- mathjax --><script src="https://cdnjs.cloudflare.co
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Beta diversity between the baseline and later time steps</h1>
-    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/devel/R/getBaselineDivergence.R" class="external-link"><code>R/getBaselineDivergence.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/harm/R/getBaselineDivergence.R" class="external-link"><code>R/getBaselineDivergence.R</code></a></small>
     <div class="hidden name"><code>getBaselineDivergence.Rd</code></div>
     </div>
 
@@ -102,63 +102,60 @@ object.</p></dd>
 
 
 <dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
-<dd><p>optional; a single character value for specifying the grouping
+<dd><p><code>Character scalar</code>. Specifies the grouping
 factor (name of a <code>colData</code> field). If given, the divergence is calculated
-per group.  e.g. subject, chamber, group etc.).</p></dd>
+per group.  e.g. subject, chamber, group etc.). (Default: <code>NULL</code>)</p></dd>
 
 
 <dt id="arg-time-field">time_field<a class="anchor" aria-label="anchor" href="#arg-time-field"></a></dt>
-<dd><p>a single character value, specifying the name of the
+<dd><p><code>Character scalar</code>. Specifies the name of the
 time series field in <code>colData</code>.</p></dd>
 
 
 <dt id="arg-name-divergence">name_divergence<a class="anchor" aria-label="anchor" href="#arg-name-divergence"></a></dt>
-<dd><p>a column vector showing beta diversity between samples
-(default: <code>name_divergence = "time_divergence"</code>)</p></dd>
+<dd><p><code>Character scalar</code>. Shows beta diversity between samples.
+(Default: <code>"time_divergence"</code>)</p></dd>
 
 
 <dt id="arg-name-timedifference">name_timedifference<a class="anchor" aria-label="anchor" href="#arg-name-timedifference"></a></dt>
-<dd><p>field name for adding the time difference between
-samples used to calculate beta diversity
-(default: <code>name_timedifference = "time_difference"</code>)</p></dd>
+<dd><p><code>Character scalar</code>. Field name for adding the time difference between
+samples used to calculate beta diversity. (Default: <code>"time_difference"</code>)</p></dd>
 
 
 <dt id="arg-assay-type">assay.type<a class="anchor" aria-label="anchor" href="#arg-assay-type"></a></dt>
-<dd><p>character indicating which assay values are used in
-the dissimilarity estimation (default: <code>assay.type = "counts"</code>).</p></dd>
+<dd><p><code>Character scalar</code>. Specifies which assay values are used in
+the dissimilarity estimation. (Default: <code>"counts"</code>)</p></dd>
 
 
 <dt id="arg-fun">FUN<a class="anchor" aria-label="anchor" href="#arg-fun"></a></dt>
-<dd><p>a <code>function</code> for dissimilarity calculation. The function must
+<dd><p><code>Function</code> for dissimilarity calculation. The function must
 expect the input matrix as its first argument. With rows as samples
-and columns as features. By default, <code>FUN</code> is
-<code><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegan::vegdist</a></code>.</p></dd>
+and columns as features. (Default: <code><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegan::vegdist</a></code>)</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>a method that is used to calculate the distance. Method is
-passed to the function that is specified by <code>FUN</code>. By default,
-<code>method</code> is <code>"bray"</code>.</p></dd>
+<dd><p><code>Character scalar</code>. Used to calculate the distance. Method is
+passed to the function that is specified by <code>FUN</code>. (Default: <code>"bray"</code>)</p></dd>
 
 
 <dt id="arg-baseline-sample">baseline_sample<a class="anchor" aria-label="anchor" href="#arg-baseline-sample"></a></dt>
-<dd><p>Optional. A character vector specifying the baseline sample(s) to be used. If the
-"group" argument is given, this must be a named vector; one element per group.</p></dd>
+<dd><p><code>Character vector</code>. Specifies the baseline sample(s) to be used. If the
+"group" argument is given, this must be a named vector; one element per group. (Default: <code>NULL</code>)</p></dd>
 
 
 <dt id="arg-altexp">altexp<a class="anchor" aria-label="anchor" href="#arg-altexp"></a></dt>
-<dd><p>String or integer scalar specifying the alternative experiment
-containing the input data.</p></dd>
+<dd><p><code>Character scalar</code> or <code>integer scalar</code>. Specifies the alternative experiment
+containing the input data. (Default: <code>NULL</code>)</p></dd>
 
 
 <dt id="arg-dimred">dimred<a class="anchor" aria-label="anchor" href="#arg-dimred"></a></dt>
-<dd><p>A string or integer scalar indicating the reduced dimension
-result in <code>reducedDims</code> to use in the estimation.</p></dd>
+<dd><p><code>Character scalar</code> or <code>integer scalar</code>. indicates the reduced dimension
+result in <code>reducedDims</code> to use in the estimation. (Default: <code>NULL</code>)</p></dd>
 
 
 <dt id="arg-n-dimred">n_dimred<a class="anchor" aria-label="anchor" href="#arg-n-dimred"></a></dt>
-<dd><p>Integer scalar or vector specifying the dimensions to use if
-<code>dimred</code> is specified.</p></dd>
+<dd><p><code>Integer vector</code>. Specifies the dimensions to use if
+<code>dimred</code> is specified. (Default: <code>NULL</code>)</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
