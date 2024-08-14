@@ -45,14 +45,8 @@
 #' containing the sample dissimilarity and corresponding time difference between
 #' samples (across n time steps), within each level of the grouping factor.
 #'
-#' @importFrom mia mergeSEs
-#' @importFrom vegan vegdist
-#' @importFrom SummarizedExperiment assay
-#' @importFrom SummarizedExperiment colData
-#' @importFrom SummarizedExperiment colData<-
-#' @importFrom SingleCellExperiment altExp
-#'
-#' @aliases getTimeDivergence
+#' @name addStepwiseDivergence
+#' @export
 #'
 #' @examples
 #' #library(miaTime)
@@ -67,16 +61,141 @@
 #' # Using vegdist for divergence calculation, one can pass
 #' # the dissimilarity method from the vegan::vegdist options
 #' # via the "method" argument
-#' tse2 <- getStepwiseDivergence(tse, group = "subject",
+#' tse2 <- addStepwiseDivergence(tse, group = "subject",
 #'                               time_interval = 1,
 #'                               time_field = "time",
 #'                               assay.type="relabundance",
 #'                               FUN = vegan::vegdist,
 #'                               method="bray")
-#'
-#' @name getStepwiseDivergence
+NULL
+
+#' @rdname addStepwiseDivergence
 #' @export
-getStepwiseDivergence <- function(x,
+#' 
+#' @importFrom mia mergeSEs
+#' @importFrom vegan vegdist
+#' @importFrom SummarizedExperiment assay
+#' @importFrom SummarizedExperiment colData
+#' @importFrom SummarizedExperiment colData<-
+#' @importFrom SingleCellExperiment altExp
+#'
+setGeneric("addStepwiseDivergence", signature = c("x"), function(x, ... )
+  standardGeneric("addStepWi"))
+
+#' @rdname addStepwiseDivergence
+#' @export
+setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
+    function(
+        x,
+        group=NULL,
+        time_field,
+        time_interval = 1,
+        name_divergence = "time_divergence",
+        name_timedifference = "time_difference",
+        assay.type = "counts",
+        method="bray",
+        ...){
+        ############################# INPUT CHECK ##############################
+        # name_divergence
+        temp <- .check_input(
+          name_divergence,
+          list(NULL, "character scalar")
+        )
+        # name_divergence
+        temp <- .check_input(
+          name_timedifference,
+          list(NULL, "character scalar")
+        )
+        ########################### INPUT CHECK END ############################
+        # Calculate values
+        res <- .get_stepwise_divergence(
+          x = x, group = group, time_field = time_field, time_interval = time_interval, assay.type = assay.type, method = method, ...)
+        # Add values to colData
+        x <- .add_values_to_colData(
+          x, res, name = c(name_divergence, name_timedifference))
+        return(x)
+    }
+)
+
+.get_stepwise_divergence <- function(
+    x,
+    group=NULL,
+    time_field,
+    time_interval=1,
+    name_divergence = "time_divergence",
+    name_timedifference = "time_difference",
+    assay.type = "counts",
+    FUN = vegan::vegdist,
+    method="bray",
+    altexp = NULL,
+    dimred = NULL,
+    n_dimred = NULL,
+    ...){
+    ##########################################
+    # If TreeSE does not have column names, add
+    if( is.null(colnames(x)) ){
+      colnames(x) <- as.character(seq_len(ncol(x)))	
+    }
+    # Use altExp if mentioned and available
+    if( !is.null(altexp) ){
+      .check_altExp_present(altexp, x)
+      x <- altExp(x, altexp)
+    }
+    # assay.type
+    .check_assay_present(assay.type, x)
+    # time_field
+    temp <- .check_input(
+      time_field,
+      list("character scalar"),
+      supported_values = colnames(colData(x))
+    )
+    # Check that timepoints are numeric
+    if( !is.numeric(x[[time_field]]) ){
+      stop("Timepoints must be numeric.", call. = FALSE)
+    }
+    # group
+    temp <- .check_input(
+      group,
+      list(NULL, "character scalar"),
+      supported_values = colnames(colData(x))
+    )
+    # time_interval
+    temp <- .check_input(
+      time_interval,
+      list(NULL, "integer scalar")
+    )
+    ############################# INPUT CHECK END ##############################
+    ### CAlculate values
+    res <- lapply(colnames(x), function(sample){
+        # Get previous time point
+        res <- .calculate_divergence_from_prev_timepoint(
+            x, sample, assay.type, method, time_field, time_interval, ...)
+        return(res)
+    })
+    # Create a list of 2 elements. One element has all time differences, other
+    # has all divergence values.
+    res <- unlist(res, recursive = FALSE)
+    return(res)
+    
+}
+
+.get_previous_sample <- function(x, sample, time_field, time_interval){
+    # Get values in this group
+    x <- x[ , colData(x)[[group]] ==  colData(x[, sample])[[group]]]
+    # Order
+    x <- x[ , order(colData(x)[[time_field]])]
+    # Get previous time point
+    sample_ind <- which(colnames(x) == sample)
+    prev_ind <- sample_ind - time_interval
+    # If the value is possible return it
+    res <- NA
+    if( prev_ind > 0 ){
+        res <- colnames(x)[prev_ind]
+    }
+    return(prev_ind)
+}
+
+.get_stepwise_divergence2 <- function(x,
                             group=NULL,
                             time_field,
                             time_interval=1,
@@ -179,29 +298,19 @@ getStepwiseDivergence <- function(x,
 
 }
 
-
-#' @rdname getStepwiseDivergence
-#' @export
-setGeneric("getTimeDivergence", signature = c("x"),
-           function(x, ... )
-             standardGeneric("getTimeDivergence"))
-
-#' @rdname getStepwiseDivergence
-#' @export
-setMethod("getTimeDivergence",
-          signature = c(x = "ANY"),
-    function(x, ...){
-
-        .Deprecated( msg = paste0("The name of the function 'getTimeDivergence' is",
-                                  " changed to 'getStepwiseDivergence'. \nPlease use the new",
-                                  " name instead.\n",
-                                  "See help('Deprecated')") )
-
-        getStepwiseDivergence(x, ...)
+.calculate_divergence_from_prev_timepoint <- function(
+    x, sample, assay.type, method, time_field, time_interval,
+    fun = FUN, FUN = vegan::vegdist, dimred = NULL, n_dimred = NULL, ...){
+    # Get preiouv sample
+    prev_sample <- .get_previous_sample(x, sample, time, time_interval)
+    
+    if( !is.na(prev_sample) ){
+      
     }
-)
-
-
+    # If this sample has previous time step, calculate. Othwerwise five just NAs.
+    # Calculate divergence between this timepints and prvious time point
+    return(res)
+}
 
 .check_pairwise_dist <- function (x,
                                 FUN,
@@ -229,8 +338,8 @@ setMethod("getTimeDivergence",
     if (nrow(mat) > time_interval) {
 
         ## beta diversity calculation
-        n <- sapply(seq((time_interval+1), nrow(mat)),
-            function (i) {FUN(mat[c(i, i-time_interval), ], method=method, ...)})
+        n <- sapply(seq((time_interval+1), nrow(mat)), ## Do not use sapply
+            function (i) {FUN(mat[c(i, i-time_interval), ], method=method, ...)}) ## MAYBE USE same method as in gtBaselineDivergence
 
         for(i in seq((time_interval+1), ncol(x))){
             colData(x)[, name_divergence][[i]] <- n[[i-time_interval]]

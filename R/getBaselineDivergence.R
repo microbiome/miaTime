@@ -63,15 +63,14 @@
 #'     FUN = vegan::vegdist,
 #'     method="bray")
 #'
-#' @name getBaselineDivergence
+#' @name addBaselineDivergence
 #' @export
 #' 
 NULL
 
-#' @rdname getBaselineDivergence
+#' @rdname addBaselineDivergence
 #' @export
 #' 
-#' @importFrom mia mergeSEs
 #' @importFrom dplyr %>%
 #' @importFrom dplyr filter
 #' @importFrom dplyr group_by
@@ -82,12 +81,12 @@ NULL
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment colData<-
 #' @importFrom SingleCellExperiment altExp
-setGeneric("getBaselineDivergence", signature = "x", function(x, ...)
+setGeneric("addBaselineDivergence", signature = "x", function(x, ...)
     standardGeneric("getBaselineDivergence"))
 
 #' @rdname getPrevalence
 #' @export
-setMethod("getBaselineDivergence", signature = c(x = "SummarizedExperiment"),
+setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     function(
         x,
         time_field,
@@ -95,12 +94,17 @@ setMethod("getBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         group = NULL,
         name_divergence = "divergence_from_baseline",
         name_timedifference = "time_from_baseline",
-        method="bray",
+        method = "bray",
         ...){
         ############################# INPUT CHECK ##############################
         # name_divergence
         temp <- .check_input(
             name_divergence,
+            list(NULL, "character scalar")
+        )
+        # name_timedifference
+        temp <- .check_input(
+            name_timedifference,
             list(NULL, "character scalar")
         )
         ########################### INPUT CHECK END ############################
