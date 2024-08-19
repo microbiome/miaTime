@@ -82,7 +82,7 @@ NULL
 #' @importFrom SummarizedExperiment colData<-
 #' @importFrom SingleCellExperiment altExp
 setGeneric("addBaselineDivergence", signature = "x", function(x, ...)
-    standardGeneric("getBaselineDivergence"))
+    standardGeneric("addBaselineDivergence"))
 
 #' @rdname getPrevalence
 #' @export
@@ -157,7 +157,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         supported_values = colnames(colData(x))
     )
     # If group is not given, assume that all samples come from a single group
-    if( !is.null(group) ){
+    if( is.null(group) ){
         group <- "group"
         colData(x)[[group]] <- rep(1, nrow = nrow(x))
     }
@@ -165,29 +165,27 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     # sample is assumed to be a sample with lowest timepoint.
     if( is.null(baseline) ){
         baseline <- "baseline_sample"
-        colData(x)[[baseline]] <- .get_baseline_sample(x, group, time)
+        colData(x)[[baseline]] <- .get_baseline_sample(x, group, time_field)
     }
     # Check that baseline samples are correct
     .check_baseline_samples(x, baseline, group)
     ############################# INPUT CHECK END ##############################
     # Get a vector that shows which samples belong to which group 
-    spl <- split(seq_len(ncol(x)), colData(x)[[group]])
+    spl <- split(seq_len(ncol(x)), unfactor(colData(x)[[group]]))
     # Apply the operation per group; with group-specific baselines
     res <- lapply(names(spl), function(g){
         x_sub <- x[, spl[[g]]]
         res <- .calculate_divergence_from_baseline(
-            x_sub, assay.type, method, time_field, baseline, ...)
+            x_sub, assay.type, method, time_field, baseline, add.ref = TRUE, ...)
         return(res)
         })
-    # Create a list of 2 elements. One element has all time differences, other
-    # has all divergence values.
-    res <- unlist(res, recursive = FALSE)
+    res <- .wrangle_divergence_list(res, x)
     return(res)
 }
 
 .check_baseline_samples <- function(x, baseline, group){
     # Check that each group have only one baseline sample specified.
-    baseline_samples <- split(colData(x)[[baseline]], colData(x)[[group]])
+    baseline_samples <- split(colData(x)[[baseline]], unfactor(colData(x)[[group]]))
     correct <- lapply(baseline_samples, function(group){
         # Get unique
         group <- unique(group)
@@ -197,6 +195,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
                 (is.character(group) && group %in% colnames(x)) )
         return(res)
     })
+    correct <- unlist(correct)
     if( !all(correct) ){
         stop(
             "Each group must have only one baseline sample specified. ",
@@ -210,12 +209,12 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     colData(x)$sample <- colnames(x)
     # For each group, get the sampe that has lowest time point
     baseline <- colData(x) %>% as.data.frame() %>%
-        group_by(group) %>%
-        mutate(rank = rank(time, ties.method = "first")) %>%
+        group_by(.data[[group]]) %>%
+        mutate(rank = rank(.data[[time]], ties.method = "first")) %>%
         filter(rank == 1) %>%	
-        select(sample, group)
+        select(.data[["sample"]], .data[[group]])
     # For each sample, assign corresponding baseline sample
-    ind <- match(colData(x)[[group]], baseline[["group"]])
+    ind <- match(colData(x)[[group]], baseline[[group]])
     baseline <- baseline[ind, ]
     baseline <- baseline[["sample"]]
     return(baseline)
@@ -226,20 +225,46 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
 #' @importFrom methods is
 .calculate_divergence_from_baseline <- function(
         x, assay.type, method, time_field, baseline,
-        fun = FUN, FUN = vegan::vegdist, dimred = NULL, n_dimred = NULL, ...){
+        fun = FUN, FUN = vegan::vegdist, dimred = NULL, n_dimred = NULL, add.ref = TRUE, ...){
     # Get reference aka baseline sample
-    reference <- x[, x[[baseline]]]
+    ref_sample <- unique(x[[baseline]])
+    
+    reference <- x[, ref_sample]
+    if( !add.ref ){
+        not_ref <- colnames(x)[ !colnames(x) %in% ref_sample ]
+        x <- x[, not_ref]
+    }
+    
     # Getting corresponding matrices, to calculate divergence 
     mat <- .get_mat_from_sce(x, assay.type, dimred, n_dimred)
     ref_mat <- .get_mat_from_sce(reference, assay.type, dimred, n_dimred)
     # transposing mat if taken from reducedDim. In reducedDim, samples are in
     # rows
-    if( !is.null(dimred) ) mat <- t(mat)
+    if( !is.null(dimred) ){
+        mat <- t(mat)
+        ref_mat <- t(ref_mat)
+    }
     # Beta divergence from baseline info
     divergencevalues <- .calc_reference_dist(
-        mat, as.vector(ref_mat), method, FUN = FUN, ...) ###################################### In mia, FUN --< stats::dist --> vegdist
+        mat, as.vector(ref_mat), method, FUN = FUN, ...) ###################################### In mia, FUN --< stats::dist --> vegdist --> USE getDissimilarity????
     # Add time divergence from baseline info; note this has to be a list    
     timevalues <- colData(x)[[time_field]] - colData(reference)[[time_field]]
+    names(divergencevalues) <- names(timevalues) <- colnames(x)
+    
     res <- list(time = timevalues, divergence = divergencevalues)
+    return(res)
+}
+
+.wrangle_divergence_list <- function(res, x){
+    divergence <- lapply(res, function(values) values[["divergence"]])
+    time <- lapply(res, function(values) values[["time"]])
+    divergence <- unlist(divergence)
+    time <- unlist(time)
+    divergence <- divergence[ match(colnames(x), names(divergence))]
+    time <- time[ match(colnames(x), names(time))]
+    names(divergence) <- names(time) <- colnames(x)
+    # Create a list of 2 elements. One element has all time differences, other
+    # has all divergence values.
+    res <- list(divergence, time)
     return(res)
 }

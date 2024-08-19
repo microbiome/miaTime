@@ -61,7 +61,7 @@
 #' # Using vegdist for divergence calculation, one can pass
 #' # the dissimilarity method from the vegan::vegdist options
 #' # via the "method" argument
-#' tse2 <- addStepwiseDivergence(tse, group = "subject",
+#' tse <- addStepwiseDivergence(tse, group = "subject",
 #'                               time_interval = 1,
 #'                               time_field = "time",
 #'                               assay.type="relabundance",
@@ -80,7 +80,7 @@ NULL
 #' @importFrom SingleCellExperiment altExp
 #'
 setGeneric("addStepwiseDivergence", signature = c("x"), function(x, ... )
-  standardGeneric("addStepWi"))
+  standardGeneric("addStepwiseDivergence"))
 
 #' @rdname addStepwiseDivergence
 #' @export
@@ -132,10 +132,6 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
     n_dimred = NULL,
     ...){
     ##########################################
-    # If TreeSE does not have column names, add
-    if( is.null(colnames(x)) ){
-      colnames(x) <- as.character(seq_len(ncol(x)))	
-    }
     # Use altExp if mentioned and available
     if( !is.null(altexp) ){
       .check_altExp_present(altexp, x)
@@ -164,195 +160,121 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
       time_interval,
       list(NULL, "integer scalar")
     )
+    if( time_interval > ncol(x) ){
+        stop("'time_interval' cannot be greater than the number of samples.", call. = FALSE)
+    }
+    # If TreeSE does not have column names, add
+    if( is.null(colnames(x)) ){
+      colnames(x) <- paste0("sample_", seq_len(ncol(x)))
+    }
+    # If group is not given, assume that all samples come from a single group
+    if( !is.null(group) ){
+        group <- "group"
+        colData(x)[[group]] <- rep(1, nrow = nrow(x))
+    }
     ############################# INPUT CHECK END ##############################
-    ### CAlculate values
-    res <- lapply(colnames(x), function(sample){
-        # Get previous time point
-        res <- .calculate_divergence_from_prev_timepoint(
-            x, sample, assay.type, method, time_field, time_interval, ...)
-        return(res)
-    })
-    # Create a list of 2 elements. One element has all time differences, other
-    # has all divergence values.
-    res <- unlist(res, recursive = FALSE)
+    
+    # 1 Get previous sample for each sample.
+    x <- .add_previous_sample(x, group, time_field, time_interval)
+    # 2 Calculate dissimilarity matrix
+    mat <- assay(x, assay.type)
+    mat <- t(mat)
+    res <- vegdist(mat, method = "bray")
+    res <- as.matrix(res)
+    # 3 Assign divergence based on dissimilarity matrix and previous sample information.
+    mapping <- data.frame(sample = x$sample, prev_sample = colData(x)[["previous_sample"]])
+    res <- mapping %>%
+      rowwise() %>%
+      mutate(divergence = get_divergence(sample, prev_sample, res)) %>%
+      ungroup()
+    res <- res[ match(res$sample, colnames(x)), ]
+    x[["divergence"]] <- res[["divergence"]]
+    res <- list(x[["previous_time"]], x[["divergence"]])
     return(res)
     
 }
 
-.get_previous_sample <- function(x, sample, time_field, time_interval){
+get_divergence <- function(current_sample, previous_sample, dissim_matrix) {
+  if (!is.na(previous_sample) && 
+      current_sample %in% rownames(dissim_matrix) && 
+      previous_sample %in% colnames(dissim_matrix)) {
+    return(dissim_matrix[current_sample, previous_sample])
+  } else {
+    return(NA)
+  }
+}
+
+.calculate_divergence_based_on_reference <- function(
+    x, assay.type, method, time_field, baseline,
+    fun = FUN, FUN = vegan::vegdist, dimred = NULL, n_dimred = NULL, add.ref = TRUE, ...){
+  # Get reference aka baseline sample
+  prev_samples <- colData(x)[["previous_sample"]]
+  prev_samples <- prev_samples[ !is.na(prev_samples) ]
+  prev_samples <- x[ , x$sample %in% prev_samples ]
+  # Getting corresponding matrices, to calculate divergence 
+  mat <- .get_mat_from_sce(x, assay.type, dimred, n_dimred)
+  ref_mat <- .get_mat_from_sce(prev_samples, assay.type, dimred, n_dimred)
+  # transposing mat if taken from reducedDim. In reducedDim, samples are in
+  # rows
+  if( !is.null(dimred) ){
+    mat <- t(mat)
+    ref_mat <- t(ref_mat)
+  }
+  # Beta divergence from baseline info
+  divergencevalues <- .calc_reference_dist(
+    mat, ref_mat, method, FUN = FUN, ...) ###################################### In mia, FUN --< stats::dist --> vegdist --> USE getDissimilarity????
+  # Add time divergence from baseline info; note this has to be a list    
+  timevalues <- colData(x)[[time_field]] - colData(reference)[[time_field]]
+  names(divergencevalues) <- names(timevalues) <- colnames(x)
+  
+  res <- list(time = timevalues, divergence = divergencevalues)
+  return(res)
+}
+
+.calculate_divergence_from_prev_timepoint <- function(
+        x, sample, assay.type, method, time_field, time_interval, group,
+        fun = FUN, FUN = vegan::vegdist, dimred = NULL, n_dimred = NULL, ...){
+    # Get preiouv sample
+    prev_sample <- .get_previous_sample(x, sample, time_field, time_interval, group)
+    # res <- list(time = NA, divergence = NA)
+    # if( !is.na(prev_sample) ){
+    #   x <- x[, c(sample, prev_sample)]
+    #   ref_name <- "reference"
+    #   colData(x)[[ref_name]] <- prev_sample
+    #   res <- .calculate_divergence_from_baseline(x, assay.type, method, time_field, ref_name, add.ref = FALSE)
+    # }
+    # # If this sample has previous time step, calculate. Othwerwise, give just NAs.
+    # # Calculate divergence between this timepints and prvious time point
+    return(prev_sample)
+}
+
+.get_previous_sample <- function(x, sample, time_field, time_interval, group){
     # Get values in this group
     x <- x[ , colData(x)[[group]] ==  colData(x[, sample])[[group]]]
     # Order
     x <- x[ , order(colData(x)[[time_field]])]
     # Get previous time point
     sample_ind <- which(colnames(x) == sample)
+    sample_ind <- sample_ind[[1]]
     prev_ind <- sample_ind - time_interval
-    # If the value is possible return it
+    # If the index is possible, return sample name. Otherwise, return NA.
     res <- NA
     if( prev_ind > 0 ){
         res <- colnames(x)[prev_ind]
     }
-    return(prev_ind)
-}
-
-.get_stepwise_divergence2 <- function(x,
-                            group=NULL,
-                            time_field,
-                            time_interval=1,
-                            name_divergence = "time_divergence",
-                            name_timedifference = "time_difference",
-                            assay.type = "counts",
-                            FUN = vegan::vegdist,
-                            method="bray",
-                            altexp = NULL,
-                            dimred = NULL,
-                            n_dimred = NULL,
-                            ...){
-
-    # Store the original x
-    xorig <- x
-    
-    # Use altExp if mentioned and available
-    if (!is.null(altexp)) {
-        .check_altExp_present(altexp, x)
-        x <- altExp(x, altexp)
-    }
-
-    # Temporary sample ID
-    x$tmp_sample_identifier_for_getStepwiseDivergence <- paste("SampleID", 1:ncol(x), sep="-")
-
-    # If group is not given, assume that all samples come from a single group
-    # TODO: switch to mia::splitOn    
-    if (is.null(group)) {
-      spl <- split(seq_len(ncol(x)), rep(1, nrow(x)))
-    } else {
-      # Split SE into a list, by grouping
-      if (is.factor(colData(x)[, group])) {
-        colData(x)[, group] <- droplevels(colData(x)[, group])
-      }      
-      spl <- split(seq_len(ncol(x)), colData(x)[, group])
-    }
-
-    # Separate the groups with multiple time points
-    spl_more <- spl[lapply(spl,length) > 1]
-    spl_one  <- spl[lapply(spl,length) == 1]
-
-    # Manipulate each subobject
-    x_more_list <- lapply(seq_along(spl_more),
-        function(i){.check_pairwise_dist(x = x[, spl_more[[i]]],
-                                        FUN=FUN,
-                                        time_interval,
-                                        name_divergence = name_divergence,
-                                        name_timedifference = name_timedifference,
-                                        time_field,
-                                        assay.type,
-                                        method,
-                                        altexp,
-                                        dimred,
-                                        n_dimred)})
-
-    x_one_list <- lapply(seq_along(spl_one), function(i) {
-        x[, spl_one[[i]]]}
-    )
-
-    for(i in seq_along(x_one_list)){
-        colData(x_one_list[[i]])[, name_timedifference] <- NA
-        colData(x_one_list[[i]])[, name_divergence] <- NA
-    }
-
-    # assign the names back to (T)SE objects
-    names(x_more_list) <- names(spl_more)
-    names(x_one_list) <- names(spl_one)
-
-    # put lists together and put them in order
-    whole_x <- do.call(c, list(x_one_list, x_more_list))
-    whole_x <- whole_x[order(as.numeric(names(whole_x)))]
-
-    # Merge the objects back into a single X
-    whole_x <- whole_x[!sapply(whole_x,is.null)]
-
-    # Return the SE elements in a list
-    if (length(whole_x) > 1) {
-        x_new <- mergeSEs(whole_x)
-    } else {
-        x_new <- whole_x[[1]]
-    }
-
-    # Ensure that sample sorting matches between the input and output data
-    inds <- match(x$tmp_sample_identifier_for_getStepwiseDivergence,
-                  x_new$tmp_sample_identifier_for_getStepwiseDivergence)
-    x_new <- x_new[, inds]
-
-    # Add the new fields to colData
-    # Just replace the colData for the original input
-    # colData(xorig) <- colData(x_new)
-
-    # Add beta divergence from baseline info; note this has to be a list
-    timevalues <- list(colData(x_new)[, name_timedifference])
-    divergencevalues <- list(colData(x_new)[, name_divergence])
-
-    xorig <- .add_values_to_colData(xorig, timevalues, name_timedifference)
-    xorig <- .add_values_to_colData(xorig, divergencevalues, name_divergence)    
-
-    return(xorig)
-
-}
-
-.calculate_divergence_from_prev_timepoint <- function(
-    x, sample, assay.type, method, time_field, time_interval,
-    fun = FUN, FUN = vegan::vegdist, dimred = NULL, n_dimred = NULL, ...){
-    # Get preiouv sample
-    prev_sample <- .get_previous_sample(x, sample, time, time_interval)
-    
-    if( !is.na(prev_sample) ){
-      
-    }
-    # If this sample has previous time step, calculate. Othwerwise five just NAs.
-    # Calculate divergence between this timepints and prvious time point
     return(res)
 }
 
-.check_pairwise_dist <- function (x,
-                                FUN,
-                                time_interval,
-                                name_divergence = "time_divergence",
-                                name_timedifference = "time_difference",
-                                time_field,
-                                assay.type,
-                                method,
-                                altexp,
-                                dimred,
-                                n_dimred,
-                                ...){
-
-    mat <- .get_mat_from_sce(x, assay.type, dimred, n_dimred)
-    ## transposing mat if taken from assay 
-    if (is.null(dimred)) mat <- t(mat)
-    
-    time <- colData(x)[, time_field]
-
-    ## Add new field to coldata
-    colData(x)[, name_divergence]     <- rep(NA, nrow(mat))
-    colData(x)[, name_timedifference] <- rep(NA, nrow(mat))
-
-    if (nrow(mat) > time_interval) {
-
-        ## beta diversity calculation
-        n <- sapply(seq((time_interval+1), nrow(mat)), ## Do not use sapply
-            function (i) {FUN(mat[c(i, i-time_interval), ], method=method, ...)}) ## MAYBE USE same method as in gtBaselineDivergence
-
-        for(i in seq((time_interval+1), ncol(x))){
-            colData(x)[, name_divergence][[i]] <- n[[i-time_interval]]
-        }
-
-        ## time difference calculation
-        time <- sapply((time_interval+1):nrow(mat),
-            function (i) {diff(colData(x)[c(i-time_interval, i), time_field])})
-
-        for(i in seq((time_interval+1), nrow(colData(x)))){
-            colData(x)[, name_timedifference][[i]] <- time[[i-time_interval]]
-        }
-    }
-    return(x)
-
+.add_previous_sample <- function(x, group, time, time_interval){
+  colData(x)$sample <- colnames(x)
+  # For each group, get the sampe that has lowest time point
+  df <- colData(x) %>% as.data.frame() %>%
+    arrange(.data[[group]], .data[[time]]) %>%                 # Sort by subject and time
+    group_by(subject) %>%                      # Group by subject
+    mutate(previous_time = lag(time, n = time_interval),   # Lag time by 1 (previous time point)
+           previous_sample = lag(sample, n = time_interval)) %>%  # Lag sample name by 1
+    ungroup() |> DataFrame()
+  rownames(df) <- colnames(x)
+  colData(x) <- df
+  return(x)
 }
