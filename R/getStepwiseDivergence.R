@@ -8,34 +8,31 @@
 #' @param x A
 #' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
 #' object.
-#' @param group optional; a single character value for specifying the grouping
+#' @param group \code{Character scalar}. Specifies the grouping
 #' factor (name of a `colData` field). If given, the divergence is calculated
-#' per group.  e.g. subject, chamber, group etc.).
-#' @param time_field a single character value, specifying the name of the
+#' per group.  e.g. subject, chamber, group etc.). (Default: \code{NULL})
+#' @param time_field \code{Character scalar}. Specifies the name of the
 #' time series field in `colData`.
-#' @param time_interval integer value indicating the increment between time
-#' steps (default: 1). If you need to take every second, every third, or so, time step only, then
-#' increase this accordingly.
-#' @param name_divergence a column vector showing beta diversity between samples
-#' (default: \code{name_divergence = "time_divergence"})
-#' @param name_timedifference field name for adding the time difference between
-#' samples used to calculate beta diversity
-#' (default: \code{name_timedifference = "time_difference"})
-#' @param assay.type character indicating which assay values are used in
-#' the dissimilarity estimation (default: \code{assay.type = "counts"}).
-#' @param FUN a \code{function} for dissimilarity calculation. The function must
+#' @param time_interval \code{Integer scalar}. Indicates the increment between time
+#' steps. If you need to take every second, every third, or so, time step only, then
+#' increase this accordingly. (Default: \code{1})
+#' @param name_divergence \code{Character scalar}. Shows beta diversity between samples.
+#' (Default: \code{"time_divergence"})
+#' @param name_timedifference \code{Character scalar}. Field name for adding the time difference between
+#' samples used to calculate beta diversity. (Default: \code{"time_difference"})
+#' @param assay.type \code{Character scalar}. Specifies which assay values are used in
+#' the dissimilarity estimation. (Default: \code{"counts"})
+#' @param FUN \code{Function} for dissimilarity calculation. The function must
 #'   expect the input matrix as its first argument. With rows as samples 
-#'   and columns as features. By default, \code{FUN} is
-#'   \code{vegan::vegdist}.
-#' @param method a method that is used to calculate the distance. Method is
-#'   passed to the function that is specified by \code{FUN}. By default,
-#'   \code{method} is \code{"bray"}.
-#' @param altexp String or integer scalar specifying the alternative experiment 
-#' containing the input data.
-#' @param dimred A string or integer scalar indicating the reduced dimension
-#' result in `reducedDims` to use in the estimation.
-#' @param n_dimred Integer scalar or vector specifying the dimensions to use if
-#' \code{dimred} is specified.
+#'   and columns as features. (Default: \code{vegan::vegdist})
+#' @param method \code{Character scalar}. Used to calculate the distance. Method is
+#'   passed to the function that is specified by \code{FUN}. (Default: \code{"bray"})
+#' @param altexp \code{Character scalar} or \code{integer scalar}. Specifies the alternative experiment 
+#' containing the input data. (Default: \code{NULL})
+#' @param dimred \code{Character scalar} or \code{integer scalar}. indicates the reduced dimension
+#' result in `reducedDims` to use in the estimation. (Default: \code{NULL})
+#' @param n_dimred \code{Integer vector}. Specifies the dimensions to use if
+#' \code{dimred} is specified. (Default: \code{NULL})
 #' @param ... Arguments to be passed
 #'
 #' @return a
