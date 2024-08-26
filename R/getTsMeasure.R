@@ -14,8 +14,6 @@
 #' 
 #' @return A list containing the results of the requested time series measures.
 #' 
-#' @importFrom stats acf pacf Box.test arima
-#' 
 #' @examples
 #' 
 #' data(minimalgut)
@@ -43,36 +41,13 @@ setMethod("getTsMeasure", signature = c(x = "TreeSummarizedExperiment"),
                 object.", call. = FALSE)
         }
         
-        # Extract the time series data from the specified column in colData
-        ts_data <- colData(x)[[time.field]]
-        
-        # Ensure ts_data is numeric
-        if (!is.numeric(ts_data)) {
-            stop("The specified time.field does not contain numeric time series 
-                data.", call. = FALSE)
-        }
-        
         ############################ Input check end ###########################
         
         ############################ Measure Calculation ######################
-        # Initialize a list to store results
-        results <- list()
-        
-        # Loop through the specified measures and calculate each
-        for (measure in measures) {
-            if (measure == "acf") {
-                results$acf <- acf(ts_data, plot = FALSE)$acf
-            }
-            if (measure == "pacf") {
-                results$pacf <- pacf(ts_data, plot = FALSE)$acf
-            }
-            if (measure == "Box.test") {
-                results$Box.test <- Box.test(ts_data, type = "Ljung-Box")
-            }
-            if (measure == "arima") {
-                results$arima <- arima(ts_data)
-            }
-        }
+        results <- lapply(measures, function(measure) {
+            .getTsMeasures(x, time.field, measure, ...)
+        })
+        names(results) <- measures
         ############################ Measure Calculation end ###################
         
         return(results)
