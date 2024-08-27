@@ -67,16 +67,17 @@ setMethod("shortTermChange", signature = c(x = "SummarizedExperiment"),
                 var_abund = value - lag(value) / time_lag
             )
         
-        colnames(grwt)[colnames(grwt) == "variable"] <- "OTU"
+        colnames(grwt)[colnames(grwt) == "Var1"] <- "OTU"
+        colnames(grwt)[colnames(grwt) == "Var2"] <- "OTU"
         
         maxgrs <- grwt %>%
             summarize(max.growth = max(growth_diff, na.rm = T))
-        colnames(maxgrs)[colnames(maxgrs) == "variable"] <- "OTU"
         grs.all <- merge(gwrt, maxgrs)
         grs.all <- grs.all %>%
             mutate(ismax = ifelse(growth_diff == max.growth, T, F))
 
         grs.all$OTU <- gsub("_", " ", grs.all$OTU)
+        return(grs.all)
     }
 )
         
