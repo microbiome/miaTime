@@ -7,7 +7,7 @@
 \usage{
 getTsMeasure(x, ...)
 
-\S4method{getTsMeasure}{TreeSummarizedExperiment}(x, time.field = "Time.hr", measures = c("acf", "pacf"), ...)
+\S4method{getTsMeasure}{TreeSummarizedExperiment}(x, time.field = "Time.hr", measures = "acf", ...)
 }
 \arguments{
 \item{x}{A
@@ -21,7 +21,7 @@ time series field in \code{colData}. (Default: \code{"Time.hr"})}
 
 \item{measures}{\code{Character vector}. Specifies the time series measures
 to compute. Supported measures include "acf", "pacf","Box.test", and "arima".
-(Default: \code{ "c("acf", "pacf")"})}
+(Default: \code{ ""acf""})}
 }
 \value{
 A list containing the results of the requested time series measures.
