@@ -71,7 +71,7 @@ from a specified column in the <code>colData</code> of a <code>TreeSE</code> obj
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">getTsMeasure</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'TreeSummarizedExperiment'</span></span>
-<span><span class="fu">getTsMeasure</span><span class="op">(</span><span class="va">x</span>, time.field <span class="op">=</span> <span class="st">"Time.hr"</span>, measures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"acf"</span>, <span class="st">"pacf"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">getTsMeasure</span><span class="op">(</span><span class="va">x</span>, time.field <span class="op">=</span> <span class="st">"Time.hr"</span>, measures <span class="op">=</span> <span class="st">"acf"</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -96,7 +96,7 @@ time series field in <code>colData</code>. (Default: <code>"Time.hr"</code>)</p>
 <dt id="arg-measures">measures<a class="anchor" aria-label="anchor" href="#arg-measures"></a></dt>
 <dd><p><code>Character vector</code>. Specifies the time series measures
 to compute. Supported measures include "acf", "pacf","Box.test", and "arima".
-(Default: <code> "c("acf", "pacf")"</code>)</p></dd>
+(Default: <code> ""acf""</code>)</p></dd>
 
 </dl></div>
     <div id="value">
