@@ -92,8 +92,8 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         time_field,
         assay.type = "counts",
         group = NULL,
-        name_divergence = "divergence_from_baseline",
-        name_timedifference = "time_from_baseline",
+        name_divergence = "divergence",
+        name_timedifference = "time_diff",
         method = "bray",
         ...){
         ############################# INPUT CHECK ##############################
@@ -170,16 +170,11 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     # Check that baseline samples are correct
     .check_baseline_samples(x, baseline, group)
     ############################# INPUT CHECK END ##############################
-    # Get a vector that shows which samples belong to which group 
-    spl <- split(seq_len(ncol(x)), unfactor(colData(x)[[group]]))
-    # Apply the operation per group; with group-specific baselines
-    res <- lapply(names(spl), function(g){
-        x_sub <- x[, spl[[g]]]
-        res <- .calculate_divergence_from_baseline(
-            x_sub, assay.type, method, time_field, baseline, add.ref = TRUE, ...)
-        return(res)
-        })
-    res <- .wrangle_divergence_list(res, x)
+    df <- colData(x)
+    x[["time_diff"]] <- df[[time]] - df[df[[baseline]], time]
+    res <- .calculate_divergence_based_on_reference(
+        x, assay.type, method, ref.field = baseline, ...)
+    res <- list(res, x[["time_diff"]])
     return(res)
 }
 
@@ -218,53 +213,4 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     baseline <- baseline[ind, ]
     baseline <- baseline[["sample"]]
     return(baseline)
-}
-
-# First define the function that calculates divergence for a given SE object
-#' @importFrom mia estimateDivergence
-#' @importFrom methods is
-.calculate_divergence_from_baseline <- function(
-        x, assay.type, method, time_field, baseline,
-        fun = FUN, FUN = vegan::vegdist, dimred = NULL, n_dimred = NULL, add.ref = TRUE, ...){
-    # Get reference aka baseline sample
-    ref_sample <- unique(x[[baseline]])
-    
-    reference <- x[, ref_sample]
-    if( !add.ref ){
-        not_ref <- colnames(x)[ !colnames(x) %in% ref_sample ]
-        x <- x[, not_ref]
-    }
-    
-    # Getting corresponding matrices, to calculate divergence 
-    mat <- .get_mat_from_sce(x, assay.type, dimred, n_dimred)
-    ref_mat <- .get_mat_from_sce(reference, assay.type, dimred, n_dimred)
-    # transposing mat if taken from reducedDim. In reducedDim, samples are in
-    # rows
-    if( !is.null(dimred) ){
-        mat <- t(mat)
-        ref_mat <- t(ref_mat)
-    }
-    # Beta divergence from baseline info
-    divergencevalues <- .calc_reference_dist(
-        mat, as.vector(ref_mat), method, FUN = FUN, ...) ###################################### In mia, FUN --< stats::dist --> vegdist --> USE getDissimilarity????
-    # Add time divergence from baseline info; note this has to be a list    
-    timevalues <- colData(x)[[time_field]] - colData(reference)[[time_field]]
-    names(divergencevalues) <- names(timevalues) <- colnames(x)
-    
-    res <- list(time = timevalues, divergence = divergencevalues)
-    return(res)
-}
-
-.wrangle_divergence_list <- function(res, x){
-    divergence <- lapply(res, function(values) values[["divergence"]])
-    time <- lapply(res, function(values) values[["time"]])
-    divergence <- unlist(divergence)
-    time <- unlist(time)
-    divergence <- divergence[ match(colnames(x), names(divergence))]
-    time <- time[ match(colnames(x), names(time))]
-    names(divergence) <- names(time) <- colnames(x)
-    # Create a list of 2 elements. One element has all time differences, other
-    # has all divergence values.
-    res <- list(divergence, time)
-    return(res)
 }

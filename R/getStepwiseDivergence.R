@@ -119,11 +119,11 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
 
 .get_stepwise_divergence <- function(
     x,
-    group=NULL,
+    group = NULL,
     time_field,
-    time_interval=1,
-    name_divergence = "time_divergence",
-    name_timedifference = "time_difference",
+    time_interval = 1,
+    name_divergence = "divergence",
+    name_timedifference = "time_diff",
     assay.type = "counts",
     FUN = vegan::vegdist,
     method="bray",
@@ -176,93 +176,10 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
     
     # 1 Get previous sample for each sample.
     x <- .add_previous_sample(x, group, time_field, time_interval)
-    # 2 Calculate dissimilarity matrix
-    mat <- assay(x, assay.type)
-    mat <- t(mat)
-    res <- vegdist(mat, method = "bray")
-    res <- as.matrix(res)
-    # 3 Assign divergence based on dissimilarity matrix and previous sample information.
-    mapping <- data.frame(sample = x$sample, prev_sample = colData(x)[["previous_sample"]])
-    res <- mapping %>%
-      rowwise() %>%
-      mutate(divergence = get_divergence(sample, prev_sample, res)) %>%
-      ungroup()
-    res <- res[ match(res$sample, colnames(x)), ]
-    x[["divergence"]] <- res[["divergence"]]
-    res <- list(x[["previous_time"]], x[["divergence"]])
+    res <- .calculate_divergence_based_on_reference(x, assay.type, method, ref.field = "previous_sample", ...)
+    res <- res <- list(res, x[["time_diff"]])
     return(res)
     
-}
-
-get_divergence <- function(current_sample, previous_sample, dissim_matrix) {
-  if (!is.na(previous_sample) && 
-      current_sample %in% rownames(dissim_matrix) && 
-      previous_sample %in% colnames(dissim_matrix)) {
-    return(dissim_matrix[current_sample, previous_sample])
-  } else {
-    return(NA)
-  }
-}
-
-.calculate_divergence_based_on_reference <- function(
-    x, assay.type, method, time_field, baseline,
-    fun = FUN, FUN = vegan::vegdist, dimred = NULL, n_dimred = NULL, add.ref = TRUE, ...){
-  # Get reference aka baseline sample
-  prev_samples <- colData(x)[["previous_sample"]]
-  prev_samples <- prev_samples[ !is.na(prev_samples) ]
-  prev_samples <- x[ , x$sample %in% prev_samples ]
-  # Getting corresponding matrices, to calculate divergence 
-  mat <- .get_mat_from_sce(x, assay.type, dimred, n_dimred)
-  ref_mat <- .get_mat_from_sce(prev_samples, assay.type, dimred, n_dimred)
-  # transposing mat if taken from reducedDim. In reducedDim, samples are in
-  # rows
-  if( !is.null(dimred) ){
-    mat <- t(mat)
-    ref_mat <- t(ref_mat)
-  }
-  # Beta divergence from baseline info
-  divergencevalues <- .calc_reference_dist(
-    mat, ref_mat, method, FUN = FUN, ...) ###################################### In mia, FUN --< stats::dist --> vegdist --> USE getDissimilarity????
-  # Add time divergence from baseline info; note this has to be a list    
-  timevalues <- colData(x)[[time_field]] - colData(reference)[[time_field]]
-  names(divergencevalues) <- names(timevalues) <- colnames(x)
-  
-  res <- list(time = timevalues, divergence = divergencevalues)
-  return(res)
-}
-
-.calculate_divergence_from_prev_timepoint <- function(
-        x, sample, assay.type, method, time_field, time_interval, group,
-        fun = FUN, FUN = vegan::vegdist, dimred = NULL, n_dimred = NULL, ...){
-    # Get preiouv sample
-    prev_sample <- .get_previous_sample(x, sample, time_field, time_interval, group)
-    # res <- list(time = NA, divergence = NA)
-    # if( !is.na(prev_sample) ){
-    #   x <- x[, c(sample, prev_sample)]
-    #   ref_name <- "reference"
-    #   colData(x)[[ref_name]] <- prev_sample
-    #   res <- .calculate_divergence_from_baseline(x, assay.type, method, time_field, ref_name, add.ref = FALSE)
-    # }
-    # # If this sample has previous time step, calculate. Othwerwise, give just NAs.
-    # # Calculate divergence between this timepints and prvious time point
-    return(prev_sample)
-}
-
-.get_previous_sample <- function(x, sample, time_field, time_interval, group){
-    # Get values in this group
-    x <- x[ , colData(x)[[group]] ==  colData(x[, sample])[[group]]]
-    # Order
-    x <- x[ , order(colData(x)[[time_field]])]
-    # Get previous time point
-    sample_ind <- which(colnames(x) == sample)
-    sample_ind <- sample_ind[[1]]
-    prev_ind <- sample_ind - time_interval
-    # If the index is possible, return sample name. Otherwise, return NA.
-    res <- NA
-    if( prev_ind > 0 ){
-        res <- colnames(x)[prev_ind]
-    }
-    return(res)
 }
 
 .add_previous_sample <- function(x, group, time, time_interval){
@@ -274,7 +191,42 @@ get_divergence <- function(current_sample, previous_sample, dissim_matrix) {
     mutate(previous_time = lag(time, n = time_interval),   # Lag time by 1 (previous time point)
            previous_sample = lag(sample, n = time_interval)) %>%  # Lag sample name by 1
     ungroup() |> DataFrame()
-  rownames(df) <- colnames(x)
+  
+  rownames(df) <- df$sample
+  df[["time_diff"]] <- df[[time]] - df[["previous_time"]]
+  df <- df[ match(colnames(x), rownames(df)), ]
   colData(x) <- df
   return(x)
+}
+
+.calculate_divergence_based_on_reference <- function(
+    x, assay.type, method, ref.field, dimred = NULL, n_dimred = NULL, ...){
+  # Getting corresponding matrices, to calculate divergence 
+  mat <- .get_mat_from_sce(x, assay.type, dimred, n_dimred)
+  # transposing mat if taken from reducedDim. In reducedDim, samples are in
+  # rows
+  if( !is.null(dimred) ){
+    mat <- t(mat)
+  }
+  #
+  diss_mat <- getDissimilarity(x, method, ...)
+  diss_mat <- as.matrix(diss_mat)
+  #
+  mapping <- data.frame(sample = colnames(x), prev_sample = x[[ref.field]])
+  mapping <- mapping %>%
+    rowwise() %>%
+    mutate(divergence = .get_divergence(diss_mat, sample, prev_sample)) %>%
+    ungroup()
+  mapping <- mapping[ match(mapping$sample, colnames(x)), ]
+  #
+  res <- mapping[["divergence"]]
+  return(res)
+}
+
+.get_divergence <- function(mat, sample, prev){
+  res <- NA
+  if( !is.na(sample) && sample %in% rownames(mat) && prev %in% colnames(mat) ){
+    res <- mat[sample, prev]
+  }
+  return(res)
 }
