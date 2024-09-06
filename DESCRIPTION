@@ -25,12 +25,14 @@ Imports:
     SummarizedExperiment,
     SingleCellExperiment,
     vegan,
-    scater
+    scater,
+    ggplot2,
+    ggrepel,
+    reshape2
 Suggests: 
     TreeSummarizedExperiment,
     tidySingleCellExperiment,
     tidySummarizedExperiment,
-    ggplot2,
     miaViz,
     lubridate,
     rmarkdown,
@@ -42,7 +44,7 @@ Suggests:
 Encoding: UTF-8
 URL: https://github.com/microbiome/miaTime
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 LazyData: false
 Config/testthat/edition: 3

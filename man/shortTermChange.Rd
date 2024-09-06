@@ -40,9 +40,13 @@ used in calculation. (Default: \code{"counts"})}
 (Default: \code{min(assay(x, assay.type)}))}
 
 \item{...}{additional arguments.}
+
+\item{plot}{\code{Logical scalar}. Whether to plot short term change.
+(Default: \code{FALSE})}
 }
 \value{
-\code{dataframe} with \code{short term change} calculations.
+\code{dataframe} or \code{plot} with \code{short term change}
+calculations.
 }
 \description{
 Calculates short term changes in abundance of taxa
@@ -56,4 +60,19 @@ Also a compositional version using relative abundance similar to
 Brian WJi, Sheth R et al
 \url{https://www.nature.com/articles/s41564-020-0685-1} can be used.
 This approach is useful for identifying short term growth behaviors of taxa.
+}
+\examples{
+
+# Load time series data
+data(minimalgut)
+tse <- minimalgut
+
+short_time_labels <- c("74.5h", "173h", "438h", "434h", "390h")
+
+# Subset samples by Time_lable and StudyIdentifier
+tse <- tse[, !(colData(tse)$Time_label \%in\% short_time_labels)]
+tse <- tse[, (colData(tse)$StudyIdentifier == "Bioreactor A")]
+
+# Plot short term change in abundance
+shortTermChange(tse, rarefy = TRUE, plot = TRUE) + ggtitle("Bioreactor A")
 }

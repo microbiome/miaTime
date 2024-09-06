@@ -1,4 +1,3 @@
-
 #' @title Short term Changes in Abundance
 #'
 #' @description Calculates short term changes in abundance of taxa
@@ -18,10 +17,14 @@
 #' @param depth \code{Integer scalar}. Specifies the depth used in rarefying. 
 #' (Default: \code{min(assay(x, assay.type)}))
 #' 
+#' @param plot \code{Logical scalar}. Whether to plot short term change.
+#' (Default: \code{FALSE})
+#' 
 #' @param ... additional arguments.
 #' 
 #' 
-#' @return \code{dataframe} with \code{short term change} calculations.
+#' @return \code{dataframe} or \code{plot} with \code{short term change} 
+#' calculations.
 #' 
 #' @details This approach is used by Wisnoski NI and colleagues
 #'          \url{https://github.com/nwisnoski/ul-seedbank}. Their approach is based on
@@ -34,10 +37,20 @@
 #' @name shortTermChange
 #' 
 #' 
-#' @example
+#' @examples
+#' 
+#' # Load time series data
 #' data(minimalgut)
 #' tse <- minimalgut
-
+#' 
+#' short_time_labels <- c("74.5h", "173h", "438h", "434h", "390h")
+#' 
+#' # Subset samples by Time_lable and StudyIdentifier
+#' tse <- tse[, !(colData(tse)$Time_label %in% short_time_labels)]
+#' tse <- tse[, (colData(tse)$StudyIdentifier == "Bioreactor A")]
+#' 
+#' # Plot short term change in abundance
+#' shortTermChange(tse, rarefy = TRUE, plot = TRUE) + ggtitle("Bioreactor A")
 
 
 #' @rdname shortTermChange
@@ -49,6 +62,10 @@ setGeneric("shortTermChange", signature = c("x"),
 
 #' @rdname shortTermChange
 #' @export
+#' @importFrom dplyr arrange as_tibble
+#' @importFrom ggplot2 ggplot
+#' @importFrom ggrepel geom_text_repel
+#' @importFrom mia rarefyAssay
 setMethod("shortTermChange", signature = c(x = "SummarizedExperiment"),
     function(x, assay.type = "counts", rarefy = FALSE, compositional = FALSE, 
         depth = min(assay(x, assay.type)), plot = FALSE, ...){
@@ -112,15 +129,20 @@ setMethod("shortTermChange", signature = c(x = "SummarizedExperiment"),
                     data = subset(grs.all, ismax == T),
                     aes(y = max.growth), alpha = 0.8, size = 3
                 ) +
-                # coord_flip() +
-                geom_ribbon(aes(group = NULL, col = NULL, ymax = 0, ymin = min(growth_diff)),
-                            fill = "white", col = "#edf3f5", alpha = 0.7
+                geom_ribbon(aes(group = NULL, col = NULL, ymax = 0, ymin = -9),
+                            fill = "#edf3f5", col = "#edf3f5", alpha = 0.5
                 ) +
                 theme(
-                    legend.position = "top", legend.text = element_text(size = 9),
-                    panel.background = element_rect(fill = "white", color = "black"),
-                    panel.grid.major = element_blank(),
-                    panel.grid.minor = element_blank(),
+                    legend.position = "right", legend.text = element_text(size = 9),
+                    panel.background = element_rect(fill = "white"),
+                    panel.grid.major = element_line(
+                        size = 0.5, linetype = "solid",
+                        colour = "#CCD1D1"
+                    ),
+                    panel.grid.minor = element_line(
+                        size = 0.5, linetype = "solid",
+                        colour = "#CCD1D1"
+                    ),
                     legend.key = element_blank()
                 ) +
                 geom_text_repel(
@@ -133,8 +155,7 @@ setMethod("shortTermChange", signature = c(x = "SummarizedExperiment"),
                 geom_hline(yintercept = 0) +
                 labs(
                     x = "Time (hr)",
-                    y = expression(paste("Change in abundance ", " \U00B5 = ", 
-                                         abund[t + 1] / abund[t]))
+                    y = expression(paste("Change in abundance ", " \U00B5 = ", abund[t + 1] / abund[t]))
                 )
         }
         return(grs.all)
@@ -165,7 +186,3 @@ setMethod("shortTermChange", signature = c(x = "SummarizedExperiment"),
     
     return(assay_data)
 }
-
-
-
-        
