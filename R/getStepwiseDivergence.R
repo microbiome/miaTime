@@ -173,7 +173,7 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
     
     # 1 Get previous sample for each sample.
     x <- .add_previous_sample(x, group, time_field, time_interval)
-    res <- .calculate_divergence_based_on_reference(x, assay.type, method, ref.field = "previous_sample", ...)
+    res <- getDivergence(x, assay.type, method, reference = "previous_sample", ...)
     res <- res <- list(res, x[["time_diff"]])
     return(res)
     
@@ -194,36 +194,4 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
   df <- df[ match(colnames(x), rownames(df)), ]
   colData(x) <- df
   return(x)
-}
-
-.calculate_divergence_based_on_reference <- function(
-    x, assay.type, method, ref.field, dimred = NULL, n_dimred = NULL, ...){
-  # Getting corresponding matrices, to calculate divergence 
-  mat <- .get_mat_from_sce(x, assay.type, dimred, n_dimred)
-  # transposing mat if taken from reducedDim. In reducedDim, samples are in
-  # rows
-  if( !is.null(dimred) ){
-    mat <- t(mat)
-  }
-  #
-  diss_mat <- getDissimilarity(x, method, ...)
-  diss_mat <- as.matrix(diss_mat)
-  #
-  mapping <- data.frame(sample = colnames(x), prev_sample = x[[ref.field]])
-  mapping <- mapping %>%
-    rowwise() %>%
-    mutate(divergence = .get_divergence(diss_mat, sample, prev_sample)) %>%
-    ungroup()
-  mapping <- mapping[ match(mapping$sample, colnames(x)), ]
-  #
-  res <- mapping[["divergence"]]
-  return(res)
-}
-
-.get_divergence <- function(mat, sample, prev){
-  res <- NA
-  if( !is.na(sample) && sample %in% rownames(mat) && prev %in% colnames(mat) ){
-    res <- mat[sample, prev]
-  }
-  return(res)
 }

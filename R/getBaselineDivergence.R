@@ -84,7 +84,7 @@ NULL
 setGeneric("addBaselineDivergence", signature = "x", function(x, ...)
     standardGeneric("addBaselineDivergence"))
 
-#' @rdname getPrevalence
+#' @rdname addBaselineDivergence
 #' @export
 setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     function(
@@ -172,8 +172,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     ############################# INPUT CHECK END ##############################
     df <- colData(x)
     x[["time_diff"]] <- df[[time]] - df[df[[baseline]], time]
-    res <- .calculate_divergence_based_on_reference(
-        x, assay.type, method, ref.field = baseline, ...)
+    res <- getDivergence( x, assay.type, method, reference = baseline, ...)
     res <- list(res, x[["time_diff"]])
     return(res)
 }
@@ -184,7 +183,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     correct <- lapply(baseline_samples, function(group){
         # Get unique
         group <- unique(group)
-        # It must be a single index or character psacifying a column
+        # It must be a single index or character specifying a column
         res <- length(group) == 1 && (
             (is.integer(group) && group >= 1 && group <= ncol(x)) ||
                 (is.character(group) && group %in% colnames(x)) )
@@ -202,7 +201,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
 
 .get_baseline_sample <- function(x, group, time){
     colData(x)$sample <- colnames(x)
-    # For each group, get the sampe that has lowest time point
+    # For each group, get the sample that has lowest time point
     baseline <- colData(x) %>% as.data.frame() %>%
         group_by(.data[[group]]) %>%
         mutate(rank = rank(.data[[time]], ties.method = "first")) %>%

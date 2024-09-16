@@ -1,3 +1,14 @@
+#' These functions are deprecated. Please use other functions instead.
+#' 
+#' @param x A
+#' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
+#' object.
+#' 
+#' @param ... Additional parameters. See dedicated function.
+#' 
+#' @name deprecate
+NULL
+
 #' @rdname deprecate
 #' @export
 setGeneric("getTimeDivergence", signature = c("x"), function(x, ... )
@@ -6,7 +17,8 @@ setGeneric("getTimeDivergence", signature = c("x"), function(x, ... )
 #' @rdname deprecate
 #' @export
 setMethod("getTimeDivergence", signature = c(x = "ANY"), function(x, ...){
-    .Deprecated(msg = "test here")
+    .Deprecated(msg = paste0("'getTimeDivergence' is deprecated. ",
+                             "Use 'addStepwiseDivergence' instead."))
     addStepwiseDivergence(x, ...)
     }
 )
@@ -14,12 +26,13 @@ setMethod("getTimeDivergence", signature = c(x = "ANY"), function(x, ...){
 #' @rdname deprecate
 #' @export
 setGeneric("getStepwiseDivergence", signature = c("x"), function(x, ... )
-    standardGeneric("getTimeDivergence"))
+    standardGeneric("getStepwiseDivergence"))
 
 #' @rdname deprecate
 #' @export
 setMethod("getStepwiseDivergence", signature = c(x = "ANY"), function(x, ...){
-    .Deprecated(msg = "Text here")
+    .Deprecated(msg = paste0("'getStepwiseDivergence' is deprecated. ",
+                             "Use 'addStepwiseDivergence' instead."))
     addStepwiseDivergence(x, ...)
 }
 )
@@ -27,12 +40,13 @@ setMethod("getStepwiseDivergence", signature = c(x = "ANY"), function(x, ...){
 #' @rdname deprecate
 #' @export
 setGeneric("getBaselineDivergence", signature = c("x"), function(x, ... )
-    standardGeneric("getTimeDivergence"))
+    standardGeneric("getBaselineDivergence"))
 
 #' @rdname deprecate
 #' @export
-setMethod("getTimeDivergence", signature = c(x = "ANY"), function(x, ...){
-    .Deprecated(msg = "add rexxr")
+setMethod("getBaselineDivergence", signature = c(x = "ANY"), function(x, ...){
+    .Deprecated(msg = paste0("'getBaselineDivergence' is deprecated. ",
+                             "Use 'addBaselineDivergence' instead."))
     addBaselineDivergence(x, ...)
 }
 )

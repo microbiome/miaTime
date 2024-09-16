@@ -163,6 +163,5 @@
 .safe_deparse <- mia:::.safe_deparse
 .check_altExp_present <- mia:::.check_altExp_present
 .check_assay_present <- mia:::.check_assay_present
-.calc_reference_dist <- mia:::.calc_reference_dist
 .add_values_to_colData <- mia:::.add_values_to_colData
 .get_mat_from_sce <- scater:::.get_mat_from_sce
