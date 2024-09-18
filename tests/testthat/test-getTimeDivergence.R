@@ -4,12 +4,15 @@ test_that("getStepwiseDivergence", {
   # Subset to speed up computing
   # Just pick 4 subjects with 1-5 time points
   tse <- tse[, colData(tse)$subject %in% c("900", "934", "843", "875")]
-  tse2 <- getStepwiseDivergence(tse, group = "subject",
-                                     time_interval = 1,
-                                     time_field = "time")
+  tse2 <- addStepwiseDivergence(tse, group = "subject",
+                                time_interval = 1,
+                                time_field = "time",
+                                assay.type="counts",
+                                FUN = vegan::vegdist,
+                                method="bray")
 
   # Trying to add new coldata field with the same name
-  expect_warning(tse2 <- getStepwiseDivergence(tse2, group = "subject",
+  expect_warning(tse2 <- addStepwiseDivergence(tse2, group = "subject",
                                      time_interval = 1,
                                      time_field = "time"))
 
@@ -17,19 +20,26 @@ test_that("getStepwiseDivergence", {
   expect_equal(class(tse), class(tse2))
 
   # A subject to check time difference calculation
-  obs_diff <- colData(tse2)[which(colData(tse2)[, "subject"] == "843"), "time_difference"]
-  exp_diff <- c(NA,diff(colData(tse)[which(colData(tse)[, "subject"] == "843"), "time"]))
+  obs_diff <- colData(tse2)[
+      which(colData(tse2)[, "subject"] == "843"), "time_difference"]
+  exp_diff <- c(NA,diff(colData(tse)[
+      which(colData(tse)[, "subject"] == "843"), "time"]))
   expect_equal(obs_diff, exp_diff)
 
   # n > 1
-  tse3 <- getStepwiseDivergence(tse, group = "subject",
-                           time_interval = 2,
-                           time_field = "time")
+  tse3 <- addStepwiseDivergence(tse, group = "subject",
+                                time_interval = 2,
+                                time_field = "time",
+                                assay.type="counts",
+                                FUN = vegan::vegdist,
+                                method="bray")
+  
   time_invertal <- 2
 
   time3 <- colData(tse3)[, "time"][which(colData(tse3)[, "subject"] == "843")]
 
-  time_dif_3 <- colData(tse3)[, "time_difference"][which(colData(tse3)[, "subject"] == "843")]
+  time_dif_3 <- colData(tse3)[, "time_difference"][
+      which(colData(tse3)[, "subject"] == "843")]
 
   # number of divergences (n-k) check
   divergence_number <- length(time3) - time_invertal
@@ -39,37 +49,47 @@ test_that("getStepwiseDivergence", {
   expect_equal(divergence_number, divergence_calculated)
 
   # interval check
-  calculated_diff <- time3[(1+ 2):length(time3)] - time3[seq_len(length(time3)-2)]
+  calculated_diff <- time3[(1+ 2):length(time3)] - 
+      time3[seq_len(length(time3)-2)]
 
-  manual_diff <- c(rep(NA, length(time3) - length(calculated_diff)), calculated_diff)
+  manual_diff <- c(rep(NA, length(time3) - 
+      length(calculated_diff)), calculated_diff)
 
   expect_equal(time_dif_3, manual_diff)
 
   # object with single time point has NA instead of divergence values
-  sub_hitchip <- hitchip1006[, colData(hitchip1006)$subject %in% c("900","843", "139")]
-  subset <- getStepwiseDivergence(sub_hitchip, group = "subject",
-                                      time_interval = 1,
-                                      time_field = "time")
+  sub_hitchip <- hitchip1006[, 
+      colData(hitchip1006)$subject %in% c("900","843", "139")]
+  subset <- addStepwiseDivergence(sub_hitchip, group = "subject",
+                                time_interval = 1,
+                                time_field = "time",
+                                assay.type="counts",
+                                FUN = vegan::vegdist,
+                                method="bray")
 
-  expect_true(all(is.na(colData(subset)[, "time_divergence"][which(duplicated(colData(subset)[, "subject"]) == FALSE)])))
+  expect_true(all(is.na(colData(subset)[, "time_divergence"][
+      which(duplicated(colData(subset)[, "subject"]) == FALSE)])))
 
 
   # Test vegan distances
-  tse2 <- getStepwiseDivergence(tse, group = "subject",
-                                     time_interval = 1,
-                                     time_field = "time",
-				     FUN=vegan::vegdist,
-				     method="bray",
-				     name_timedifference="timedifference",
-			             name_divergence="timedivergence")
+  tse2 <- addStepwiseDivergence(tse, group = "subject",
+                                  time_interval = 1,
+                                  time_field = "time",
+                                  assay.type="counts",
+                                  FUN = vegan::vegdist,
+                                  method="bray",
+                                  name_timedifference="timedifference",
+                                  name_divergence="timedivergence")
+  
   # Test vegan distances
-  tse2 <- getStepwiseDivergence(tse2, group = "subject",
-                                     time_interval = 1,
-                                     time_field = "time",
-				     FUN=vegan::vegdist,
-				     method="euclidean",
-				     name_timedifference="timedifference2",
-			             name_divergence="timedivergence2")				     
+  tse2 <- addStepwiseDivergence(tse2, group = "subject",
+                                time_interval = 1,
+                                time_field = "time",
+                                assay.type="counts",
+                                FUN = vegan::vegdist,
+                                method="euclidean",
+                                name_timedifference="timedifference2",
+                                name_divergence="timedivergence2")
 				     
   # Time differences should still match
   expect_true(identical(tse2$timedifference, tse2$timedifference2))
@@ -81,7 +101,7 @@ test_that("getStepwiseDivergence", {
                         name = "PCoA_BC", exprs_values = "counts",
                         na.rm = TRUE, ncomponents=4)
   # testing with all ordination components; n_dimred=NULL --> all 4 components
-  tse2 <- getStepwiseDivergence(tse2, group = "subject",
+  tse2 <- addStepwiseDivergence(tse2, group = "subject",
                                 time_interval = 1,
                                 time_field = "time",
                                 name_timedifference="timedifference_ord_4",
@@ -95,7 +115,7 @@ test_that("getStepwiseDivergence", {
   expect_true(!identical(tse2$timedivergence_ord_4, tse2$timedivergence))
   
   # testing with 2 ordination components
-  tse2 <- getStepwiseDivergence(tse2, group = "subject",
+  tse2 <- addStepwiseDivergence(tse2, group = "subject",
                                 time_interval = 1,
                                 time_field = "time",
                                 name_timedifference="timedifference_ord_2",
@@ -110,8 +130,9 @@ test_that("getStepwiseDivergence", {
   expect_true(!identical(tse2$timedivergence_ord_2, tse2$timedivergence_ord_4))
   
   ## testing with altExp
-  SingleCellExperiment::altExp(tse2, "Family") <- mia::agglomerateByRank(tse2, rank="Family")
-  tse2 <- getStepwiseDivergence(tse2, group = "subject",
+  SingleCellExperiment::altExp(tse2, "Family") <- mia::agglomerateByRank(tse2, 
+                                                        rank="Family")
+  tse2 <- addStepwiseDivergence(tse2, group = "subject",
                                 time_interval = 1,
                                 time_field = "time",
                                 altexp="Family",

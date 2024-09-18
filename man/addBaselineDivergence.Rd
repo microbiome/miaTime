@@ -68,7 +68,7 @@ tse <- mia::transformAssay(hitchip1006, method = "relabundance")
 # Subset to speed up example
 tse <- tse[, tse$subject \%in\% c("900", "934", "843", "875")]
 
-tse2 <- getBaselineDivergence(
+tse2 <- addBaselineDivergence(
     tse,
     group = "subject",
     time_field = "time",
@@ -78,7 +78,7 @@ tse2 <- getBaselineDivergence(
     FUN = vegan::vegdist,
     method="bray")
 
-tse2 <- getBaselineDivergence(
+tse2 <- addBaselineDivergence(
     tse,
     baseline_sample = "Sample-875",
     group = "subject",

@@ -13,24 +13,27 @@
 #' per group.  e.g. subject, chamber, group etc.). (Default: \code{NULL})
 #' @param time_field \code{Character scalar}. Specifies the name of the
 #' time series field in `colData`.
-#' @param time_interval \code{Integer scalar}. Indicates the increment between time
-#' steps. If you need to take every second, every third, or so, time step only, then
-#' increase this accordingly. (Default: \code{1})
-#' @param name_divergence \code{Character scalar}. Shows beta diversity between samples.
-#' (Default: \code{"time_divergence"})
-#' @param name_timedifference \code{Character scalar}. Field name for adding the time difference between
-#' samples used to calculate beta diversity. (Default: \code{"time_difference"})
-#' @param assay.type \code{Character scalar}. Specifies which assay values are used in
-#' the dissimilarity estimation. (Default: \code{"counts"})
+#' @param time_interval \code{Integer scalar}. Indicates the increment between 
+#' time steps. If you need to take every second, every third, or so, time step 
+#' only, then increase this accordingly. (Default: \code{1})
+#' @param name_divergence \code{Character scalar}. Shows beta diversity between 
+#' samples. (Default: \code{"time_divergence"})
+#' @param name_timedifference \code{Character scalar}. Field name for adding the 
+#' time difference between samples used to calculate beta diversity. 
+#' (Default: \code{"time_difference"})
+#' @param assay.type \code{Character scalar}. Specifies which assay values are 
+#' used in the dissimilarity estimation. (Default: \code{"counts"})
 #' @param FUN \code{Function} for dissimilarity calculation. The function must
-#'   expect the input matrix as its first argument. With rows as samples 
-#'   and columns as features. (Default: \code{vegan::vegdist})
-#' @param method \code{Character scalar}. Used to calculate the distance. Method is
-#'   passed to the function that is specified by \code{FUN}. (Default: \code{"bray"})
-#' @param altexp \code{Character scalar} or \code{integer scalar}. Specifies the alternative experiment 
-#' containing the input data. (Default: \code{NULL})
-#' @param dimred \code{Character scalar} or \code{integer scalar}. indicates the reduced dimension
-#' result in `reducedDims` to use in the estimation. (Default: \code{NULL})
+#' expect the input matrix as its first argument. With rows as samples and 
+#' columns as features. (Default: \code{vegan::vegdist})
+#' @param method \code{Character scalar}. Used to calculate the distance. 
+#' Method is passed to the function that is specified by \code{FUN}. 
+#' (Default: \code{"bray"})
+#' @param altexp \code{Character scalar} or \code{integer scalar}. Specifies the 
+#' alternative experiment containing the input data. (Default: \code{NULL})
+#' @param dimred \code{Character scalar} or \code{integer scalar}. indicates the 
+#' reduced dimension result in `reducedDims` to use in the estimation. 
+#' (Default: \code{NULL})
 #' @param n_dimred \code{Integer vector}. Specifies the dimensions to use if
 #' \code{dimred} is specified. (Default: \code{NULL})
 #' @param ... Arguments to be passed
@@ -50,7 +53,7 @@
 #' library(TreeSummarizedExperiment)
 #'
 #' data(hitchip1006)
-#' tse <- mia::transformCounts(hitchip1006, method = "relabundance")
+#' tse <- mia::transformAssay(hitchip1006, method = "relabundance")
 #'
 #' # Subset to speed up example
 #' tse <- tse[, colData(tse)$subject %in% c("900", "934", "843", "875")]
@@ -106,7 +109,8 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
         ########################### INPUT CHECK END ############################
         # Calculate values
         res <- .get_stepwise_divergence(
-          x = x, group = group, time_field = time_field, time_interval = time_interval, assay.type = assay.type, method = method, ...)
+          x = x, group = group, time_field = time_field, 
+          time_interval = time_interval, assay.type = assay.type, method = method, ...)
         # Add values to colData
         x <- .add_values_to_colData(
           x, res, name = c(name_divergence, name_timedifference))
@@ -173,7 +177,8 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
     
     # 1 Get previous sample for each sample.
     x <- .add_previous_sample(x, group, time_field, time_interval)
-    res <- getDivergence(x, assay.type, method, reference = "previous_sample", ...)
+    res <- getDivergence(x, assay.type, method = method, 
+              reference = "previous_sample", ...)
     res <- res <- list(res, x[["time_diff"]])
     return(res)
     
@@ -183,10 +188,14 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
   colData(x)$sample <- colnames(x)
   # For each group, get the sampe that has lowest time point
   df <- colData(x) %>% as.data.frame() %>%
-    arrange(.data[[group]], .data[[time]]) %>%                 # Sort by subject and time
-    group_by(subject) %>%                      # Group by subject
-    mutate(previous_time = lag(time, n = time_interval),   # Lag time by 1 (previous time point)
-           previous_sample = lag(sample, n = time_interval)) %>%  # Lag sample name by 1
+    # Sort by subject and time
+    arrange(.data[[group]], .data[[time]]) %>%
+    # Group by subject
+    group_by(subject) %>%
+    # Lag time by 1 (previous time point)
+    mutate(previous_time = lag(time, n = time_interval),  
+           # Lag sample name by 1
+           previous_sample = lag(sample, n = time_interval)) %>%  
     ungroup() |> DataFrame()
   
   rownames(df) <- df$sample

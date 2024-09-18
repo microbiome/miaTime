@@ -42,7 +42,7 @@
 #' # Subset to speed up example
 #' tse <- tse[, tse$subject %in% c("900", "934", "843", "875")]
 #'
-#' tse2 <- getBaselineDivergence(
+#' tse2 <- addBaselineDivergence(
 #'     tse,
 #'     group = "subject",
 #'     time_field = "time",
@@ -52,7 +52,7 @@
 #'     FUN = vegan::vegdist,
 #'     method="bray")
 #'
-#' tse2 <- getBaselineDivergence(
+#' tse2 <- addBaselineDivergence(
 #'     tse,
 #'     baseline_sample = "Sample-875",
 #'     group = "subject",
@@ -110,7 +110,8 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         ########################### INPUT CHECK END ############################
         # Calculate values
         res <- .get_baseline_divergence(
-            x = x, group = group, time_field = time_field, assay.type = assay.type, method = method, ...)
+            x = x, group = group, time_field = time_field, 
+            assay.type = assay.type, method = method, ...)
         # Add values to colData
         x <- .add_values_to_colData(
             x, res, name = c(name_divergence, name_timedifference))
@@ -171,7 +172,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     .check_baseline_samples(x, baseline, group)
     ############################# INPUT CHECK END ##############################
     df <- colData(x)
-    x[["time_diff"]] <- df[[time]] - df[df[[baseline]], time]
+    x[["time_diff"]] <- df[[time_field]] - df[df[[baseline]], time_field]
     res <- getDivergence( x, assay.type, method, reference = baseline, ...)
     res <- list(res, x[["time_diff"]])
     return(res)

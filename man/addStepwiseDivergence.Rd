@@ -33,31 +33,34 @@ per group.  e.g. subject, chamber, group etc.). (Default: \code{NULL})}
 \item{time_field}{\code{Character scalar}. Specifies the name of the
 time series field in \code{colData}.}
 
-\item{time_interval}{\code{Integer scalar}. Indicates the increment between time
-steps. If you need to take every second, every third, or so, time step only, then
-increase this accordingly. (Default: \code{1})}
+\item{time_interval}{\code{Integer scalar}. Indicates the increment between
+time steps. If you need to take every second, every third, or so, time step
+only, then increase this accordingly. (Default: \code{1})}
 
-\item{name_divergence}{\code{Character scalar}. Shows beta diversity between samples.
-(Default: \code{"time_divergence"})}
+\item{name_divergence}{\code{Character scalar}. Shows beta diversity between
+samples. (Default: \code{"time_divergence"})}
 
-\item{name_timedifference}{\code{Character scalar}. Field name for adding the time difference between
-samples used to calculate beta diversity. (Default: \code{"time_difference"})}
+\item{name_timedifference}{\code{Character scalar}. Field name for adding the
+time difference between samples used to calculate beta diversity.
+(Default: \code{"time_difference"})}
 
-\item{assay.type}{\code{Character scalar}. Specifies which assay values are used in
-the dissimilarity estimation. (Default: \code{"counts"})}
+\item{assay.type}{\code{Character scalar}. Specifies which assay values are
+used in the dissimilarity estimation. (Default: \code{"counts"})}
 
-\item{method}{\code{Character scalar}. Used to calculate the distance. Method is
-passed to the function that is specified by \code{FUN}. (Default: \code{"bray"})}
+\item{method}{\code{Character scalar}. Used to calculate the distance.
+Method is passed to the function that is specified by \code{FUN}.
+(Default: \code{"bray"})}
 
 \item{FUN}{\code{Function} for dissimilarity calculation. The function must
-expect the input matrix as its first argument. With rows as samples
-and columns as features. (Default: \code{vegan::vegdist})}
+expect the input matrix as its first argument. With rows as samples and
+columns as features. (Default: \code{vegan::vegdist})}
 
-\item{altexp}{\code{Character scalar} or \code{integer scalar}. Specifies the alternative experiment
-containing the input data. (Default: \code{NULL})}
+\item{altexp}{\code{Character scalar} or \code{integer scalar}. Specifies the
+alternative experiment containing the input data. (Default: \code{NULL})}
 
-\item{dimred}{\code{Character scalar} or \code{integer scalar}. indicates the reduced dimension
-result in \code{reducedDims} to use in the estimation. (Default: \code{NULL})}
+\item{dimred}{\code{Character scalar} or \code{integer scalar}. indicates the
+reduced dimension result in \code{reducedDims} to use in the estimation.
+(Default: \code{NULL})}
 
 \item{n_dimred}{\code{Integer vector}. Specifies the dimensions to use if
 \code{dimred} is specified. (Default: \code{NULL})}
@@ -81,7 +84,7 @@ time difference is returned as well. The method operates on
 library(TreeSummarizedExperiment)
 
 data(hitchip1006)
-tse <- mia::transformCounts(hitchip1006, method = "relabundance")
+tse <- mia::transformAssay(hitchip1006, method = "relabundance")
 
 # Subset to speed up example
 tse <- tse[, colData(tse)$subject \%in\% c("900", "934", "843", "875")]
