@@ -20,24 +20,24 @@ Depends:
     mia
 Imports:
     dplyr,
-    methods,    
+    methods,
     S4Vectors,
-    SummarizedExperiment,
+    scater,
     SingleCellExperiment,
-    vegan,
-    scater
+    SummarizedExperiment,
+    vegan
 Suggests: 
-    TreeSummarizedExperiment,
+    BiocStyle,
+    devtools,
+    ggplot2,
+    knitr,
+    lubridate,
+    miaViz,
+    rmarkdown,
+    testthat,
     tidySingleCellExperiment,
     tidySummarizedExperiment,
-    ggplot2,
-    miaViz,
-    lubridate,
-    rmarkdown,
-    knitr,
-    devtools,
-    BiocStyle,
-    testthat,
+    TreeSummarizedExperiment,
     zoo
 Encoding: UTF-8
 URL: https://github.com/microbiome/miaTime

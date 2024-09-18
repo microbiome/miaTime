@@ -72,7 +72,7 @@ NULL
 #' @rdname addStepwiseDivergence
 #' @export
 #' 
-#' @importFrom mia mergeSEs
+#' @importFrom mia mergeSEs getDivergence
 #' @importFrom vegan vegdist
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData

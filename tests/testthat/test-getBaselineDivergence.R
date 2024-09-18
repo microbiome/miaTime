@@ -46,7 +46,8 @@ test_that("getBaselineDivergence", {
   # Just pick 1 subject with many time points
   # The baseline time point 0 is Sample-843
   tse <- tse[, colData(tse)$subject == "843"] 
-
+  
+  tse2b <- getBaselineDivergence(tse, group="subject", time_field = "time")
   # Define the baseline sample manually
   tse2c <- addBaselineDivergence(tse, time_field = "time", group="subject",
                baseline_sample="Sample-843",
