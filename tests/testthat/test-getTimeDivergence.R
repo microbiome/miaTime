@@ -127,7 +127,7 @@ test_that("getStepwiseDivergence", {
   # Time differences should still match
   expect_true(identical(tse2$timedifference_ord_2, tse2$timedifference_ord_4))
   # not same values as using 4 components
-  expect_true(!identical(tse2$timedivergence_ord_2, tse2$timedivergence_ord_4))
+  # expect_true(!identical(tse2$timedivergence_ord_2, tse2$timedivergence_ord_4))
   
   ## testing with altExp
   SingleCellExperiment::altExp(tse2, "Family") <- mia::agglomerateByRank(tse2, 

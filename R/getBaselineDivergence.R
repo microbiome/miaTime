@@ -121,7 +121,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
 )
 
 .get_baseline_divergence <- function(
-        x, group, baseline_sample, time_field, assay.type, method,
+        x, group, baseline_sample = NULL, time_field, assay.type, method,
         altexp = NULL, baseline = NULL, ...){
     ############################### INPUT CHECK ################################
     # If TreeSE does not have column names, add
@@ -200,17 +200,28 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     return(NULL)
 }
 
-.get_baseline_sample <- function(x, group, time){
+.get_baseline_sample <- function(x, group, time, baseline_sample = NULL) {
     colData(x)$sample <- colnames(x)
-    # For each group, get the sample that has lowest time point
-    baseline <- colData(x) %>% as.data.frame() %>%
-        group_by(.data[[group]]) %>%
+    
+    # If a specific baseline sample is provided, use it directly
+    if (!is.null(baseline_sample)) {
+        baseline <- rep(baseline_sample, ncol(x))
+        return(baseline)
+    }
+
+    # For each group, get the sample with the lowest time point
+    baseline <- colData(x) %>%
+        as.data.frame() %>%
+        group_by(across(all_of(group))) %>%
         mutate(rank = rank(.data[[time]], ties.method = "first")) %>%
-        filter(rank == 1) %>%	
-        select(.data[["sample"]], .data[[group]])
-    # For each sample, assign corresponding baseline sample
+        filter(rank == 1) %>%
+        select(sample, all_of(group))
+    
+    # Match baseline sample with each group
     ind <- match(colData(x)[[group]], baseline[[group]])
     baseline <- baseline[ind, ]
     baseline <- baseline[["sample"]]
+    
     return(baseline)
 }
+

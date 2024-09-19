@@ -189,7 +189,7 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
   # For each group, get the sampe that has lowest time point
   df <- colData(x) %>% as.data.frame() %>%
     # Sort by subject and time
-    arrange(.data[[group]], .data[[time]]) %>%
+    arrange(all_of(group), all_of(time)) %>%
     # Group by subject
     group_by(subject) %>%
     # Lag time by 1 (previous time point)
