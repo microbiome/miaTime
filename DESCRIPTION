@@ -31,7 +31,8 @@ Imports:
     SummarizedExperiment,
     SingleCellExperiment,
     vegan,
-    scater
+    scater,
+    stats
 Suggests: 
     TreeSummarizedExperiment,
     tidySingleCellExperiment,
