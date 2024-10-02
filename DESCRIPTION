@@ -39,6 +39,8 @@ Suggests:
     BiocStyle,
     testthat,
     zoo
+Remotes:
+    github::microbiome/mia
 Encoding: UTF-8
 URL: https://github.com/microbiome/miaTime
 Roxygen: list(markdown = TRUE)
