@@ -2,7 +2,6 @@
 # internal methods loaded from other packages
 
 .check_altExp_present <- mia:::.check_altExp_present
-.calc_reference_dist <- mia:::.calc_reference_dist
 .get_mat_from_sce <- scater:::.get_mat_from_sce
 
 ################################################################################

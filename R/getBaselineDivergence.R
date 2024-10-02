@@ -220,11 +220,15 @@ getBaselineDivergence <- function(x,
     ref_mat <- .get_mat_from_sce(reference, assay.type, dimred, n_dimred)
     
     # transposing mat if taken from reducedDim 
-    if (!is.null(dimred)) mat <- t(mat)
+    if (!is.null(dimred)){
+        mat <- t(mat)
+        ref_mat <- t(ref_mat)
+    }
     
     # Beta divergence from baseline info
-    divergencevalues <- .calc_reference_dist(mat, as.vector(ref_mat),
-                                             FUN = FUN, method)
+    divergencevalues <- mia:::.calc_divergence(
+        cbind(mat, ref_mat), colnames(ref_mat), FUN = FUN, method = method)
+    divergencevalues <- divergencevalues[seq_len(ncol(mat)), "value"]
 
     # Add time divergence from baseline info; note this has to be a list    
     timevalues <- list(colData(x)[, time_field] - colData(reference)[, time_field])
