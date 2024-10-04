@@ -199,7 +199,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         colData(x)$sample <- colnames(x)
         baseline <- colData(x) %>% as.data.frame() %>%
             group_by(group) %>%
-            mutate(rank = rank(time, ties.method="first")) %>%
+            mutate(rank = rank(time_field, ties.method="first")) %>%
             filter(rank==1) %>%	
             select(sample, group)
         baseline_sample <- baseline$sample

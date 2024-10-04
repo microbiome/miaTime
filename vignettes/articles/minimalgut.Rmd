@@ -83,7 +83,7 @@ here hour zero until the end of the experiment.
 ```{r}
 ## Divergence from baseline i.e from hour zero.
 tse <- mia::relAbundanceCounts(minimalgut) # get relative abundance
-tse <- getBaselineDivergence(tse,
+tse <- addBaselineDivergence(tse,
                              group = "StudyIdentifier",
                              time_field = "Time.hr",
                              name_divergence = "divergence_from_baseline",
@@ -143,19 +143,19 @@ plotSeries(mia::relAbundanceCounts(minimalgut),
 ## Visualize the rate (slope) of divergence 
 
 Sample dissimilarity between consecutive time steps(step size n >= 1) within
-a group(subject, age, reaction chamber, etc.) can be calculated by `getStepwiseDivergence`. If we normalize this by the time interval, this gives an approximate slope for the change.
+a group(subject, age, reaction chamber, etc.) can be calculated by `addStepwiseDivergence`. If we normalize this by the time interval, this gives an approximate slope for the change.
 
 
-```{r getStepwiseDivergence, fig.height=4, fig.width=8, warning=FALSE}
+```{r addStepwiseDivergence, fig.height=4, fig.width=8, warning=FALSE}
 # Load libraries
 library(miaTime)
 library(dplyr)
 
-# Sort samples by time (necessary for getStepwiseDivergence)
+# Sort samples by time (necessary for addStepwiseDivergence)
 tse <- tse[, order(colData(tse)$Time_hr_num)]
 
 # Divergence between consecutive time points
-tse <- getStepwiseDivergence(tse, group = "StudyIdentifier",
+tse <- addStepwiseDivergence(tse, group = "StudyIdentifier",
                                time_interval = 1,
                                time_field = "Time_hr_num",
                                name_divergence = "divergence_from_previous_step",
