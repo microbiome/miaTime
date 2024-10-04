@@ -15,6 +15,10 @@ addBaselineDivergence(x, ...)
   name_divergence = "divergence",
   name_timedifference = "time_diff",
   method = "bray",
+  altexp = NULL,
+  dimred = NULL,
+  n_dimred = NULL,
+  FUN = vegan::vegdist,
   ...
 )
 }
@@ -23,7 +27,42 @@ addBaselineDivergence(x, ...)
 \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
 object.}
 
-\item{...}{Additional parameters. See dedicated function.}
+\item{...}{Arguments to be passed}
+
+\item{time_field}{\code{Character scalar}. Specifies the name of the
+time series field in \code{colData}.}
+
+\item{assay.type}{\code{Character scalar}. Specifies which assay values are
+used in the dissimilarity estimation. (Default: \code{"counts"})}
+
+\item{group}{\code{Character scalar}. Specifies the grouping
+factor (name of a \code{colData} field). If given, the divergence is calculated
+per group.  e.g. subject, chamber, group etc.). (Default: \code{NULL})}
+
+\item{name_divergence}{\code{Character scalar}. Shows beta diversity between
+samples. (Default: \code{"time_divergence"})}
+
+\item{name_timedifference}{\code{Character scalar}. Field name for adding the
+time difference between samples used to calculate beta diversity.
+(Default: \code{"time_difference"})}
+
+\item{method}{\code{Character scalar}. Used to calculate the distance.
+Method is passed to the function that is specified by \code{FUN}.
+(Default: \code{"bray"})}
+
+\item{altexp}{\code{Character scalar} or \code{integer scalar}. Specifies the
+alternative experiment containing the input data. (Default: \code{NULL})}
+
+\item{dimred}{\code{Character scalar} or \code{integer scalar}. indicates the
+reduced dimension result in \code{reducedDims} to use in the estimation.
+(Default: \code{NULL})}
+
+\item{n_dimred}{\code{Integer vector}. Specifies the dimensions to use if
+\code{dimred} is specified. (Default: \code{NULL})}
+
+\item{FUN}{\code{Function} for dissimilarity calculation. The function must
+expect the input matrix as its first argument. With rows as samples and
+columns as features. (Default: \code{vegan::vegdist})}
 
 \item{baseline_sample}{\code{Character vector}. Specifies the baseline
 sample(s) to be used. If the \code{group} argument is given, this must be a

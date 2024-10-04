@@ -72,7 +72,7 @@ NULL
 #' @rdname addStepwiseDivergence
 #' @export
 #' 
-#' @importFrom mia mergeSEs getDivergence
+#' @importFrom mia mergeSEs
 #' @importFrom vegan vegdist
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
@@ -177,7 +177,7 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
     
     # 1 Get previous sample for each sample.
     x <- .add_previous_sample(x, group, time_field, time_interval)
-    res <- getDivergence(x, assay.type, method = method, 
+    res <- mia::getDivergence(x, assay.type, method = method, 
               reference = "previous_sample", ...)
     res <- res <- list(res, x[["time_diff"]])
     return(res)

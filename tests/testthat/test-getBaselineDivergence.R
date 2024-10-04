@@ -122,8 +122,8 @@ test_that("getBaselineDivergence", {
   expect_true(identical(tse2$time_from_baseline_ord_4, 
                         tse2f$time_from_baseline))
   # ordination based divergence values should not be equal to the ones on counts
-  # expect_false(identical(tse2$divergence_from_baseline_ord_4, 
-  #                       tse2f$divergence_from_baseline))
+  expect_false(identical(tse2$divergence_from_baseline_ord_4, 
+                       tse2f$divergence_from_baseline))
   # testing with 2 ordination components
   tse2 <- addBaselineDivergence(tse2, group = "subject",
                                 time_field = "time",
@@ -137,8 +137,8 @@ test_that("getBaselineDivergence", {
   expect_true(identical(tse2$time_from_baseline_ord_4, 
                         tse2$time_from_baseline_ord_2))
   # ordination based divergence values should not be equal to the ones on counts
-  # expect_false(identical(tse2$divergence_from_baseline_ord_4, 
-  #                       tse2$divergence_from_baseline_ord_2))
+  expect_false(identical(tse2$divergence_from_baseline_ord_4, 
+                         tse2$divergence_from_baseline_ord_2))
   ## testing with altExp
   SingleCellExperiment::altExp(tse2, "Family") <- mia::agglomerateByRank(tse2, 
                                                       rank="Family")
