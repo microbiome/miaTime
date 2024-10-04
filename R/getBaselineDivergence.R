@@ -131,7 +131,8 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
                                        name_divergence = name_divergence,
                                        name_timedifference = name_timedifference, 
                                        dimred = dimred, n_dimred = n_dimred, 
-                                       altexp = altexp,  ...)
+                                       altexp = altexp, 
+                                       baseline_sample = baseline_sample, ...)
         
         return(x)
         
