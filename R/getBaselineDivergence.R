@@ -7,6 +7,16 @@
 #' are stored in `colData`.
 #'
 #' @inheritParams addStepwiseDivergence
+#' @param FUN \code{Function} for dissimilarity calculation. The function must
+#' expect the input matrix as its first argument. With rows as samples and 
+#' columns as features. (Default: \code{vegan::vegdist})
+#' @param altexp \code{Character scalar} or \code{integer scalar}. Specifies the 
+#' alternative experiment containing the input data. (Default: \code{NULL})
+#' @param dimred \code{Character scalar} or \code{integer scalar}. indicates the 
+#' reduced dimension result in `reducedDims` to use in the estimation. 
+#' (Default: \code{NULL})
+#' @param n_dimred \code{Integer vector}. Specifies the dimensions to use if
+#' \code{dimred} is specified. (Default: \code{NULL})
 #' @param baseline_sample \code{Character vector}. Specifies the baseline
 #' sample(s) to be used. If the \code{group} argument is given, this must be a
 #' named \code{vector}; one element per group.
@@ -99,6 +109,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         dimred = NULL,
         n_dimred = NULL,
         FUN = vegan::vegdist,
+        baseline_sample = NULL,
         ...){
         ############################# INPUT CHECK ##############################
         # name_divergence

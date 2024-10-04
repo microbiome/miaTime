@@ -19,6 +19,7 @@ addBaselineDivergence(x, ...)
   dimred = NULL,
   n_dimred = NULL,
   FUN = vegan::vegdist,
+  baseline_sample = NULL,
   ...
 )
 }

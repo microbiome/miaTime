@@ -50,20 +50,6 @@ used in the dissimilarity estimation. (Default: \code{"counts"})}
 \item{method}{\code{Character scalar}. Used to calculate the distance.
 Method is passed to the function that is specified by \code{FUN}.
 (Default: \code{"bray"})}
-
-\item{FUN}{\code{Function} for dissimilarity calculation. The function must
-expect the input matrix as its first argument. With rows as samples and
-columns as features. (Default: \code{vegan::vegdist})}
-
-\item{altexp}{\code{Character scalar} or \code{integer scalar}. Specifies the
-alternative experiment containing the input data. (Default: \code{NULL})}
-
-\item{dimred}{\code{Character scalar} or \code{integer scalar}. indicates the
-reduced dimension result in \code{reducedDims} to use in the estimation.
-(Default: \code{NULL})}
-
-\item{n_dimred}{\code{Integer vector}. Specifies the dimensions to use if
-\code{dimred} is specified. (Default: \code{NULL})}
 }
 \value{
 a
