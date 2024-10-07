@@ -181,7 +181,7 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
     # Sort by subject and time
     arrange(all_of(group), all_of(time)) %>%
     # Group by subject
-    group_by(across(all_of(group))) %>%
+    group_by(!!sym(group)) %>%
     # Lag time by 1 (previous time point)
     mutate(previous_time = lag(time, n = time_interval),  
            # Lag sample name by 1
