@@ -62,8 +62,8 @@ setGeneric("shortTermChange", signature = c("x"),
 
 #' @rdname shortTermChange
 #' @export
-#' @importFrom dplyr arrange as_tibble
-#' @importFrom ggplot2 ggplot
+#' @importFrom dplyr arrange as_tibble summarize
+#' @importFrom ggplot2 ggplot aes
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom mia rarefyAssay
 setMethod("shortTermChange", signature = c(x = "SummarizedExperiment"),
