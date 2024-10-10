@@ -22,21 +22,23 @@ Description:
 biocViews: Microbiome, Software, Sequencing, Coverage
 License: Artistic-2.0 | file LICENSE
 Depends:
-    R (>= 4.0)
+    R (>= 4.0),
+    ggplot2,
+    mia,
+    SummarizedExperiment,
 Imports:
     dplyr,
     methods,    
-    mia,
     S4Vectors,
-    SummarizedExperiment,
     SingleCellExperiment,
     vegan,
-    scater
+    scater,
+    ggrepel,
+    reshape2
 Suggests: 
     TreeSummarizedExperiment,
     tidySingleCellExperiment,
     tidySummarizedExperiment,
-    ggplot2,
     miaViz,
     lubridate,
     rmarkdown,
