@@ -121,6 +121,7 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
     altexp = NULL,
     dimred = NULL,
     n_dimred = NULL,
+    group_col = group,
     ...){
     ##########################################
     # Use altExp if mentioned and available
@@ -158,6 +159,8 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
     if( is.null(colnames(x)) ){
       colnames(x) <- paste0("sample_", seq_len(ncol(x)))
     }
+    # preserve group
+    group_col <- group
     # If group is not given, assume that all samples come from a single group
     if( !is.null(group) ){
         group <- "group"
@@ -166,7 +169,7 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
     ############################# INPUT CHECK END ##############################
     
     # 1 Get previous sample for each sample.
-    x <- .add_previous_sample(x, group, time_field, time_interval)
+    x <- .add_previous_sample(x, group, time_field, time_interval, group_col)
     res <- mia::getDivergence(x, assay.type, method = method, 
               reference = "previous_sample", ...)
     res <- res <- list(res, x[["time_diff"]])
@@ -174,20 +177,18 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
     
 }
 
-.add_previous_sample <- function(x, group, time, time_interval){
+.add_previous_sample <- function(x, group, time, time_interval, group_col){
   colData(x)$sample <- colnames(x)
   # For each group, get the sampe that has lowest time point
   df <- colData(x) %>% as.data.frame() %>%
     # Sort by subject and time
-    arrange(all_of(group), all_of(time)) %>%
-    # Group by subject
-    group_by(!!sym(group)) %>%
+    arrange(.data[[group]], .data[[time]]) %>%
+    group_by(.data[[group_col]]) %>%
     # Lag time by 1 (previous time point)
     mutate(previous_time = lag(time, n = time_interval),  
            # Lag sample name by 1
            previous_sample = lag(sample, n = time_interval)) %>%  
     ungroup() |> DataFrame()
-  
   rownames(df) <- df$sample
   df[["time_diff"]] <- df[[time]] - df[["previous_time"]]
   df <- df[ match(colnames(x), rownames(df)), ]
