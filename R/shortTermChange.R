@@ -65,7 +65,8 @@ setGeneric("shortTermChange", signature = c("x"),
 #' @importFrom dplyr arrange as_tibble summarize
 #' @importFrom ggplot2 ggplot aes
 #' @importFrom ggrepel geom_text_repel
-#' @importFrom mia rarefyAssay
+#' @importFrom mia rarefyAssay transformAssay
+#' @importFrom SummarizedExperiment colData
 setMethod("shortTermChange", signature = c(x = "SummarizedExperiment"),
     function(x, assay.type = "counts", rarefy = FALSE, compositional = FALSE, 
         depth = min(assay(x, assay.type)), plot = FALSE, ...){
