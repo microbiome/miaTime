@@ -60,7 +60,7 @@ SummarizedExperiment objects, and the results are stored in colData."><!-- mathj
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Beta diversity between consecutive time steps</h1>
-    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/devel/R/getStepwiseDivergence.R" class="external-link"><code>R/getStepwiseDivergence.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/shortTermChange/R/getStepwiseDivergence.R" class="external-link"><code>R/getStepwiseDivergence.R</code></a></small>
     <div class="hidden name"><code>getStepwiseDivergence.Rd</code></div>
     </div>
 
@@ -188,7 +188,7 @@ samples (across n time steps), within each level of the grouping factor.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> See help("Deprecated")</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Subset to speed up example</span></span></span>
-<span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">tse</span><span class="op">[</span>, <span class="fu">colData</span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">$</span><span class="va">subject</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"900"</span>, <span class="st">"934"</span>, <span class="st">"843"</span>, <span class="st">"875"</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">tse</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">$</span><span class="va">subject</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"900"</span>, <span class="st">"934"</span>, <span class="st">"843"</span>, <span class="st">"875"</span><span class="op">)</span><span class="op">]</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Using vegdist for divergence calculation, one can pass</span></span></span>
 <span class="r-in"><span><span class="co"># the dissimilarity method from the vegan::vegdist options</span></span></span>
