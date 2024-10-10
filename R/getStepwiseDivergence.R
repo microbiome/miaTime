@@ -190,7 +190,7 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
            previous_sample = lag(sample, n = time_interval)) %>%  
     ungroup() |> DataFrame()
   rownames(df) <- df$sample
-  df[["time_diff"]] <- df[[time]] - df[["previous_time"]]
+  df[["time_diff"]] <- ifelse(is.na(df[["previous_time"]]), 0, df[[time]] - df[["previous_time"]])
   df <- df[ match(colnames(x), rownames(df)), ]
   colData(x) <- df
   return(x)
