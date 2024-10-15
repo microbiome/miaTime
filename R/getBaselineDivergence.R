@@ -7,11 +7,9 @@
 #' are stored in `colData`.
 #'
 #' @inheritParams addStepwiseDivergence
-#' @param FUN \code{Function} for dissimilarity calculation. The function must
+#' @param dis.fun \code{Function} for dissimilarity calculation. The function must
 #' expect the input matrix as its first argument. With rows as samples and 
 #' columns as features. (Default: \code{vegan::vegdist})
-#' @param altexp \code{Character scalar} or \code{integer scalar}. Specifies the 
-#' alternative experiment containing the input data. (Default: \code{NULL})
 #' @param dimred \code{Character scalar} or \code{integer scalar}. indicates the 
 #' reduced dimension result in `reducedDims` to use in the estimation. 
 #' (Default: \code{NULL})
@@ -20,6 +18,7 @@
 #' @param baseline_sample \code{Character vector}. Specifies the baseline
 #' sample(s) to be used. If the \code{group} argument is given, this must be a
 #' named \code{vector}; one element per group.
+#' @param ... optional arguments
 #'
 #' @return a
 #' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
@@ -55,22 +54,22 @@
 #' tse2 <- addBaselineDivergence(
 #'     tse,
 #'     group = "subject",
-#'     time_field = "time",
+#'     time.col = "time",
 #'     name_divergence = "divergence_from_baseline",
 #'     name_timedifference = "time_from_baseline",
 #'     assay.type="relabundance",
-#'     FUN = vegan::vegdist,
+#'     dis.fun = vegan::vegdist,
 #'     method="bray")
 #'
 #' tse2 <- addBaselineDivergence(
 #'     tse,
 #'     baseline_sample = "Sample-875",
 #'     group = "subject",
-#'     time_field = "time",
+#'     time.col = "time",
 #'     name_divergence = "divergence_from_baseline",
 #'     name_timedifference = "time_from_baseline",
 #'     assay.type="relabundance",
-#'     FUN = vegan::vegdist,
+#'     dis.fun = vegan::vegdist,
 #'     method="bray")
 #'
 #' @name addBaselineDivergence
@@ -99,7 +98,7 @@ setGeneric("addBaselineDivergence", signature = "x", function(x, ...)
 setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     function(
         x,
-        time_field,
+        time.col,
         assay.type = "counts",
         group = NULL,
         name_divergence = "divergence",
@@ -108,7 +107,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         altexp = NULL,
         dimred = NULL,
         n_dimred = NULL,
-        FUN = vegan::vegdist,
+        dis.fun = vegan::vegdist,
         baseline_sample = NULL,
         ...){
         ############################# INPUT CHECK ##############################
@@ -125,7 +124,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         ########################### INPUT CHECK END ############################
         # Calculate values
         x <- .get_baseline_divergence( x = x, group = group, 
-                                       time_field = time_field, 
+                                       time.col = time.col, 
                                        assay.type = assay.type, 
                                        method = method, 
                                        name_divergence = name_divergence,
@@ -141,10 +140,10 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
 
 .get_baseline_divergence <- function(
         x, group, baseline_sample = NULL, 
-        time_field, assay.type, method,
+        time.col, assay.type, method,
         altexp = NULL, baseline = NULL, 
         dimred = NULL, n_dimred = NULL, 
-        FUN = vegan::vegdist, 
+        dis.fun = vegan::vegdist, 
         name_timedifference = "time_diff", 
         name_divergence = "divergence", ...){
     ############################### INPUT CHECK ################################
@@ -159,14 +158,14 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     }
     # assay.type
     .check_assay_present(assay.type, x)
-    # time_field
+    # time.col
     temp <- .check_input(
-        time_field,
+        time.col,
         list("character scalar"),
         supported_values = colnames(colData(x))
     )
     # Check that timepoints are numeric
-    if( !is.numeric(x[[time_field]]) ){
+    if( !is.numeric(x[[time.col]]) ){
         stop("Timepoints must be numeric.", call. = FALSE)
     }
     # group
@@ -199,7 +198,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         colData(x)$sample <- colnames(x)
         baseline <- colData(x) %>% as.data.frame() %>%
             group_by(group) %>%
-            mutate(rank = rank(time_field, ties.method="first")) %>%
+            mutate(rank = rank(time.col, ties.method="first")) %>%
             filter(rank==1) %>%	
             select(sample, group)
         baseline_sample <- baseline$sample
@@ -236,18 +235,18 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     if (ncol(baseline) == 1) {
         xli <- lapply(names(spl), function (g) {
             .calculate_divergence_from_baseline(x[,spl[[g]]], baseline,
-                                                time_field, name_divergence, 
+                                                time.col, name_divergence, 
                                                 name_timedifference, 
-                                                assay.type, FUN,
+                                                assay.type, dis.fun,
                                                 method, dimred, n_dimred, ...)})
     } else {
         xli <- lapply(names(spl), function (g) {
             .calculate_divergence_from_baseline(x[,spl[[g]]], 
                                                 baseline[, baseline_sample[[g]]],
-                                                time_field, 
+                                                time.col, 
                                                 name_divergence, 
                                                 name_timedifference, 
-                                                assay.type, FUN,
+                                                assay.type, dis.fun,
                                                 method, dimred, n_dimred, ...)})
     }
     
@@ -295,10 +294,10 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
 # First define the function that calculates divergence for a given SE object
 #' @importFrom mia estimateDivergence
 #' @importFrom methods is
-.calculate_divergence_from_baseline <- function (x, baseline, time_field,
+.calculate_divergence_from_baseline <- function (x, baseline, time.col,
                                                  name_divergence, 
                                                  name_timedifference,
-                                                 assay.type, FUN, method,
+                                                 assay.type, dis.fun, method,
                                                  dimred, n_dimred) {
     
     # If baseline is SE object then just ensure it has exactly one sample 
@@ -331,11 +330,11 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     
     # Beta divergence from baseline info
     divergencevalues <- mia:::.calc_divergence(
-        cbind(mat, ref_mat), colnames(ref_mat), FUN = FUN, method = method)
+        cbind(mat, ref_mat), colnames(ref_mat), dis.fun = dis.fun, method = method)
     divergencevalues <- divergencevalues[seq_len(ncol(mat)), "value"]
     
     # Add time divergence from baseline info; note this has to be a list    
-    timevalues <- list(colData(x)[, time_field] - colData(reference)[, time_field])
+    timevalues <- list(colData(x)[, time.col] - colData(reference)[, time.col])
     
     x <- .add_values_to_colData(x, timevalues, name_timedifference)
     x <- .add_values_to_colData(x, list(divergencevalues), name_divergence)    

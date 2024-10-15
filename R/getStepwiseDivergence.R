@@ -11,20 +11,20 @@
 #' @param group \code{Character scalar}. Specifies the grouping
 #' factor (name of a `colData` field). If given, the divergence is calculated
 #' per group.  e.g. subject, chamber, group etc.). (Default: \code{NULL})
-#' @param time_field \code{Character scalar}. Specifies the name of the
+#' @param time.col \code{Character scalar}. Specifies the name of the
 #' time series field in `colData`.
 #' @param time_interval \code{Integer scalar}. Indicates the increment between 
 #' time steps. If you need to take every second, every third, or so, time step 
 #' only, then increase this accordingly. (Default: \code{1})
-#' @param name_divergence \code{Character scalar}. Shows beta diversity between 
+#' @param name \code{Character scalar}. Shows beta diversity between 
 #' samples. (Default: \code{"time_divergence"})
-#' @param name_timedifference \code{Character scalar}. Field name for adding the 
+#' @param name.time \code{Character scalar}. Field name for adding the 
 #' time difference between samples used to calculate beta diversity. 
 #' (Default: \code{"time_difference"})
 #' @param assay.type \code{Character scalar}. Specifies which assay values are 
 #' used in the dissimilarity estimation. (Default: \code{"counts"})
 #' @param method \code{Character scalar}. Used to calculate the distance. 
-#' Method is passed to the function that is specified by \code{FUN}. 
+#' Method is passed to the function that is specified by \code{dis.fun}. 
 #' (Default: \code{"bray"})
 #' @param ... Arguments to be passed
 #'
@@ -53,9 +53,9 @@
 #' # via the "method" argument
 #' tse <- addStepwiseDivergence(tse, group = "subject",
 #'                               time_interval = 1,
-#'                               time_field = "time",
+#'                               time.col = "time",
 #'                               assay.type="relabundance",
-#'                               FUN = vegan::vegdist,
+#'                               dis.fun = vegan::vegdist,
 #'                               method="bray")
 NULL
 
@@ -64,6 +64,7 @@ NULL
 #' 
 #' @importFrom mia mergeSEs
 #' @importFrom vegan vegdist
+#' @importFrom mia addDivergence
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment colData<-
@@ -78,112 +79,46 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
     function(
         x,
         group=NULL,
-        time_field,
+        time.col,
         time_interval = 1,
-        name_divergence = "time_divergence",
-        name_timedifference = "time_difference",
+        name = "time_divergence",
+        name.time = "time_difference",
         assay.type = "counts",
         method="bray",
+        n_dimred = NULL,
+        dimred = NULL,
         ...){
         ############################# INPUT CHECK ##############################
-        # name_divergence
+        # name
         temp <- .check_input(
-          name_divergence,
+          name,
           list(NULL, "character scalar")
         )
-        # name_divergence
+        # name
         temp <- .check_input(
-          name_timedifference,
+          name.time,
           list(NULL, "character scalar")
         )
         ########################### INPUT CHECK END ############################
         # Calculate values
-        res <- .get_stepwise_divergence(
-          x = x, group = group, time_field = time_field, 
-          time_interval = time_interval, assay.type = assay.type, method = method, ...)
-        # Add values to colData
-        x <- .add_values_to_colData(
-          x, res, name = c(name_divergence, name_timedifference))
-        return(x)
+        x <- .add_previous_sample(x, group, time.col, time_interval )
+        res <- addDivergence(x, assay.type = assay.type, method = method, 
+                             reference = "previous_sample", 
+                             name = name, n_dimred = n_dimred, dimred = dimred, ...)
+        col_data <- colData(res)
+        colnames(col_data)[colnames(col_data) == "time_diff"] <- name.time
+        colData(res) <- col_data 
+        return(res)
     }
 )
 
-.get_stepwise_divergence <- function(
-    x,
-    group = NULL,
-    time_field,
-    time_interval = 1,
-    name_divergence = "divergence",
-    name_timedifference = "time_diff",
-    assay.type = "counts",
-    FUN = vegan::vegdist,
-    method="bray",
-    altexp = NULL,
-    dimred = NULL,
-    n_dimred = NULL,
-    group_col = group,
-    ...){
-    ##########################################
-    # Use altExp if mentioned and available
-    if( !is.null(altexp) ){
-      .check_altExp_present(altexp, x)
-      x <- altExp(x, altexp)
-    }
-    # assay.type
-    .check_assay_present(assay.type, x)
-    # time_field
-    temp <- .check_input(
-      time_field,
-      list("character scalar"),
-      supported_values = colnames(colData(x))
-    )
-    # Check that timepoints are numeric
-    if( !is.numeric(x[[time_field]]) ){
-      stop("Timepoints must be numeric.", call. = FALSE)
-    }
-    # group
-    temp <- .check_input(
-      group,
-      list(NULL, "character scalar"),
-      supported_values = colnames(colData(x))
-    )
-    # time_interval
-    temp <- .check_input(
-      time_interval,
-      list(NULL, "integer scalar")
-    )
-    if( time_interval > ncol(x) ){
-        stop("'time_interval' cannot be greater than the number of samples.", call. = FALSE)
-    }
-    # If TreeSE does not have column names, add
-    if( is.null(colnames(x)) ){
-      colnames(x) <- paste0("sample_", seq_len(ncol(x)))
-    }
-    # preserve group
-    group_col <- group
-    # If group is not given, assume that all samples come from a single group
-    if( !is.null(group) ){
-        group <- "group"
-        colData(x)[[group]] <- rep(1, nrow = nrow(x))
-    }
-    ############################# INPUT CHECK END ##############################
-    
-    # 1 Get previous sample for each sample.
-    x <- .add_previous_sample(x, group, time_field, time_interval, group_col)
-    res <- mia::getDivergence(x, assay.type, method = method, 
-              reference = "previous_sample", ...)
-    res <- res <- list(res, x[["time_diff"]])
-    return(res)
-    
-}
-
-.add_previous_sample <- function(x, group, time, time_interval, group_col){
+.add_previous_sample <- function(x, group, time, time_interval ){
   colData(x)$sample <- colnames(x)
-  # For each group, get the sampe that has lowest time point
+  # For each group, get the same that has lowest time point
   df <- colData(x) %>% as.data.frame() %>%
     # Sort by subject and time
     arrange(.data[[group]], .data[[time]]) %>%
-    group_by(.data[[group_col]]) %>%
+    group_by(.data[[group]]) %>%
     # Lag time by 1 (previous time point)
     mutate(previous_time = lag(.data[[time]], n = time_interval),  
            # Lag sample name by 1

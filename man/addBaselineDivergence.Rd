@@ -9,7 +9,7 @@ addBaselineDivergence(x, ...)
 
 \S4method{addBaselineDivergence}{SummarizedExperiment}(
   x,
-  time_field,
+  time.col,
   assay.type = "counts",
   group = NULL,
   name_divergence = "divergence",
@@ -18,7 +18,7 @@ addBaselineDivergence(x, ...)
   altexp = NULL,
   dimred = NULL,
   n_dimred = NULL,
-  FUN = vegan::vegdist,
+  dis.fun = vegan::vegdist,
   baseline_sample = NULL,
   ...
 )
@@ -28,9 +28,9 @@ addBaselineDivergence(x, ...)
 \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
 object.}
 
-\item{...}{Arguments to be passed}
+\item{...}{optional arguments}
 
-\item{time_field}{\code{Character scalar}. Specifies the name of the
+\item{time.col}{\code{Character scalar}. Specifies the name of the
 time series field in \code{colData}.}
 
 \item{assay.type}{\code{Character scalar}. Specifies which assay values are
@@ -40,19 +40,9 @@ used in the dissimilarity estimation. (Default: \code{"counts"})}
 factor (name of a \code{colData} field). If given, the divergence is calculated
 per group.  e.g. subject, chamber, group etc.). (Default: \code{NULL})}
 
-\item{name_divergence}{\code{Character scalar}. Shows beta diversity between
-samples. (Default: \code{"time_divergence"})}
-
-\item{name_timedifference}{\code{Character scalar}. Field name for adding the
-time difference between samples used to calculate beta diversity.
-(Default: \code{"time_difference"})}
-
 \item{method}{\code{Character scalar}. Used to calculate the distance.
-Method is passed to the function that is specified by \code{FUN}.
+Method is passed to the function that is specified by \code{dis.fun}.
 (Default: \code{"bray"})}
-
-\item{altexp}{\code{Character scalar} or \code{integer scalar}. Specifies the
-alternative experiment containing the input data. (Default: \code{NULL})}
 
 \item{dimred}{\code{Character scalar} or \code{integer scalar}. indicates the
 reduced dimension result in \code{reducedDims} to use in the estimation.
@@ -61,7 +51,7 @@ reduced dimension result in \code{reducedDims} to use in the estimation.
 \item{n_dimred}{\code{Integer vector}. Specifies the dimensions to use if
 \code{dimred} is specified. (Default: \code{NULL})}
 
-\item{FUN}{\code{Function} for dissimilarity calculation. The function must
+\item{dis.fun}{\code{Function} for dissimilarity calculation. The function must
 expect the input matrix as its first argument. With rows as samples and
 columns as features. (Default: \code{vegan::vegdist})}
 
@@ -111,22 +101,22 @@ tse <- tse[, tse$subject \%in\% c("900", "934", "843", "875")]
 tse2 <- addBaselineDivergence(
     tse,
     group = "subject",
-    time_field = "time",
+    time.col = "time",
     name_divergence = "divergence_from_baseline",
     name_timedifference = "time_from_baseline",
     assay.type="relabundance",
-    FUN = vegan::vegdist,
+    dis.fun = vegan::vegdist,
     method="bray")
 
 tse2 <- addBaselineDivergence(
     tse,
     baseline_sample = "Sample-875",
     group = "subject",
-    time_field = "time",
+    time.col = "time",
     name_divergence = "divergence_from_baseline",
     name_timedifference = "time_from_baseline",
     assay.type="relabundance",
-    FUN = vegan::vegdist,
+    dis.fun = vegan::vegdist,
     method="bray")
 
 }

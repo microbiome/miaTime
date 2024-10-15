@@ -6,7 +6,7 @@ test_that("getBaselineDivergence", {
   # Subset to speed up computing
   # Just pick 4 subjects with 1-5 time points
   tse <- tse[, colData(tse)$subject %in% c("900", "934", "843", "875", "836")]
-  tse2 <- addBaselineDivergence(tse, group = "subject", time_field = "time", 
+  tse2 <- addBaselineDivergence(tse, group = "subject", time.col = "time", 
               name_timedifference = "time_from_baseline", 
               name_divergence = "divergence_from_baseline")
 
@@ -30,7 +30,7 @@ test_that("getBaselineDivergence", {
   # Should also work when baseline is not 0  
   inds <- which(colData(tse)[, "subject"] == "843")[2:5]
   tse2 <- addBaselineDivergence(tse[, inds], group = "subject", 
-              time_field = "time",
+              time.col = "time",
               name_timedifference = "time_from_baseline", 
               name_divergence = "divergence_from_baseline")
   time2 <- colData(tse[, inds])[, "time"] - min(colData(tse[, inds])[, "time"])
@@ -47,13 +47,13 @@ test_that("getBaselineDivergence", {
   # The baseline time point 0 is Sample-843
   tse <- tse[, colData(tse)$subject == "843"] 
   
-  tse2b <- addBaselineDivergence(tse, group="subject", time_field = "time")
+  tse2b <- addBaselineDivergence(tse, group="subject", time.col = "time")
   # Define the baseline sample manually
-  tse2c <- addBaselineDivergence(tse, time_field = "time", group="subject",
+  tse2c <- addBaselineDivergence(tse, time.col = "time", group="subject",
                baseline_sample="Sample-843",
                name_timedifference = "time_from_baseline", 
                name_divergence = "divergence_from_baseline")
-  tse2d <- addBaselineDivergence(tse, time_field = "time", group="subject",
+  tse2d <- addBaselineDivergence(tse, time.col = "time", group="subject",
                baseline_sample="Sample-1075",
                name_timedifference = "time_from_baseline", 
                name_divergence = "divergence_from_baseline")
@@ -70,13 +70,13 @@ test_that("getBaselineDivergence", {
   # Just pick 4 subjects with 1-5 time points
   tse <- tse[, colData(tse)$subject %in% c("900", "934", "843", "875", "836")]
   tse2e <- addBaselineDivergence(tse[, colData(tse)$subject == "843"], 
-               group="subject", time_field = "time",
+               group="subject", time.col = "time",
                name_timedifference = "time_from_baseline", 
                name_divergence = "divergence_from_baseline")      
-  tse2f <- addBaselineDivergence(tse, group = "subject", time_field = "time", 
+  tse2f <- addBaselineDivergence(tse, group = "subject", time.col = "time", 
                name_timedifference = "time_from_baseline", 
                name_divergence = "divergence_from_baseline")
-  tse2g <- addBaselineDivergence(tse, group = "subject", time_field = "time", 
+  tse2g <- addBaselineDivergence(tse, group = "subject", time.col = "time", 
                baseline_sample="Sample-1075", 
                name_timedifference = "time_from_baseline", 
                name_divergence = "divergence_from_baseline")  
@@ -89,7 +89,7 @@ test_that("getBaselineDivergence", {
   baselines <- c("Sample-1041", "Sample-1075",  
                  "Sample-875", "Sample-900", "Sample-934")
   names(baselines) <- names(split(colnames(tse), as.character(tse$subject)))
-  tse2h <- addBaselineDivergence(tse, group = "subject", time_field = "time", 
+  tse2h <- addBaselineDivergence(tse, group = "subject", time.col = "time", 
                baseline_sample=baselines, 
                name_timedifference = "time_from_baseline", 
                name_divergence = "divergence_from_baseline")
@@ -97,7 +97,7 @@ test_that("getBaselineDivergence", {
                    colData(tse2g)["Sample-843", "time_from_baseline"])    
 
   # Single baseline
-  tse2i <- addBaselineDivergence(tse, group = "subject", time_field = "time", 
+  tse2i <- addBaselineDivergence(tse, group = "subject", time.col = "time", 
                baseline_sample=tse[, "Sample-1075"], 
                name_timedifference = "time_from_baseline", 
                name_divergence = "divergence_from_baseline")
@@ -112,11 +112,11 @@ test_that("getBaselineDivergence", {
                          na.rm = TRUE, ncomponents=4)
   # testing with all ordination components; n_dimred=NULL --> all 4 components
   tse2 <- addBaselineDivergence(tse, group = "subject",
-                                time_field = "time",
+                                time.col = "time",
                                 name_timedifference="time_from_baseline_ord_4",
                                 name_divergence="divergence_from_baseline_ord_4",
                                 dimred = "PCoA_BC",
-                                FUN=vegan::vegdist,
+                                dis.fun=vegan::vegdist,
                                 method="euclidean")
   # Time differences should still match
   expect_true(identical(tse2$time_from_baseline_ord_4, 
@@ -126,12 +126,12 @@ test_that("getBaselineDivergence", {
                        tse2f$divergence_from_baseline))
   # testing with 2 ordination components
   tse2 <- addBaselineDivergence(tse2, group = "subject",
-                                time_field = "time",
+                                time.col = "time",
                                 name_timedifference="time_from_baseline_ord_2",
                                 name_divergence="divergence_from_baseline_ord_2",
                                 dimred = "PCoA_BC",
                                 n_dimred = 2,
-                                FUN=vegan::vegdist,
+                                dis.fun=vegan::vegdist,
                                 method="euclidean")
   # Time differences should still match
   expect_true(identical(tse2$time_from_baseline_ord_4, 
@@ -143,7 +143,7 @@ test_that("getBaselineDivergence", {
   SingleCellExperiment::altExp(tse2, "Family") <- mia::agglomerateByRank(tse2, 
                                                       rank="Family")
   tse2 <- addBaselineDivergence(tse2, group = "subject",
-                                time_field = "time",
+                                time.col = "time",
                                 altexp="Family",
                                 name_timedifference="time_from_baseline_Fam",
                                 name_divergence="divergence_from_baseline_Fam")

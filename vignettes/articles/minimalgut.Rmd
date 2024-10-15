@@ -85,11 +85,11 @@ here hour zero until the end of the experiment.
 tse <- mia::relAbundanceCounts(minimalgut) # get relative abundance
 tse <- addBaselineDivergence(tse,
                              group = "StudyIdentifier",
-                             time_field = "Time.hr",
+                             time.col = "Time.hr",
                              name_divergence = "divergence_from_baseline",
                              name_timedifference = "time_from_baseline",
                              assay.type="relabundance",
-                             FUN = vegan::vegdist,
+                             dis.fun = vegan::vegdist,
                              method="bray")
 
 ```
@@ -157,11 +157,11 @@ tse <- tse[, order(colData(tse)$Time_hr_num)]
 # Divergence between consecutive time points
 tse <- addStepwiseDivergence(tse, group = "StudyIdentifier",
                                time_interval = 1,
-                               time_field = "Time_hr_num",
+                               time.col = "Time_hr_num",
                                name_divergence = "divergence_from_previous_step",
                                name_timedifference = "time_from_previous_step",
                                assay.type ="relabundance",
-                               FUN = vegan::vegdist,
+                               dis.fun = vegan::vegdist,
                                method="bray")
 
 # We have now new fields added in the colData:

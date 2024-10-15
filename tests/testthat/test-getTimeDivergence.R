@@ -6,15 +6,15 @@ test_that("getStepwiseDivergence", {
   tse <- tse[, colData(tse)$subject %in% c("900", "934", "843", "875")]
   tse2 <- addStepwiseDivergence(tse, group = "subject",
                                 time_interval = 1,
-                                time_field = "time",
+                                time.col = "time",
                                 assay.type="counts",
-                                FUN = vegan::vegdist,
+                                dis.fun = vegan::vegdist,
                                 method="bray")
 
   # Trying to add new coldata field with the same name
   expect_warning(tse2 <- addStepwiseDivergence(tse2, group = "subject",
                                      time_interval = 1,
-                                     time_field = "time"))
+                                     time.col = "time"))
 
   # Input and output classes should match
   expect_equal(class(tse), class(tse2))
@@ -29,9 +29,9 @@ test_that("getStepwiseDivergence", {
   # n > 1
   tse3 <- addStepwiseDivergence(tse, group = "subject",
                                 time_interval = 2,
-                                time_field = "time",
+                                time.col = "time",
                                 assay.type="counts",
-                                FUN = vegan::vegdist,
+                                dis.fun = vegan::vegdist,
                                 method="bray")
   
   time_invertal <- 2
@@ -62,9 +62,9 @@ test_that("getStepwiseDivergence", {
       colData(hitchip1006)$subject %in% c("900","843", "139")]
   subset <- addStepwiseDivergence(sub_hitchip, group = "subject",
                                 time_interval = 1,
-                                time_field = "time",
+                                time.col = "time",
                                 assay.type="counts",
-                                FUN = vegan::vegdist,
+                                dis.fun = vegan::vegdist,
                                 method="bray")
 
   expect_true(all(is.na(colData(subset)[, "time_divergence"][
@@ -74,22 +74,22 @@ test_that("getStepwiseDivergence", {
   # Test vegan distances
   tse2 <- addStepwiseDivergence(tse, group = "subject",
                                   time_interval = 1,
-                                  time_field = "time",
+                                  time.col = "time",
                                   assay.type="counts",
-                                  FUN = vegan::vegdist,
+                                  dis.fun = vegan::vegdist,
                                   method="bray",
-                                  name_timedifference="timedifference",
-                                  name_divergence="timedivergence")
+                                  name.time="timedifference",
+                                  name="timedivergence")
   
   # Test vegan distances
   tse2 <- addStepwiseDivergence(tse2, group = "subject",
                                 time_interval = 1,
-                                time_field = "time",
+                                time.col = "time",
                                 assay.type="counts",
-                                FUN = vegan::vegdist,
+                                dis.fun = vegan::vegdist,
                                 method="euclidean",
-                                name_timedifference="timedifference2",
-                                name_divergence="timedivergence2")
+                                name.time="timedifference2",
+                                name="timedivergence2")
 				     
   # Time differences should still match
   expect_true(identical(tse2$timedifference, tse2$timedifference2))
@@ -103,11 +103,11 @@ test_that("getStepwiseDivergence", {
   # testing with all ordination components; n_dimred=NULL --> all 4 components
   tse2 <- addStepwiseDivergence(tse2, group = "subject",
                                 time_interval = 1,
-                                time_field = "time",
-                                name_timedifference="timedifference_ord_4",
-                                name_divergence="timedivergence_ord_4",
+                                time.col = "time",
+                                name.time="timedifference_ord_4",
+                                name="timedivergence_ord_4",
                                 dimred = "PCoA_BC",
-                                FUN=vegan::vegdist,
+                                dis.fun=vegan::vegdist,
                                 method="euclidean")
   # Time differences should still match
   expect_true(identical(tse2$timedifference_ord_4, tse2$timedifference))
@@ -117,27 +117,27 @@ test_that("getStepwiseDivergence", {
   # testing with 2 ordination components
   tse2 <- addStepwiseDivergence(tse2, group = "subject",
                                 time_interval = 1,
-                                time_field = "time",
-                                name_timedifference="timedifference_ord_2",
-                                name_divergence="timedivergence_ord_2",
+                                time.col = "time",
+                                name.time="timedifference_ord_2",
+                                name="timedivergence_ord_2",
                                 dimred = "PCoA_BC",
                                 n_dimred = 2,
-                                FUN=vegan::vegdist,
+                                dis.fun=vegan::vegdist,
                                 method="euclidean")
   # Time differences should still match
   expect_true(identical(tse2$timedifference_ord_2, tse2$timedifference_ord_4))
   # not same values as using 4 components
-  # expect_true(!identical(tse2$timedivergence_ord_2, tse2$timedivergence_ord_4))
+  expect_true(!identical(tse2$timedivergence_ord_2, tse2$timedivergence_ord_4))
   
   ## testing with altExp
   SingleCellExperiment::altExp(tse2, "Family") <- mia::agglomerateByRank(tse2, 
                                                         rank="Family")
   tse2 <- addStepwiseDivergence(tse2, group = "subject",
                                 time_interval = 1,
-                                time_field = "time",
+                                time.col = "time",
                                 altexp="Family",
-                                name_timedifference="timedifference_Fam",
-                                name_divergence="timedivergence_Fam")
+                                name.time="timedifference_Fam",
+                                name="timedivergence_Fam")
   # Time differences should still match
   expect_true(identical(tse2$timedifference_Fam, tse2$timedifference))
   # divergence values based on Family rank counts should not be equal to the

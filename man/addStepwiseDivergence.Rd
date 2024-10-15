@@ -10,12 +10,14 @@ addStepwiseDivergence(x, ...)
 \S4method{addStepwiseDivergence}{ANY}(
   x,
   group = NULL,
-  time_field,
+  time.col,
   time_interval = 1,
-  name_divergence = "time_divergence",
-  name_timedifference = "time_difference",
+  name = "time_divergence",
+  name.time = "time_difference",
   assay.type = "counts",
   method = "bray",
+  n_dimred = NULL,
+  dimred = NULL,
   ...
 )
 }
@@ -30,17 +32,17 @@ object.}
 factor (name of a \code{colData} field). If given, the divergence is calculated
 per group.  e.g. subject, chamber, group etc.). (Default: \code{NULL})}
 
-\item{time_field}{\code{Character scalar}. Specifies the name of the
+\item{time.col}{\code{Character scalar}. Specifies the name of the
 time series field in \code{colData}.}
 
 \item{time_interval}{\code{Integer scalar}. Indicates the increment between
 time steps. If you need to take every second, every third, or so, time step
 only, then increase this accordingly. (Default: \code{1})}
 
-\item{name_divergence}{\code{Character scalar}. Shows beta diversity between
+\item{name}{\code{Character scalar}. Shows beta diversity between
 samples. (Default: \code{"time_divergence"})}
 
-\item{name_timedifference}{\code{Character scalar}. Field name for adding the
+\item{name.time}{\code{Character scalar}. Field name for adding the
 time difference between samples used to calculate beta diversity.
 (Default: \code{"time_difference"})}
 
@@ -48,7 +50,7 @@ time difference between samples used to calculate beta diversity.
 used in the dissimilarity estimation. (Default: \code{"counts"})}
 
 \item{method}{\code{Character scalar}. Used to calculate the distance.
-Method is passed to the function that is specified by \code{FUN}.
+Method is passed to the function that is specified by \code{dis.fun}.
 (Default: \code{"bray"})}
 }
 \value{
@@ -80,8 +82,8 @@ tse <- tse[, colData(tse)$subject \%in\% c("900", "934", "843", "875")]
 # via the "method" argument
 tse <- addStepwiseDivergence(tse, group = "subject",
                               time_interval = 1,
-                              time_field = "time",
+                              time.col = "time",
                               assay.type="relabundance",
-                              FUN = vegan::vegdist,
+                              dis.fun = vegan::vegdist,
                               method="bray")
 }
