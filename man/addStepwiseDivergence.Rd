@@ -52,6 +52,13 @@ used in the dissimilarity estimation. (Default: \code{"counts"})}
 \item{method}{\code{Character scalar}. Used to calculate the distance.
 Method is passed to the function that is specified by \code{dis.fun}.
 (Default: \code{"bray"})}
+
+\item{n_dimred}{\code{Integer vector}. Specifies the dimensions to use if
+\code{dimred} is specified. (Default: \code{NULL})}
+
+\item{dimred}{\code{Character scalar} or \code{integer scalar}. indicates the
+reduced dimension result in \code{reducedDims} to use in the estimation.
+(Default: \code{NULL})}
 }
 \value{
 a
@@ -68,11 +75,12 @@ time difference is returned as well. The method operates on
 \code{SummarizedExperiment} objects, and the results are stored in \code{colData}.
 }
 \examples{
-#library(miaTime)
+library(miaTime)
+library(mia)
 library(TreeSummarizedExperiment)
 
 data(hitchip1006)
-tse <- mia::transformAssay(hitchip1006, method = "relabundance")
+tse <- transformAssay(hitchip1006, method = "relabundance")
 
 # Subset to speed up example
 tse <- tse[, colData(tse)$subject \%in\% c("900", "934", "843", "875")]

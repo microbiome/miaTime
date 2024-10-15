@@ -10,11 +10,6 @@
 #' @param dis.fun \code{Function} for dissimilarity calculation. The function must
 #' expect the input matrix as its first argument. With rows as samples and 
 #' columns as features. (Default: \code{vegan::vegdist})
-#' @param dimred \code{Character scalar} or \code{integer scalar}. indicates the 
-#' reduced dimension result in `reducedDims` to use in the estimation. 
-#' (Default: \code{NULL})
-#' @param n_dimred \code{Integer vector}. Specifies the dimensions to use if
-#' \code{dimred} is specified. (Default: \code{NULL})
 #' @param baseline_sample \code{Character vector}. Specifies the baseline
 #' sample(s) to be used. If the \code{group} argument is given, this must be a
 #' named \code{vector}; one element per group.
@@ -44,9 +39,10 @@
 #'
 #' @examples
 #' library(miaTime)
+#' library(mia)
 #'
 #' data(hitchip1006)
-#' tse <- mia::transformAssay(hitchip1006, method = "relabundance")
+#' tse <- transformAssay(hitchip1006, method = "relabundance")
 #'
 #' # Subset to speed up example
 #' tse <- tse[, tse$subject %in% c("900", "934", "843", "875")]
@@ -55,8 +51,8 @@
 #'     tse,
 #'     group = "subject",
 #'     time.col = "time",
-#'     name_divergence = "divergence_from_baseline",
-#'     name_timedifference = "time_from_baseline",
+#'     name = "divergence_from_baseline",
+#'     name.time = "time_from_baseline",
 #'     assay.type="relabundance",
 #'     dis.fun = vegan::vegdist,
 #'     method="bray")
@@ -66,8 +62,8 @@
 #'     baseline_sample = "Sample-875",
 #'     group = "subject",
 #'     time.col = "time",
-#'     name_divergence = "divergence_from_baseline",
-#'     name_timedifference = "time_from_baseline",
+#'     name = "divergence_from_baseline",
+#'     name.time = "time_from_baseline",
 #'     assay.type="relabundance",
 #'     dis.fun = vegan::vegdist,
 #'     method="bray")
@@ -101,24 +97,23 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         time.col,
         assay.type = "counts",
         group = NULL,
-        name_divergence = "divergence",
-        name_timedifference = "time_diff",
+        name = "divergence",
+        name.time = "time_diff",
         method = "bray",
-        altexp = NULL,
         dimred = NULL,
         n_dimred = NULL,
         dis.fun = vegan::vegdist,
         baseline_sample = NULL,
         ...){
         ############################# INPUT CHECK ##############################
-        # name_divergence
+        # name
         temp <- .check_input(
-            name_divergence,
+            name,
             list(NULL, "character scalar")
         )
-        # name_timedifference
+        # name.time
         temp <- .check_input(
-            name_timedifference,
+            name.time,
             list(NULL, "character scalar")
         )
         ########################### INPUT CHECK END ############################
@@ -127,8 +122,8 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
                                        time.col = time.col, 
                                        assay.type = assay.type, 
                                        method = method, 
-                                       name_divergence = name_divergence,
-                                       name_timedifference = name_timedifference, 
+                                       name = name,
+                                       name.time = name.time, 
                                        dimred = dimred, n_dimred = n_dimred, 
                                        altexp = altexp, 
                                        baseline_sample = baseline_sample, ...)
@@ -141,20 +136,15 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
 .get_baseline_divergence <- function(
         x, group, baseline_sample = NULL, 
         time.col, assay.type, method,
-        altexp = NULL, baseline = NULL, 
+        baseline = NULL, 
         dimred = NULL, n_dimred = NULL, 
         dis.fun = vegan::vegdist, 
-        name_timedifference = "time_diff", 
-        name_divergence = "divergence", ...){
+        name.time = "time_diff", 
+        name = "divergence", ...){
     ############################### INPUT CHECK ################################
     # If TreeSE does not have column names, add
     if( is.null(colnames(x)) ){
         colnames(x) <- as.character(seq_len(ncol(x)))	
-    }
-    # Use altExp if mentioned and available
-    if( !is.null(altexp) ){
-        .check_altExp_present(altexp, x)
-        x <- altExp(x, altexp)
     }
     # assay.type
     .check_assay_present(assay.type, x)
@@ -235,8 +225,8 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     if (ncol(baseline) == 1) {
         xli <- lapply(names(spl), function (g) {
             .calculate_divergence_from_baseline(x[,spl[[g]]], baseline,
-                                                time.col, name_divergence, 
-                                                name_timedifference, 
+                                                time.col, name, 
+                                                name.time, 
                                                 assay.type, dis.fun,
                                                 method, dimred, n_dimred, ...)})
     } else {
@@ -244,8 +234,8 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
             .calculate_divergence_from_baseline(x[,spl[[g]]], 
                                                 baseline[, baseline_sample[[g]]],
                                                 time.col, 
-                                                name_divergence, 
-                                                name_timedifference, 
+                                                name, 
+                                                name.time, 
                                                 assay.type, dis.fun,
                                                 method, dimred, n_dimred, ...)})
     }
@@ -292,11 +282,10 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
 }
 
 # First define the function that calculates divergence for a given SE object
-#' @importFrom mia estimateDivergence
 #' @importFrom methods is
 .calculate_divergence_from_baseline <- function (x, baseline, time.col,
-                                                 name_divergence, 
-                                                 name_timedifference,
+                                                 name, 
+                                                 name.time,
                                                  assay.type, dis.fun, method,
                                                  dimred, n_dimred) {
     
@@ -336,8 +325,8 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     # Add time divergence from baseline info; note this has to be a list    
     timevalues <- list(colData(x)[, time.col] - colData(reference)[, time.col])
     
-    x <- .add_values_to_colData(x, timevalues, name_timedifference)
-    x <- .add_values_to_colData(x, list(divergencevalues), name_divergence)    
+    x <- .add_values_to_colData(x, timevalues, name.time)
+    x <- .add_values_to_colData(x, list(divergencevalues), name)    
     
     # Return
     return(x)

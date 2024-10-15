@@ -26,6 +26,11 @@
 #' @param method \code{Character scalar}. Used to calculate the distance. 
 #' Method is passed to the function that is specified by \code{dis.fun}. 
 #' (Default: \code{"bray"})
+#' @param dimred \code{Character scalar} or \code{integer scalar}. indicates the 
+#' reduced dimension result in `reducedDims` to use in the estimation. 
+#' (Default: \code{NULL})
+#' @param n_dimred \code{Integer vector}. Specifies the dimensions to use if
+#' \code{dimred} is specified. (Default: \code{NULL})
 #' @param ... Arguments to be passed
 #'
 #' @return a
@@ -39,11 +44,12 @@
 #' @export
 #'
 #' @examples
-#' #library(miaTime)
+#' library(miaTime)
+#' library(mia)
 #' library(TreeSummarizedExperiment)
 #'
 #' data(hitchip1006)
-#' tse <- mia::transformAssay(hitchip1006, method = "relabundance")
+#' tse <- transformAssay(hitchip1006, method = "relabundance")
 #'
 #' # Subset to speed up example
 #' tse <- tse[, colData(tse)$subject %in% c("900", "934", "843", "875")]
@@ -62,9 +68,7 @@ NULL
 #' @rdname addStepwiseDivergence
 #' @export
 #' 
-#' @importFrom mia mergeSEs
 #' @importFrom vegan vegdist
-#' @importFrom mia addDivergence
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment colData<-

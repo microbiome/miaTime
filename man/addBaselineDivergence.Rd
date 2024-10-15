@@ -12,10 +12,9 @@ addBaselineDivergence(x, ...)
   time.col,
   assay.type = "counts",
   group = NULL,
-  name_divergence = "divergence",
-  name_timedifference = "time_diff",
+  name = "divergence",
+  name.time = "time_diff",
   method = "bray",
-  altexp = NULL,
   dimred = NULL,
   n_dimred = NULL,
   dis.fun = vegan::vegdist,
@@ -39,6 +38,13 @@ used in the dissimilarity estimation. (Default: \code{"counts"})}
 \item{group}{\code{Character scalar}. Specifies the grouping
 factor (name of a \code{colData} field). If given, the divergence is calculated
 per group.  e.g. subject, chamber, group etc.). (Default: \code{NULL})}
+
+\item{name}{\code{Character scalar}. Shows beta diversity between
+samples. (Default: \code{"time_divergence"})}
+
+\item{name.time}{\code{Character scalar}. Field name for adding the
+time difference between samples used to calculate beta diversity.
+(Default: \code{"time_difference"})}
 
 \item{method}{\code{Character scalar}. Used to calculate the distance.
 Method is passed to the function that is specified by \code{dis.fun}.
@@ -91,9 +97,10 @@ group (named list per group).
 }
 \examples{
 library(miaTime)
+library(mia)
 
 data(hitchip1006)
-tse <- mia::transformAssay(hitchip1006, method = "relabundance")
+tse <- transformAssay(hitchip1006, method = "relabundance")
 
 # Subset to speed up example
 tse <- tse[, tse$subject \%in\% c("900", "934", "843", "875")]
@@ -102,8 +109,8 @@ tse2 <- addBaselineDivergence(
     tse,
     group = "subject",
     time.col = "time",
-    name_divergence = "divergence_from_baseline",
-    name_timedifference = "time_from_baseline",
+    name = "divergence_from_baseline",
+    name.time = "time_from_baseline",
     assay.type="relabundance",
     dis.fun = vegan::vegdist,
     method="bray")
@@ -113,8 +120,8 @@ tse2 <- addBaselineDivergence(
     baseline_sample = "Sample-875",
     group = "subject",
     time.col = "time",
-    name_divergence = "divergence_from_baseline",
-    name_timedifference = "time_from_baseline",
+    name = "divergence_from_baseline",
+    name.time = "time_from_baseline",
     assay.type="relabundance",
     dis.fun = vegan::vegdist,
     method="bray")
