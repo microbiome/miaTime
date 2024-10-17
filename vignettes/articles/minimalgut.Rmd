@@ -82,7 +82,7 @@ here hour zero until the end of the experiment.
 
 ```{r}
 ## Divergence from baseline i.e from hour zero.
-tse <- transformAssay(minimalgut) # get relative abundance
+tse <- transformAssay(minimalgut, method = "relabundance") # get relative abundance
 tse <- addBaselineDivergence(tse,
                              group = "StudyIdentifier",
                              time.col = "Time.hr",
