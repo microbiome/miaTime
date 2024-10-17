@@ -16,7 +16,7 @@ addStepwiseDivergence(x, ...)
   name.time = "time_difference",
   assay.type = "counts",
   method = "bray",
-  n_dimred = NULL,
+  ndimred = NULL,
   dimred = NULL,
   ...
 )
@@ -53,7 +53,7 @@ used in the dissimilarity estimation. (Default: \code{"counts"})}
 Method is passed to the function that is specified by \code{dis.fun}.
 (Default: \code{"bray"})}
 
-\item{n_dimred}{\code{Integer vector}. Specifies the dimensions to use if
+\item{ndimred}{\code{Integer vector}. Specifies the dimensions to use if
 \code{dimred} is specified. (Default: \code{NULL})}
 
 \item{dimred}{\code{Character scalar} or \code{integer scalar}. indicates the

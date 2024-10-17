@@ -16,7 +16,7 @@ addBaselineDivergence(x, ...)
   name.time = "time_diff",
   method = "bray",
   dimred = NULL,
-  n_dimred = NULL,
+  ndimred = NULL,
   dis.fun = vegan::vegdist,
   baseline_sample = NULL,
   ...
@@ -54,7 +54,7 @@ Method is passed to the function that is specified by \code{dis.fun}.
 reduced dimension result in \code{reducedDims} to use in the estimation.
 (Default: \code{NULL})}
 
-\item{n_dimred}{\code{Integer vector}. Specifies the dimensions to use if
+\item{ndimred}{\code{Integer vector}. Specifies the dimensions to use if
 \code{dimred} is specified. (Default: \code{NULL})}
 
 \item{dis.fun}{\code{Function} for dissimilarity calculation. The function must

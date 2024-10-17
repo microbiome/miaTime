@@ -101,7 +101,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         name.time = "time_diff",
         method = "bray",
         dimred = NULL,
-        n_dimred = NULL,
+        ndimred = NULL,
         dis.fun = vegan::vegdist,
         baseline_sample = NULL,
         ...){
@@ -124,8 +124,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
                                        method = method, 
                                        name = name,
                                        name.time = name.time, 
-                                       dimred = dimred, n_dimred = n_dimred, 
-                                       altexp = altexp, 
+                                       dimred = dimred, ndimred = ndimred, 
                                        baseline_sample = baseline_sample, ...)
         
         return(x)
@@ -136,8 +135,8 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
 .get_baseline_divergence <- function(
         x, group, baseline_sample = NULL, 
         time.col, assay.type, method,
-        baseline = NULL, 
-        dimred = NULL, n_dimred = NULL, 
+        altexp = NULL, baseline = NULL, 
+        dimred = NULL, ndimred = NULL, 
         dis.fun = vegan::vegdist, 
         name.time = "time_diff", 
         name = "divergence", ...){
@@ -145,6 +144,11 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     # If TreeSE does not have column names, add
     if( is.null(colnames(x)) ){
         colnames(x) <- as.character(seq_len(ncol(x)))	
+    }
+    # Use altExp if mentioned and available
+    if( !is.null(altexp) ){
+        .check_altExp_present(altexp, x)
+        x <- altExp(x, altexp)
     }
     # assay.type
     .check_assay_present(assay.type, x)
@@ -228,7 +232,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
                                                 time.col, name, 
                                                 name.time, 
                                                 assay.type, dis.fun,
-                                                method, dimred, n_dimred, ...)})
+                                                method, dimred, ndimred, ...)})
     } else {
         xli <- lapply(names(spl), function (g) {
             .calculate_divergence_from_baseline(x[,spl[[g]]], 
@@ -237,7 +241,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
                                                 name, 
                                                 name.time, 
                                                 assay.type, dis.fun,
-                                                method, dimred, n_dimred, ...)})
+                                                method, dimred, ndimred, ...)})
     }
     
     # Return the elements in a list
@@ -287,7 +291,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
                                                  name, 
                                                  name.time,
                                                  assay.type, dis.fun, method,
-                                                 dimred, n_dimred) {
+                                                 dimred, ndimred) {
     
     # If baseline is SE object then just ensure it has exactly one sample 
     # (well-defined baseline).
@@ -308,8 +312,8 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     }
     
     # Getting corresponding matrices, to calculate divergence 
-    mat <- .get_mat_from_sce(x, assay.type, dimred, n_dimred)
-    ref_mat <- .get_mat_from_sce(reference, assay.type, dimred, n_dimred)
+    mat <- .get_mat_from_sce(x, assay.type, dimred, ndimred)
+    ref_mat <- .get_mat_from_sce(reference, assay.type, dimred, ndimred)
     
     # transposing mat if taken from reducedDim 
     if (!is.null(dimred)){

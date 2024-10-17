@@ -110,7 +110,7 @@ test_that("getBaselineDivergence", {
   tse <- scater::runMDS(tse, FUN = vegan::vegdist, method = "bray",
                          name = "PCoA_BC", exprs_values = "counts",
                          na.rm = TRUE, ncomponents=4)
-  # testing with all ordination components; n_dimred=NULL --> all 4 components
+  # testing with all ordination components; ndimred=NULL --> all 4 components
   tse2 <- addBaselineDivergence(tse, group = "subject",
                                 time.col = "time",
                                 name.time="time_from_baseline_ord_4",
@@ -130,7 +130,7 @@ test_that("getBaselineDivergence", {
                                 name.time="time_from_baseline_ord_2",
                                 name="divergence_from_baseline_ord_2",
                                 dimred = "PCoA_BC",
-                                n_dimred = 2,
+                                ndimred = 2,
                                 dis.fun=vegan::vegdist,
                                 method="euclidean")
   # Time differences should still match

@@ -29,7 +29,7 @@
 #' @param dimred \code{Character scalar} or \code{integer scalar}. indicates the 
 #' reduced dimension result in `reducedDims` to use in the estimation. 
 #' (Default: \code{NULL})
-#' @param n_dimred \code{Integer vector}. Specifies the dimensions to use if
+#' @param ndimred \code{Integer vector}. Specifies the dimensions to use if
 #' \code{dimred} is specified. (Default: \code{NULL})
 #' @param ... Arguments to be passed
 #'
@@ -89,7 +89,7 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
         name.time = "time_difference",
         assay.type = "counts",
         method="bray",
-        n_dimred = NULL,
+        ndimred = NULL,
         dimred = NULL,
         ...){
         ############################# INPUT CHECK ##############################
@@ -108,7 +108,7 @@ setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
         x <- .add_previous_sample(x, group, time.col, time_interval )
         res <- addDivergence(x, assay.type = assay.type, method = method, 
                              reference = "previous_sample", 
-                             name = name, n_dimred = n_dimred, dimred = dimred, ...)
+                             name = name, ndimred = ndimred, dimred = dimred, ...)
         col_data <- colData(res)
         colnames(col_data)[colnames(col_data) == "time_diff"] <- name.time
         colData(res) <- col_data 
