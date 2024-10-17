@@ -79,16 +79,15 @@ are stored in <code>colData</code>.</p>
 <span><span class="co"># S4 method for class 'SummarizedExperiment'</span></span>
 <span><span class="fu">addBaselineDivergence</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  <span class="va">time_field</span>,</span>
+<span>  <span class="va">time.col</span>,</span>
 <span>  assay.type <span class="op">=</span> <span class="st">"counts"</span>,</span>
 <span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  name_divergence <span class="op">=</span> <span class="st">"divergence"</span>,</span>
-<span>  name_timedifference <span class="op">=</span> <span class="st">"time_diff"</span>,</span>
+<span>  name <span class="op">=</span> <span class="st">"divergence"</span>,</span>
+<span>  name.time <span class="op">=</span> <span class="st">"time_diff"</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"bray"</span>,</span>
-<span>  altexp <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dimred <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  n_dimred <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  FUN <span class="op">=</span> <span class="fu">vegan</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegdist</a></span>,</span>
+<span>  ndimred <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dis.fun <span class="op">=</span> <span class="fu">vegan</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegdist</a></span>,</span>
 <span>  baseline_sample <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -105,10 +104,10 @@ object.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Arguments to be passed</p></dd>
+<dd><p>optional arguments</p></dd>
 
 
-<dt id="arg-time-field">time_field<a class="anchor" aria-label="anchor" href="#arg-time-field"></a></dt>
+<dt id="arg-time-col">time.col<a class="anchor" aria-label="anchor" href="#arg-time-col"></a></dt>
 <dd><p><code>Character scalar</code>. Specifies the name of the
 time series field in <code>colData</code>.</p></dd>
 
@@ -124,12 +123,12 @@ factor (name of a <code>colData</code> field). If given, the divergence is calcu
 per group.  e.g. subject, chamber, group etc.). (Default: <code>NULL</code>)</p></dd>
 
 
-<dt id="arg-name-divergence">name_divergence<a class="anchor" aria-label="anchor" href="#arg-name-divergence"></a></dt>
+<dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
 <dd><p><code>Character scalar</code>. Shows beta diversity between
 samples. (Default: <code>"time_divergence"</code>)</p></dd>
 
 
-<dt id="arg-name-timedifference">name_timedifference<a class="anchor" aria-label="anchor" href="#arg-name-timedifference"></a></dt>
+<dt id="arg-name-time">name.time<a class="anchor" aria-label="anchor" href="#arg-name-time"></a></dt>
 <dd><p><code>Character scalar</code>. Field name for adding the
 time difference between samples used to calculate beta diversity.
 (Default: <code>"time_difference"</code>)</p></dd>
@@ -137,13 +136,8 @@ time difference between samples used to calculate beta diversity.
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p><code>Character scalar</code>. Used to calculate the distance.
-Method is passed to the function that is specified by <code>FUN</code>.
+Method is passed to the function that is specified by <code>dis.fun</code>.
 (Default: <code>"bray"</code>)</p></dd>
-
-
-<dt id="arg-altexp">altexp<a class="anchor" aria-label="anchor" href="#arg-altexp"></a></dt>
-<dd><p><code>Character scalar</code> or <code>integer scalar</code>. Specifies the
-alternative experiment containing the input data. (Default: <code>NULL</code>)</p></dd>
 
 
 <dt id="arg-dimred">dimred<a class="anchor" aria-label="anchor" href="#arg-dimred"></a></dt>
@@ -152,12 +146,12 @@ reduced dimension result in <code>reducedDims</code> to use in the estimation.
 (Default: <code>NULL</code>)</p></dd>
 
 
-<dt id="arg-n-dimred">n_dimred<a class="anchor" aria-label="anchor" href="#arg-n-dimred"></a></dt>
+<dt id="arg-ndimred">ndimred<a class="anchor" aria-label="anchor" href="#arg-ndimred"></a></dt>
 <dd><p><code>Integer vector</code>. Specifies the dimensions to use if
 <code>dimred</code> is specified. (Default: <code>NULL</code>)</p></dd>
 
 
-<dt id="arg-fun">FUN<a class="anchor" aria-label="anchor" href="#arg-fun"></a></dt>
+<dt id="arg-dis-fun">dis.fun<a class="anchor" aria-label="anchor" href="#arg-dis-fun"></a></dt>
 <dd><p><code>Function</code> for dissimilarity calculation. The function must
 expect the input matrix as its first argument. With rows as samples and
 columns as features. (Default: <code><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegan::vegdist</a></code>)</p></dd>
@@ -196,9 +190,10 @@ group (named list per group).</p>
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/microbiome/miaTime" class="external-link">miaTime</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/microbiome/mia" class="external-link">mia</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">hitchip1006</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu">mia</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/mia/man/transformAssay.html" class="external-link">transformAssay</a></span><span class="op">(</span><span class="va">hitchip1006</span>, method <span class="op">=</span> <span class="st">"relabundance"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mia/man/transformAssay.html" class="external-link">transformAssay</a></span><span class="op">(</span><span class="va">hitchip1006</span>, method <span class="op">=</span> <span class="st">"relabundance"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Subset to speed up example</span></span></span>
 <span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">tse</span><span class="op">[</span>, <span class="va">tse</span><span class="op">$</span><span class="va">subject</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"900"</span>, <span class="st">"934"</span>, <span class="st">"843"</span>, <span class="st">"875"</span><span class="op">)</span><span class="op">]</span></span></span>
@@ -206,22 +201,22 @@ group (named list per group).</p>
 <span class="r-in"><span><span class="va">tse2</span> <span class="op">&lt;-</span> <span class="fu">addBaselineDivergence</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="va">tse</span>,</span></span>
 <span class="r-in"><span>    group <span class="op">=</span> <span class="st">"subject"</span>,</span></span>
-<span class="r-in"><span>    time_field <span class="op">=</span> <span class="st">"time"</span>,</span></span>
-<span class="r-in"><span>    name_divergence <span class="op">=</span> <span class="st">"divergence_from_baseline"</span>,</span></span>
-<span class="r-in"><span>    name_timedifference <span class="op">=</span> <span class="st">"time_from_baseline"</span>,</span></span>
+<span class="r-in"><span>    time.col <span class="op">=</span> <span class="st">"time"</span>,</span></span>
+<span class="r-in"><span>    name <span class="op">=</span> <span class="st">"divergence_from_baseline"</span>,</span></span>
+<span class="r-in"><span>    name.time <span class="op">=</span> <span class="st">"time_from_baseline"</span>,</span></span>
 <span class="r-in"><span>    assay.type<span class="op">=</span><span class="st">"relabundance"</span>,</span></span>
-<span class="r-in"><span>    FUN <span class="op">=</span> <span class="fu">vegan</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegdist</a></span>,</span></span>
+<span class="r-in"><span>    dis.fun <span class="op">=</span> <span class="fu">vegan</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegdist</a></span>,</span></span>
 <span class="r-in"><span>    method<span class="op">=</span><span class="st">"bray"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">tse2</span> <span class="op">&lt;-</span> <span class="fu">addBaselineDivergence</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="va">tse</span>,</span></span>
 <span class="r-in"><span>    baseline_sample <span class="op">=</span> <span class="st">"Sample-875"</span>,</span></span>
 <span class="r-in"><span>    group <span class="op">=</span> <span class="st">"subject"</span>,</span></span>
-<span class="r-in"><span>    time_field <span class="op">=</span> <span class="st">"time"</span>,</span></span>
-<span class="r-in"><span>    name_divergence <span class="op">=</span> <span class="st">"divergence_from_baseline"</span>,</span></span>
-<span class="r-in"><span>    name_timedifference <span class="op">=</span> <span class="st">"time_from_baseline"</span>,</span></span>
+<span class="r-in"><span>    time.col <span class="op">=</span> <span class="st">"time"</span>,</span></span>
+<span class="r-in"><span>    name <span class="op">=</span> <span class="st">"divergence_from_baseline"</span>,</span></span>
+<span class="r-in"><span>    name.time <span class="op">=</span> <span class="st">"time_from_baseline"</span>,</span></span>
 <span class="r-in"><span>    assay.type<span class="op">=</span><span class="st">"relabundance"</span>,</span></span>
-<span class="r-in"><span>    FUN <span class="op">=</span> <span class="fu">vegan</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegdist</a></span>,</span></span>
+<span class="r-in"><span>    dis.fun <span class="op">=</span> <span class="fu">vegan</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/vegan/man/vegdist.html" class="external-link">vegdist</a></span>,</span></span>
 <span class="r-in"><span>    method<span class="op">=</span><span class="st">"bray"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
