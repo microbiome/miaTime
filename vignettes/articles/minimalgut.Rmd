@@ -124,7 +124,7 @@ Now visualize abundance of *Blautia hydrogenotrophica* using the `miaViz::plotSe
 
 ```{r fig.height=4, fig.width=8}
 library(miaViz)
-plotSeries(transformAssay(minimalgut),
+plotSeries(transformAssay(minimalgut, method = "relabundance"),
            x = "Time.hr",
            y = "Blautia_hydrogenotrophica",
            colour_by = "Species",
