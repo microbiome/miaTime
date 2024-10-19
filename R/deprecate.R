@@ -18,35 +18,8 @@ setGeneric("getTimeDivergence", signature = c("x"), function(x, ... )
 #' @export
 setMethod("getTimeDivergence", signature = c(x = "ANY"), function(x, ...){
     .Deprecated(msg = "'getTimeDivergence' is deprecated. 
-                Use 'addStepwiseDivergence' instead.")
+        Use 'addStepwiseDivergence' instead.")
     addStepwiseDivergence(x, ...)
-}
+    }
 )
 
-#' @rdname deprecate
-#' @export
-setGeneric("getStepwiseDivergence", signature = c("x"), function(x, ... )
-    standardGeneric("getStepwiseDivergence"))
-
-#' @rdname deprecate
-#' @export
-setMethod("getStepwiseDivergence", signature = c(x = "ANY"), function(x, ...){
-    .Deprecated(msg = "'getStepwiseDivergence' is deprecated. 
-                Use 'addStepwiseDivergence' instead.")
-    addStepwiseDivergence(x, ...)
-}
-)
-
-#' @rdname deprecate
-#' @export
-setGeneric("getBaselineDivergence", signature = c("x"), function(x, ... )
-    standardGeneric("getBaselineDivergence"))
-
-#' @rdname deprecate
-#' @export
-setMethod("getBaselineDivergence", signature = c(x = "ANY"), function(x, ...){
-    .Deprecated(msg = "'getBaselineDivergence' is deprecated. 
-                Use 'addBaselineDivergence' instead.")
-    addBaselineDivergence(x, ...)
-}
-)

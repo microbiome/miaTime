@@ -4,23 +4,11 @@
 \alias{deprecate}
 \alias{getTimeDivergence}
 \alias{getTimeDivergence,ANY-method}
-\alias{getStepwiseDivergence}
-\alias{getStepwiseDivergence,ANY-method}
-\alias{getBaselineDivergence}
-\alias{getBaselineDivergence,ANY-method}
 \title{These functions are deprecated. Please use other functions instead.}
 \usage{
 getTimeDivergence(x, ...)
 
 \S4method{getTimeDivergence}{ANY}(x, ...)
-
-getStepwiseDivergence(x, ...)
-
-\S4method{getStepwiseDivergence}{ANY}(x, ...)
-
-getBaselineDivergence(x, ...)
-
-\S4method{getBaselineDivergence}{ANY}(x, ...)
 }
 \arguments{
 \item{x}{A

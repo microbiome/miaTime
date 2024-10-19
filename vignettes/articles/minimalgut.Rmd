@@ -182,8 +182,6 @@ p <- tse |> ggplot(aes(x=time_from_baseline,
 print(p)
 ```
 
-
-
 ## Moving average of the slope
 
 This shows how to calculate and plot moving average for the variable of interest (here: slope).

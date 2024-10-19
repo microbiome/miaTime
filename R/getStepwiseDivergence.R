@@ -5,38 +5,14 @@
 #' time difference is returned as well. The method operates on
 #' `SummarizedExperiment` objects, and the results are stored in `colData`.
 #'
-#' @param x A
-#' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
-#' object.
-#' @param group \code{Character scalar}. Specifies the grouping
-#' factor (name of a `colData` field). If given, the divergence is calculated
-#' per group.  e.g. subject, chamber, group etc.). (Default: \code{NULL})
-#' @param time.col \code{Character scalar}. Specifies the name of the
-#' time series field in `colData`.
-#' @param time_interval \code{Integer scalar}. Indicates the increment between 
+#' @inheritParams addBaselineDivergence
+#' 
+#' @param time.interval \code{Integer scalar}. Indicates the increment between 
 #' time steps. If you need to take every second, every third, or so, time step 
-#' only, then increase this accordingly. (Default: \code{1})
-#' @param name \code{Character scalar}. Shows beta diversity between 
-#' samples. (Default: \code{"time_divergence"})
-#' @param name.time \code{Character scalar}. Field name for adding the 
-#' time difference between samples used to calculate beta diversity. 
-#' (Default: \code{"time_difference"})
-#' @param assay.type \code{Character scalar}. Specifies which assay values are 
-#' used in the dissimilarity estimation. (Default: \code{"counts"})
-#' @param method \code{Character scalar}. Used to calculate the distance. 
-#' Method is passed to the function that is specified by \code{dis.fun}. 
-#' (Default: \code{"bray"})
-#' @param dimred \code{Character scalar} or \code{integer scalar}. indicates the 
-#' reduced dimension result in `reducedDims` to use in the estimation. 
-#' (Default: \code{NULL})
-#' @param ndimred \code{Integer vector}. Specifies the dimensions to use if
-#' \code{dimred} is specified. (Default: \code{NULL})
-#' @param ... Arguments to be passed
-#'
+#' only, then increase this accordingly. (Default: \code{1L})
+#' 
 #' @return a
 #' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
-#' or
-#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
 #' containing the sample dissimilarity and corresponding time difference between
 #' samples (across n time steps), within each level of the grouping factor.
 #'
@@ -45,92 +21,97 @@
 #'
 #' @examples
 #' library(miaTime)
-#' library(mia)
-#' library(TreeSummarizedExperiment)
 #'
 #' data(hitchip1006)
 #' tse <- transformAssay(hitchip1006, method = "relabundance")
-#'
-#' # Subset to speed up example
-#' tse <- tse[, colData(tse)$subject %in% c("900", "934", "843", "875")]
-#'
-#' # Using vegdist for divergence calculation, one can pass
-#' # the dissimilarity method from the vegan::vegdist options
-#' # via the "method" argument
-#' tse <- addStepwiseDivergence(tse, group = "subject",
-#'                               time_interval = 1,
-#'                               time.col = "time",
-#'                               assay.type="relabundance",
-#'                               dis.fun = vegan::vegdist,
-#'                               method="bray")
+#' 
+#' # Calculate divergence
+#' tse <- addStepwiseDivergence(
+#'     tse, group = "subject",
+#'     time_interval = 1,
+#'     time.col = "time",
+#'     assay.type="relabundance"
+#'     )
+#' 
 NULL
 
 #' @rdname addStepwiseDivergence
 #' @export
-#' 
-#' @importFrom vegan vegdist
-#' @importFrom SummarizedExperiment assay
-#' @importFrom SummarizedExperiment colData
-#' @importFrom SummarizedExperiment colData<-
-#' @importFrom SingleCellExperiment altExp
 #'
-setGeneric("addStepwiseDivergence", signature = c("x"), function(x, ... )
-  standardGeneric("addStepwiseDivergence"))
+setGeneric("getStepwiseDivergence", signature = c("x"), function(x, ...)
+  standardGeneric("getStepwiseDivergence"))
 
 #' @rdname addStepwiseDivergence
 #' @export
-setMethod("addStepwiseDivergence", signature = c(x = "ANY"),
+setMethod("getStepwiseDivergence", signature = c(x = "ANY"),
     function(
         x,
-        group=NULL,
         time.col,
-        time_interval = 1,
-        name = "time_divergence",
-        name.time = "time_difference",
         assay.type = "counts",
-        method="bray",
-        ndimred = NULL,
-        dimred = NULL,
+        time.interval = 1L,
+        group = NULL,
+        method = "bray",
+        name = "divergence",
+        name.time = "time_diff",
         ...){
         ############################# INPUT CHECK ##############################
-        # name
         temp <- .check_input(
-          name,
-          list(NULL, "character scalar")
-        )
-        # name
+            time.col, list("character scalar"), colnames(colData(x)))
+        if( !is.numeric(x[[time.col]]) ){
+            stop("'time.col' must specify numeric column from colData(x)",
+                call. = FALSE)
+        }
+        #
+        .check_assay_present(assay.type, x)
+        #
         temp <- .check_input(
-          name.time,
-          list(NULL, "character scalar")
-        )
+            group, list(NULL, "character scalar"), colnames(colData(x)))
+        #
+        temp <- .check_input(method, list("character scalar"))
+        #
+        temp <- .check_input(name, list(NULL, "character scalar"))
+        #
+        temp <- .check_input(name.time, list(NULL, "character scalar"))
+        #
+        if( is.null(rownames(x)) ){
+            rownames(x) <- paste0("row", seq_len(nrow(x)))
+        }
+        if( is.null(colnames(x)) ){
+            colnames(x) <- paste0("col", seq_len(ncol(x)))
+        }
         ########################### INPUT CHECK END ############################
-        # Calculate values
-        x <- .add_previous_sample(x, group, time.col, time_interval )
-        res <- addDivergence(x, assay.type = assay.type, method = method, 
-                             reference = "previous_sample", 
-                             name = name, ndimred = ndimred, dimred = dimred, ...)
-        col_data <- colData(res)
-        colnames(col_data)[colnames(col_data) == "time_diff"] <- name.time
-        colData(res) <- col_data 
+        # Add stepwise samples to colData
+        x <- .add_reference_samples_to_coldata(
+            x, time.col, group, time.interval = time.interval,
+            reference.method = "stepwise", ...)
+        reference <- x[[2]]
+        x <- x[[1]]
+        # Calculate divergences
+        res <- getDivergence(
+            x, assay.type = assay.type, reference = reference,
+            method = method, ...)
+        # Add time difference
+        time_res <- .get_time_difference(x, time.col, reference)
+        # Create a DF to return
+        res <- .convert_divergence_to_df(x, res, time_res, name, name.time)
         return(res)
     }
 )
 
-.add_previous_sample <- function(x, group, time, time_interval ){
-  colData(x)$sample <- colnames(x)
-  # For each group, get the same that has lowest time point
-  df <- colData(x) %>% as.data.frame() %>%
-    # Sort by subject and time
-    arrange(.data[[group]], .data[[time]]) %>%
-    group_by(.data[[group]]) %>%
-    # Lag time by 1 (previous time point)
-    mutate(previous_time = lag(.data[[time]], n = time_interval),  
-           # Lag sample name by 1
-           previous_sample = lag(sample, n = time_interval)) %>%  
-    ungroup() |> DataFrame()
-  rownames(df) <- df$sample
-  df[["time_diff"]] <- df[[time]] - df[["previous_time"]]
-  df <- df[ match(colnames(x), rownames(df)), ]
-  colData(x) <- df
-  return(x)
-}
+#' @rdname addStepwiseDivergence
+#' @export
+setGeneric("addStepwiseDivergence", signature = "x", function(x, ...)
+    standardGeneric("addStepwiseDivergence"))
+
+#' @rdname addStepwiseDivergence
+#' @export
+setMethod("addStepwiseDivergence", signature = c(x = "SummarizedExperiment"),
+    function(x, name = "divergence", name.time = "time_diff", ...){
+      # Calculate divergence
+        res <- getStepwiseDivergence(x,  ...)
+        # Add to colData
+        res <- as.list(res) |> unname()
+        x <- .add_values_to_colData(x, res, list(name, name.time), ...)
+        return(x)
+    }
+)

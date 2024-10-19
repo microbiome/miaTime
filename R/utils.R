@@ -159,6 +159,7 @@
 .is_non_empty_character <- mia:::.is_non_empty_character
 .is_non_empty_string <- mia:::.is_non_empty_string
 .is_an_integer <- mia:::.is_an_integer
+.is_a_numeric <- mia:::.is_a_numeric
 .get_name_in_parent <- mia:::.get_name_in_parent
 .safe_deparse <- mia:::.safe_deparse
 .check_altExp_present <- mia:::.check_altExp_present

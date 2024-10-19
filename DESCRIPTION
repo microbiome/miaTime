@@ -24,14 +24,14 @@ License: Artistic-2.0 | file LICENSE
 Depends:
     R (>= 4.0),
     mia,
-    dplyr
-Imports:
-    methods,
-    S4Vectors,
-    scater,
     SingleCellExperiment,
     SummarizedExperiment,
-    vegan
+    TreeSummarizedExperiment
+Imports:
+    dplyr,
+    methods,
+    S4Vectors,
+    scater
 Suggests: 
     BiocStyle,
     devtools,

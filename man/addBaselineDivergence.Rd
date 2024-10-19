@@ -2,32 +2,36 @@
 % Please edit documentation in R/getBaselineDivergence.R
 \name{addBaselineDivergence}
 \alias{addBaselineDivergence}
+\alias{getBaselineDivergence}
+\alias{getBaselineDivergence,SummarizedExperiment-method}
 \alias{addBaselineDivergence,SummarizedExperiment-method}
 \title{Beta diversity between the baseline and later time steps}
 \usage{
-addBaselineDivergence(x, ...)
+getBaselineDivergence(x, ...)
 
-\S4method{addBaselineDivergence}{SummarizedExperiment}(
+\S4method{getBaselineDivergence}{SummarizedExperiment}(
   x,
   time.col,
   assay.type = "counts",
+  reference = NULL,
   group = NULL,
+  method = "bray",
   name = "divergence",
   name.time = "time_diff",
-  method = "bray",
-  dimred = NULL,
-  ndimred = NULL,
-  dis.fun = vegan::vegdist,
-  baseline_sample = NULL,
   ...
 )
+
+addBaselineDivergence(x, ...)
+
+\S4method{addBaselineDivergence}{SummarizedExperiment}(x, name = "divergence", name.time = "time_diff", ...)
 }
 \arguments{
 \item{x}{A
 \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
 object.}
 
-\item{...}{optional arguments}
+\item{...}{optional arguments passed into
+\code{\link[mia::addDivergence]{mia::addDivergence()}}.}
 
 \item{time.col}{\code{Character scalar}. Specifies the name of the
 time series field in \code{colData}.}
@@ -35,9 +39,17 @@ time series field in \code{colData}.}
 \item{assay.type}{\code{Character scalar}. Specifies which assay values are
 used in the dissimilarity estimation. (Default: \code{"counts"})}
 
+\item{reference}{\code{Character vector}. Specifies the baseline
+sample(s) to be used. If the \code{group} argument is given, this must be a
+named \code{vector}; one element per group.}
+
 \item{group}{\code{Character scalar}. Specifies the grouping
 factor (name of a \code{colData} field). If given, the divergence is calculated
-per group.  e.g. subject, chamber, group etc.). (Default: \code{NULL})}
+per group.  e.g. subject, chamber, group etc. (Default: \code{NULL})}
+
+\item{method}{\code{Character scalar}. Used to calculate the distance.
+Method is passed to the function that is specified by \code{dis.fun}.
+(Default: \code{"bray"})}
 
 \item{name}{\code{Character scalar}. Shows beta diversity between
 samples. (Default: \code{"time_divergence"})}
@@ -46,30 +58,11 @@ samples. (Default: \code{"time_divergence"})}
 time difference between samples used to calculate beta diversity.
 (Default: \code{"time_difference"})}
 
-\item{method}{\code{Character scalar}. Used to calculate the distance.
-Method is passed to the function that is specified by \code{dis.fun}.
-(Default: \code{"bray"})}
-
-\item{dimred}{\code{Character scalar} or \code{integer scalar}. indicates the
-reduced dimension result in \code{reducedDims} to use in the estimation.
-(Default: \code{NULL})}
-
-\item{ndimred}{\code{Integer vector}. Specifies the dimensions to use if
-\code{dimred} is specified. (Default: \code{NULL})}
-
-\item{dis.fun}{\code{Function} for dissimilarity calculation. The function must
-expect the input matrix as its first argument. With rows as samples and
-columns as features. (Default: \code{vegan::vegdist})}
-
-\item{baseline_sample}{\code{Character vector}. Specifies the baseline
-sample(s) to be used. If the \code{group} argument is given, this must be a
-named \code{vector}; one element per group.}
+\item{baseline_sample}{Deprecated. Use \code{reference} instead.}
 }
 \value{
 a
 \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
-or
-\code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
 containing the sample dissimilarity and corresponding time difference between
 samples (across n time steps), within each level of the grouping factor.
 }
@@ -102,10 +95,7 @@ library(mia)
 data(hitchip1006)
 tse <- transformAssay(hitchip1006, method = "relabundance")
 
-# Subset to speed up example
-tse <- tse[, tse$subject \%in\% c("900", "934", "843", "875")]
-
-tse2 <- addBaselineDivergence(
+tse <- addBaselineDivergence(
     tse,
     group = "subject",
     time.col = "time",
@@ -115,9 +105,9 @@ tse2 <- addBaselineDivergence(
     dis.fun = vegan::vegdist,
     method="bray")
 
-tse2 <- addBaselineDivergence(
+tse <- addBaselineDivergence(
     tse,
-    baseline_sample = "Sample-875",
+    baseline.sample = "Sample-875",
     group = "subject",
     time.col = "time",
     name = "divergence_from_baseline",

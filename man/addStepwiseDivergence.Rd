@@ -2,42 +2,54 @@
 % Please edit documentation in R/getStepwiseDivergence.R
 \name{addStepwiseDivergence}
 \alias{addStepwiseDivergence}
-\alias{addStepwiseDivergence,ANY-method}
+\alias{getStepwiseDivergence}
+\alias{getStepwiseDivergence,ANY-method}
+\alias{addStepwiseDivergence,SummarizedExperiment-method}
 \title{Beta diversity between consecutive time steps}
 \usage{
-addStepwiseDivergence(x, ...)
+getStepwiseDivergence(x, ...)
 
-\S4method{addStepwiseDivergence}{ANY}(
+\S4method{getStepwiseDivergence}{ANY}(
   x,
-  group = NULL,
   time.col,
-  time_interval = 1,
-  name = "time_divergence",
-  name.time = "time_difference",
   assay.type = "counts",
+  time.interval = 1L,
+  group = NULL,
   method = "bray",
-  ndimred = NULL,
-  dimred = NULL,
+  name = "divergence",
+  name.time = "time_diff",
   ...
 )
+
+addStepwiseDivergence(x, ...)
+
+\S4method{addStepwiseDivergence}{SummarizedExperiment}(x, name = "divergence", name.time = "time_diff", ...)
 }
 \arguments{
 \item{x}{A
 \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
 object.}
 
-\item{...}{Arguments to be passed}
-
-\item{group}{\code{Character scalar}. Specifies the grouping
-factor (name of a \code{colData} field). If given, the divergence is calculated
-per group.  e.g. subject, chamber, group etc.). (Default: \code{NULL})}
+\item{...}{optional arguments passed into
+\code{\link[mia::addDivergence]{mia::addDivergence()}}.}
 
 \item{time.col}{\code{Character scalar}. Specifies the name of the
 time series field in \code{colData}.}
 
-\item{time_interval}{\code{Integer scalar}. Indicates the increment between
+\item{assay.type}{\code{Character scalar}. Specifies which assay values are
+used in the dissimilarity estimation. (Default: \code{"counts"})}
+
+\item{time.interval}{\code{Integer scalar}. Indicates the increment between
 time steps. If you need to take every second, every third, or so, time step
-only, then increase this accordingly. (Default: \code{1})}
+only, then increase this accordingly. (Default: \code{1L})}
+
+\item{group}{\code{Character scalar}. Specifies the grouping
+factor (name of a \code{colData} field). If given, the divergence is calculated
+per group.  e.g. subject, chamber, group etc. (Default: \code{NULL})}
+
+\item{method}{\code{Character scalar}. Used to calculate the distance.
+Method is passed to the function that is specified by \code{dis.fun}.
+(Default: \code{"bray"})}
 
 \item{name}{\code{Character scalar}. Shows beta diversity between
 samples. (Default: \code{"time_divergence"})}
@@ -45,26 +57,10 @@ samples. (Default: \code{"time_divergence"})}
 \item{name.time}{\code{Character scalar}. Field name for adding the
 time difference between samples used to calculate beta diversity.
 (Default: \code{"time_difference"})}
-
-\item{assay.type}{\code{Character scalar}. Specifies which assay values are
-used in the dissimilarity estimation. (Default: \code{"counts"})}
-
-\item{method}{\code{Character scalar}. Used to calculate the distance.
-Method is passed to the function that is specified by \code{dis.fun}.
-(Default: \code{"bray"})}
-
-\item{ndimred}{\code{Integer vector}. Specifies the dimensions to use if
-\code{dimred} is specified. (Default: \code{NULL})}
-
-\item{dimred}{\code{Character scalar} or \code{integer scalar}. indicates the
-reduced dimension result in \code{reducedDims} to use in the estimation.
-(Default: \code{NULL})}
 }
 \value{
 a
 \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
-or
-\code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
 containing the sample dissimilarity and corresponding time difference between
 samples (across n time steps), within each level of the grouping factor.
 }
@@ -76,22 +72,16 @@ time difference is returned as well. The method operates on
 }
 \examples{
 library(miaTime)
-library(mia)
-library(TreeSummarizedExperiment)
 
 data(hitchip1006)
 tse <- transformAssay(hitchip1006, method = "relabundance")
 
-# Subset to speed up example
-tse <- tse[, colData(tse)$subject \%in\% c("900", "934", "843", "875")]
+# Calculate divergence
+tse <- addStepwiseDivergence(
+    tse, group = "subject",
+    time_interval = 1,
+    time.col = "time",
+    assay.type="relabundance"
+    )
 
-# Using vegdist for divergence calculation, one can pass
-# the dissimilarity method from the vegan::vegdist options
-# via the "method" argument
-tse <- addStepwiseDivergence(tse, group = "subject",
-                              time_interval = 1,
-                              time.col = "time",
-                              assay.type="relabundance",
-                              dis.fun = vegan::vegdist,
-                              method="bray")
 }
