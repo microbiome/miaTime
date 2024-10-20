@@ -315,7 +315,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         # For each sample, get the previous ith sample.
         # For each subject, get previous sample based on time.
         df <- df |>
-            mutate(!!reference_col := dplyr::lag(
+            mutate(!!reference_col := lag(
                 .data[[rowname_col]], n = time.interval,
                 order_by = .data[[time.col]]))
     }
