@@ -35,10 +35,8 @@
 #' sample(s) to be used. If the \code{group} argument is given, this must be a
 #' named \code{vector}; one element per group.
 #' 
-#' @param baseline_sample Deprecated. Use \code{reference} instead.
-#' 
 #' @param ... optional arguments passed into
-#' \code{\link[mia::addDivergence]{mia::addDivergence()}}.
+#' \code{\link[mia:addDivergence]{mia::addDivergence()}}.
 #'
 #' @return a
 #' \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}

@@ -31,7 +31,7 @@ addBaselineDivergence(x, ...)
 object.}
 
 \item{...}{optional arguments passed into
-\code{\link[mia::addDivergence]{mia::addDivergence()}}.}
+\code{\link[mia:addDivergence]{mia::addDivergence()}}.}
 
 \item{time.col}{\code{Character scalar}. Specifies the name of the
 time series field in \code{colData}.}
@@ -57,8 +57,6 @@ samples. (Default: \code{"time_divergence"})}
 \item{name.time}{\code{Character scalar}. Field name for adding the
 time difference between samples used to calculate beta diversity.
 (Default: \code{"time_difference"})}
-
-\item{baseline_sample}{Deprecated. Use \code{reference} instead.}
 }
 \value{
 a

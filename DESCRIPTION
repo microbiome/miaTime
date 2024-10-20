@@ -23,14 +23,14 @@ biocViews: Microbiome, Software, Sequencing, Coverage
 License: Artistic-2.0 | file LICENSE
 Depends:
     R (>= 4.0),
-    mia,
-    SingleCellExperiment,
-    SummarizedExperiment,
-    TreeSummarizedExperiment
+    mia
 Imports:
     dplyr,
     methods,
-    S4Vectors
+    S4Vectors,
+    SingleCellExperiment,
+    SummarizedExperiment,
+    TreeSummarizedExperiment
 Suggests: 
     BiocStyle,
     devtools,

@@ -31,7 +31,7 @@ addStepwiseDivergence(x, ...)
 object.}
 
 \item{...}{optional arguments passed into
-\code{\link[mia::addDivergence]{mia::addDivergence()}}.}
+\code{\link[mia:addDivergence]{mia::addDivergence()}}.}
 
 \item{time.col}{\code{Character scalar}. Specifies the name of the
 time series field in \code{colData}.}
