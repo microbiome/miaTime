@@ -112,6 +112,7 @@ setMethod("getBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         name.time = "time_diff",
         ...){
         ############################# INPUT CHECK ##############################
+        x <- .check_and_get_altExp(x, ...)
         # time.col must specify numeric column from colData
         temp <- .check_input(
             time.col, list("character scalar"), colnames(colData(x)))
@@ -238,15 +239,30 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     # correctly.
     # It can be a single character value specifying a column from colData
     # (preferred) or single character value specifying a sample.
-    is_wrong_string <- !(.is_non_empty_string(reference) &&
-        (reference %in% colnames(cd) || reference %in% rownames(cd)))
+    is_wrong_string <- FALSE
+    if( !is.null(reference) && .is_non_empty_string(reference) ){
+        is_wrong_string <- !(reference %in% colnames(cd) ||
+            reference %in% rownames(cd))
+    }
     # It can also be a character vector. Then its length should match with
     # the length of sample or groups if "group" is specified. (At this point,
     # group cannot be NULL, because we defined it earlier if it was not
     # specified by user)
-    is_wrong_vector <- !.is_non_empty_string(reference) &&
-        length(reference) != length(unique(cd[[group]]))
-    if( !is.null(reference) && (is_wrong_string || is_wrong_vector) ){
+    is_wrong_vector <- FALSE
+    if( !is.null(reference) && !.is_non_empty_string(reference) ){
+        is_wrong_vector <- length(reference) != length(unique(cd[[group]]))
+        # If the user provided a vector for each group, the vector must be named
+        if( !is_wrong_vector && length(reference) != nrow(cd) &&
+            is.null(names(reference)) ){
+            is_wrong_vector <- TRUE
+        }
+        # Otherwise, we can expand the reference vector for each member of the
+        # groups
+        if( !is_wrong_vector && length(reference) != nrow(cd) ){
+            reference <- reference[ match(cd[[group]], names(reference)) ]
+        }
+    }
+    if( is_wrong_string || is_wrong_vector ){
         stop("'reference' must be NULL or a single character value specifying ",
             "a column from colData(x).", call. = FALSE)
     }

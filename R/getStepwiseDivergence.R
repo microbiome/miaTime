@@ -80,6 +80,7 @@ setMethod("getStepwiseDivergence", signature = c(x = "ANY"),
             colnames(x) <- paste0("col", seq_len(ncol(x)))
         }
         ########################### INPUT CHECK END ############################
+        x <- .check_and_get_altExp(x, ...)
         # Add stepwise samples to colData
         x <- .add_reference_samples_to_coldata(
             x, time.col, group, time.interval = time.interval,

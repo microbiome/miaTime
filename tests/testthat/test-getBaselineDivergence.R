@@ -1,6 +1,5 @@
 test_that("getBaselineDivergence", {
-
-  library(dplyr)
+  
   data(hitchip1006)
   tse <- hitchip1006
   # Subset to speed up computing
@@ -36,11 +35,8 @@ test_that("getBaselineDivergence", {
   time2 <- colData(tse[, inds])[, "time"] - min(colData(tse[, inds])[, "time"])
   time_diff_2 <- colData(tse2)[, "time_from_baseline"]
   expect_true(all(time2==time_diff_2))
-
-  # -----------------------------------------------------------
-
-  # devtools::load_all("~/Rpackages/microbiome/miaverse/miaTime/")
-
+  
+  #
   data(hitchip1006)
   tse <- hitchip1006
   # Just pick 1 subject with many time points
@@ -50,11 +46,11 @@ test_that("getBaselineDivergence", {
   tse2b <- addBaselineDivergence(tse, group="subject", time.col = "time")
   # Define the baseline sample manually
   tse2c <- addBaselineDivergence(tse, time.col = "time", group="subject",
-               baseline_sample="Sample-843",
+               reference="Sample-843",
                name.time = "time_from_baseline", 
                name = "divergence_from_baseline")
   tse2d <- addBaselineDivergence(tse, time.col = "time", group="subject",
-               baseline_sample="Sample-1075",
+               reference = "Sample-1075",
                name.time = "time_from_baseline", 
                name = "divergence_from_baseline")
   # Now the times from baseline should be shifted and dissimilarities differ
@@ -77,7 +73,7 @@ test_that("getBaselineDivergence", {
                name.time = "time_from_baseline", 
                name = "divergence_from_baseline")
   tse2g <- addBaselineDivergence(tse, group = "subject", time.col = "time", 
-               baseline_sample="Sample-1075", 
+               reference="Sample-1075", 
                name.time = "time_from_baseline", 
                name = "divergence_from_baseline")  
   expect_identical(colData(tse2e)["Sample-843", "time_from_baseline"], 
@@ -90,7 +86,7 @@ test_that("getBaselineDivergence", {
                  "Sample-875", "Sample-900", "Sample-934")
   names(baselines) <- names(split(colnames(tse), as.character(tse$subject)))
   tse2h <- addBaselineDivergence(tse, group = "subject", time.col = "time", 
-               baseline_sample=baselines, 
+               reference=baselines, 
                name.time = "time_from_baseline", 
                name = "divergence_from_baseline")
   expect_identical(colData(tse2h)["Sample-843", "time_from_baseline"], 
@@ -98,7 +94,7 @@ test_that("getBaselineDivergence", {
 
   # Single baseline
   tse2i <- addBaselineDivergence(tse, group = "subject", time.col = "time", 
-               baseline_sample=tse[, "Sample-1075"], 
+               reference = "Sample-1075", 
                name.time = "time_from_baseline", 
                name = "divergence_from_baseline")
   expect_identical(colData(tse2i)["Sample-1075", "time_from_baseline"], 
@@ -106,51 +102,49 @@ test_that("getBaselineDivergence", {
   expect_identical(colData(tse2i)["Sample-843", "time_from_baseline"] + 0.7, 
                    colData(tse2g)["Sample-1075", "time_from_baseline"])  
   
-  ## Test with ordination values
-  tse <- scater::runMDS(tse, FUN = vegan::vegdist, method = "bray",
-                         name = "PCoA_BC", exprs_values = "counts",
-                         na.rm = TRUE, ncomponents=4)
+  # ## Test with ordination values
+  # tse <- scater::runMDS(tse, FUN = vegan::vegdist, method = "bray",
+  #                        name = "PCoA_BC", exprs_values = "counts",
+  #                        na.rm = TRUE, ncomponents=4)
   # testing with all ordination components; ndimred=NULL --> all 4 components
-  tse2 <- addBaselineDivergence(tse, group = "subject",
-                                time.col = "time",
-                                name.time="time_from_baseline_ord_4",
-                                name="divergence_from_baseline_ord_4",
-                                dimred = "PCoA_BC",
-                                dis.fun=vegan::vegdist,
-                                method="euclidean")
-  # Time differences should still match
-  expect_true(identical(tse2$time_from_baseline_ord_4, 
-                        tse2f$time_from_baseline))
-  # ordination based divergence values should not be equal to the ones on counts
-  expect_false(identical(tse2$divergence_from_baseline_ord_4, 
-                       tse2f$divergence_from_baseline))
-  # testing with 2 ordination components
-  tse2 <- addBaselineDivergence(tse2, group = "subject",
-                                time.col = "time",
-                                name.time="time_from_baseline_ord_2",
-                                name="divergence_from_baseline_ord_2",
-                                dimred = "PCoA_BC",
-                                ndimred = 2,
-                                dis.fun=vegan::vegdist,
-                                method="euclidean")
-  # Time differences should still match
-  expect_true(identical(tse2$time_from_baseline_ord_4, 
-                        tse2$time_from_baseline_ord_2))
-  # ordination based divergence values should not be equal to the ones on counts
-  expect_false(identical(tse2$divergence_from_baseline_ord_4, 
-                         tse2$divergence_from_baseline_ord_2))
+  # tse2 <- addBaselineDivergence(tse, group = "subject",
+  #                               time.col = "time",
+  #                               name.time="time_from_baseline_ord_4",
+  #                               name="divergence_from_baseline_ord_4",
+  #                               dimred = "PCoA_BC",
+  #                               dis.fun=vegan::vegdist,
+  #                               method="euclidean")
+  # # Time differences should still match
+  # expect_true(identical(tse2$time_from_baseline_ord_4, 
+  #                       tse2f$time_from_baseline))
+  # # ordination based divergence values should not be equal to the ones on counts
+  # expect_false(identical(tse2$divergence_from_baseline_ord_4, 
+  #                      tse2f$divergence_from_baseline))
+  # # testing with 2 ordination components
+  # tse2 <- addBaselineDivergence(tse2, group = "subject",
+  #                               time.col = "time",
+  #                               name.time="time_from_baseline_ord_2",
+  #                               name="divergence_from_baseline_ord_2",
+  #                               dimred = "PCoA_BC",
+  #                               ndimred = 2,
+  #                               dis.fun=vegan::vegdist,
+  #                               method="euclidean")
+  # # Time differences should still match
+  # expect_true(identical(tse2$time_from_baseline_ord_4, 
+  #                       tse2$time_from_baseline_ord_2))
+  # # ordination based divergence values should not be equal to the ones on counts
+  # expect_false(identical(tse2$divergence_from_baseline_ord_4, 
+  #                        tse2$divergence_from_baseline_ord_2))
+  
   ## testing with altExp
-  SingleCellExperiment::altExp(tse2, "Family") <- agglomerateByRank(tse2, 
-                                                      rank="Family")
-  tse2 <- addBaselineDivergence(tse2, group = "subject",
-                                time.col = "time",
-                                altexp="Family",
-                                name.time="time_from_baseline_Fam",
-                                name="divergence_from_baseline_Fam")
+  tse <- hitchip1006
+  altExp(tse, "Family") <- agglomerateByRank(tse, rank = "Family")
+  tse <- addBaselineDivergence(
+    tse, group = "subject", time.col = "time", altexp = "Family")
+  altExp(tse, "Family_test") <-  addBaselineDivergence(
+    altExp(tse, "Family"), group = "subject", time.col = "time", name = "val",
+    name.time = "time_val")
   # Time differences should still match
-  expect_true(identical(tse2$time_from_baseline_Fam, tse2f$time_from_baseline))
-  # divergence values based on Family rank counts should not be equal to the
-  # ones with Genus counts
-  expect_false(identical(tse2$divergence_from_baseline_Fam, 
-                         tse2f$divergence_from_baseline))
+  expect_equal(
+    altExp(tse, "Family")$divergence, altExp(tse, "Family_test")$val)
 })

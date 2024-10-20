@@ -165,4 +165,4 @@
 .check_altExp_present <- mia:::.check_altExp_present
 .check_assay_present <- mia:::.check_assay_present
 .add_values_to_colData <- mia:::.add_values_to_colData
-.get_mat_from_sce <- scater:::.get_mat_from_sce
+.check_and_get_altExp <- mia:::.check_and_get_altExp

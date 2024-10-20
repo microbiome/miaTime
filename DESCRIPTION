@@ -30,8 +30,7 @@ Depends:
 Imports:
     dplyr,
     methods,
-    S4Vectors,
-    scater
+    S4Vectors
 Suggests: 
     BiocStyle,
     devtools,
@@ -40,6 +39,7 @@ Suggests:
     lubridate,
     miaViz,
     rmarkdown,
+    scater,
     testthat,
     tidySingleCellExperiment,
     tidySummarizedExperiment,
