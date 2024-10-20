@@ -293,7 +293,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
 # This function returns the first sample for each group by default.
 # Alternatively, it returns the previous ith sample for each sample in each
 # group.
-#' @importFrom dplyr group_by mutate arrange ungroup
+#' @importFrom dplyr group_by mutate arrange ungroup lag
 .get_reference_samples <- function(
         df, time.col, time.interval, group, reference.method){
     rowname_col <- "temporary_rownames_column"
@@ -313,11 +313,11 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
                 .data[[rowname_col]][which.min(.data[[time.col]])])
     } else if( reference.method == "stepwise" ){
         # For each sample, get the previous ith sample.
-        # Arrange rows within each group based on time to ensure correct order
+        # For each subject, get previous sample based on time.
         df <- df |>
-            arrange(.data[[time.col]]) |>
-            mutate(!!reference_col := lag(
-                .data[[rowname_col]], n = time.interval, default = NA))
+            mutate(!!reference_col := dplyr::lag(
+                .data[[rowname_col]], n = time.interval,
+                order_by = .data[[time.col]]))
     }
     # Ungroup to revert to the original structure and convert to DataFrame
     df <- df |>

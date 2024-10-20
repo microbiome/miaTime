@@ -122,17 +122,16 @@ test_that("getStepwiseDivergence", {
     altExp(tse, "Family") <- agglomerateByRank(tse,  rank = "Family")
     tse <- addStepwiseDivergence(
         tse, group = "subject", time.interval = 1, time.col = "time",
-        altexp = "Family", name.time = "timedifference_Fam",
-        name = "timedivergence_Fam")
-    altExp(tse, "Family") <- addStepwiseDivergence(
+        altexp = "Family")
+    altExp(tse, "Family_test") <- addStepwiseDivergence(
         altExp(tse, "Family"), group = "subject", time.interval = 1,
         time.col = "time", name.time = "timedifference",
         name = "timedivergence")
     # Time differences should still match
     expect_equal(
-        tse$timedivergence_Fam,
-        altExp(tse, "Family")$timedifference)
-    # divergence values based on Family rank counts should not be equal to the
-    # ones with Genus counts
-    #expect_true(!identical(tse2$timedivergence_Fam, tse2$timedivergence))
+        altExp(tse, "Family")$time_diff,
+        altExp(tse, "Family_test")$timedifference)
+    expect_equal(
+      altExp(tse, "Family")$divergence,
+      altExp(tse, "Family_test")$timedivergence)
 })
