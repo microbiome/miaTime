@@ -89,7 +89,7 @@ Simsek</h4>
                   <a class="author_email" href="mailto:#"></a><a href="mailto:yagmur.simsek@hsrw.org" class="email">yagmur.simsek@hsrw.org</a>
       
                   
-            <h4 data-toc-skip class="date">2024-10-17</h4>
+            <h4 data-toc-skip class="date">2024-10-20</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/bioc_mods/vignettes/articles/manipulation.Rmd" class="external-link"><code>vignettes/articles/manipulation.Rmd</code></a></small>
       <div class="hidden name"><code>manipulation.Rmd</code></div>
@@ -129,7 +129,7 @@ functions for (Tree)SE manipulation.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/stemangiola/tidySingleCellExperiment" class="external-link">"tidySingleCellExperiment"</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">hitchip1006</span><span class="op">)</span></span>
 <span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">hitchip1006</span></span>
-<span><span class="va">tse2</span> <span class="op">&lt;-</span> <span class="va">tse</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">subject</span>, <span class="va">time</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">tse2</span> <span class="op">&lt;-</span> <span class="va">tse</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">arrange</span><span class="op">(</span><span class="va">subject</span>, <span class="va">time</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="storing-time-information-with-period-class">Storing time information with Period class<a class="anchor" aria-label="anchor" href="#storing-time-information-with-period-class"></a>
@@ -364,7 +364,7 @@ reaction chamber, sampling location, …).</p>
 <span><span class="co">##  [1] tidySummarizedExperiment_1.15.1 ggplot2_3.5.1                  </span></span>
 <span><span class="co">##  [3] ttservice_0.4.1                 tidyr_1.3.1                    </span></span>
 <span><span class="co">##  [5] tidySingleCellExperiment_1.15.5 lubridate_1.9.3                </span></span>
-<span><span class="co">##  [7] miaTime_0.1.22                  dplyr_1.1.4                    </span></span>
+<span><span class="co">##  [7] dplyr_1.1.4                     miaTime_0.1.22                 </span></span>
 <span><span class="co">##  [9] mia_1.13.44                     TreeSummarizedExperiment_2.13.0</span></span>
 <span><span class="co">## [11] Biostrings_2.73.2               XVector_0.45.0                 </span></span>
 <span><span class="co">## [13] SingleCellExperiment_1.27.2     MultiAssayExperiment_1.31.5    </span></span>
@@ -375,7 +375,7 @@ reaction chamber, sampling location, …).</p>
 <span><span class="co">## [23] matrixStats_1.4.1               BiocStyle_2.33.1               </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
-<span><span class="co">##   [1] rstudioapi_0.16.0           jsonlite_1.8.9             </span></span>
+<span><span class="co">##   [1] rstudioapi_0.17.0           jsonlite_1.8.9             </span></span>
 <span><span class="co">##   [3] magrittr_2.0.3              ggbeeswarm_0.7.2           </span></span>
 <span><span class="co">##   [5] nloptr_2.1.1                rmarkdown_2.28             </span></span>
 <span><span class="co">##   [7] fs_1.6.4                    zlibbioc_1.51.1            </span></span>
