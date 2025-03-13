@@ -1,8 +1,8 @@
-pandoc: 3.6.2
+pandoc: 3.6.3
 pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
   articles/manipulation: manipulation.html
   miaTime: miaTime.html
   articles/minimalgut: minimalgut.html
-last_built: 2025-02-06T13:30Z
+last_built: 2025-03-13T16:48Z

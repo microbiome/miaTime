@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">miaTime</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.6</span>
       </span>
     </div>
 
@@ -57,7 +57,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Calculate coefficient of bimodality.</h1>
-    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/devel/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/miaTime/blob/devel/R/getBimodality.R" class="external-link"><code>R/getBimodality.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/final_fixes/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/miaTime/blob/final_fixes/R/getBimodality.R" class="external-link"><code>R/getBimodality.R</code></a></small>
     <div class="hidden name"><code>getBimodality.Rd</code></div>
     </div>
 
@@ -156,7 +156,6 @@ Microbial Diversity. doi: 10.1128/mbio.01371-14</p>
 <span class="r-in"><span><span class="co"># Determine taxa with high bimodality</span></span></span>
 <span class="r-in"><span><span class="va">bimodal_taxa</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">b</span><span class="op">)</span><span class="op">[</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">b</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&gt;</span> <span class="fl">0.95</span><span class="op">)</span> <span class="op">]</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># Determine taxa with abundance &gt; 0.5%</span></span></span>
 <span class="r-in"><span><span class="va">abundant</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mia/man/getAbundant.html" class="external-link">getAbundant</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="va">tse</span>, assay.type <span class="op">=</span> <span class="st">"relabundance"</span>, abundant.th <span class="op">=</span> <span class="fl">0.5</span><span class="op">/</span><span class="fl">100</span><span class="op">)</span></span></span>
@@ -164,7 +163,7 @@ Microbial Diversity. doi: 10.1128/mbio.01371-14</p>
 <span class="r-in"><span><span class="co"># The detected CRT</span></span></span>
 <span class="r-in"><span><span class="va">crt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">bimodal_taxa</span>, <span class="va">abundant</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">crt</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> character(0)</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
