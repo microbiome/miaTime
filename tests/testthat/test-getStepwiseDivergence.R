@@ -189,8 +189,8 @@ col_data <- DataFrame(
     row.names = c("Sample1", "Sample2", "Sample3", "Sample4",
         "Sample5", "Sample6"))
 count_data <- matrix(c(10, 20, 30, 40, 50, 60), ncol = 6, byrow = TRUE)
-se <- SummarizedExperiment(assays = list(counts = count_data),
-                           colData = col_data)
+se <- SummarizedExperiment(
+    assays = list(counts = count_data), colData = col_data)
 
 # Input validation for getStepwiseDivergence
 test_that("getStepwiseDivergence input validations", {
@@ -286,6 +286,7 @@ test_that("addStepwiseDivergence with custom reference sample", {
 test_that("getStepwiseDivergence with replicated samples", {
     tse <- makeTSE(nrow = 1000, ncol = 20)
     assayNames(tse) <- "counts"
+    set.seed(513746)
     colData(tse)[["time"]] <- sample(c(1, 3, 6, 100), 20, replace = TRUE)
     res <- getStepwiseDivergence(
         tse, time.col = "time", group = "group", method = "euclidean") |>

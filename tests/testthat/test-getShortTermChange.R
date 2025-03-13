@@ -2,6 +2,7 @@
 test_that("getShortTermChange errors", {
     tse <- makeTSE(nrow = 100, ncol = 20)
     assayNames(tse) <- "counts"
+    set.seed(537466)
     tse[["Time"]] <- sample(seq(1, 5), 20, replace = TRUE)
 
     df <- getShortTermChange(tse, time.col = "Test", assay.type = "counts") |>
@@ -22,6 +23,7 @@ test_that("getShortTermChange errors", {
 test_that("getShortTermChange calculates correctly without group", {
     tse <- makeTSE(nrow = 100, ncol = 20)
     assayNames(tse) <- "counts"
+    set.seed(5846)
     tse[["Time"]] <- sample(seq(1, 5), 20, replace = TRUE)
 
     df <- getShortTermChange(tse, time.col = "Time", assay.type = "counts") |>
@@ -78,6 +80,7 @@ test_that("getShortTermChange calculates correctly without group", {
 test_that("getShortTermChange calculates correctly with time interval 2", {
     tse <- makeTSE(nrow = 1000, ncol = 200)
     assayNames(tse) <- "counts"
+    set.seed(533746)
     tse[["Time"]] <- sample(seq(1, 5), 200, replace = TRUE)
     tse <- transformAssay(tse, method = "relabundance")
     df <- getShortTermChange(
@@ -136,6 +139,7 @@ test_that("getShortTermChange calculates correctly with time interval 2", {
 test_that("getShortTermChange calculates correctly with group", {
     tse <- makeTSE(nrow = 1000, ncol = 200)
     assayNames(tse) <- "counts"
+    set.seed(5313746)
     tse[["Time"]] <- sample(seq(1, 5), 200, replace = TRUE)
     # Remove duplicated samples
     tse <- tse[ , !duplicated(colData(tse)[, c("group", "Time")])]
@@ -200,6 +204,7 @@ test_that("getShortTermChange calculates correctly with group", {
 test_that("get* and add* are equal", {
     tse <- makeTSE(nrow = 1000, ncol = 200)
     assayNames(tse) <- "counts"
+    set.seed(153746)
     tse[["Time"]] <- sample(seq(1, 5), 200, replace = TRUE)
     # Remove duplicated samples
     tse <- tse[ , !duplicated(colData(tse)[, c("Time")])]

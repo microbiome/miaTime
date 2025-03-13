@@ -421,7 +421,9 @@ setMethod("getStability", signature = c(x = "SummarizedExperiment"),
         # consecutive time points" and "difference between previous time point
         # and reference point".
         # If taxa is very rare, it might be that its standard deviation of
-        # 'ref' is 0. Suppress the warning "the standard deviation is zero"
+        # 'ref' is 0 which causes warning "the standard deviation is zero".
+        # As user has no way to determine which taxa caused this warning, we
+        # suppress it.
         res <- cor(values, ref, ...) |> suppressWarnings()
     } else if( mode == "lm" ){
         # Apply linear model that takes into account time difference between

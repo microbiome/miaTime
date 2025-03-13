@@ -2,6 +2,7 @@
 test_that(".calculate_skewness works as expected", {
     # Symmetrical data
     expect_equal(.calculate_skewness(c(1, 2, 3)), 0)
+    set.seed(12346)
     expect_equal(.calculate_skewness(rnorm(10000)), 0, tolerance = 0.05)
     # Positively skewed data
     expect_equal(

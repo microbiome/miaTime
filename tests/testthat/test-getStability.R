@@ -14,8 +14,10 @@ test_that("getStability input checks work",{
 # Check that stability is correctly calculated
 test_that("getStability calculates correctly",{
     tse <- makeTSE(nrow = 10L, ncol = 200L)
+    set.seed(546)
     assay(tse, "counts", withDimnames = FALSE) <- matrix(
         rnorm(10*200), nrow = 10L, ncol = 200L)
+    set.seed(56)
     tse[["Time"]] <- sample(seq(1, 5), 200, replace = TRUE)
     # Remove duplicated samples
     tse <- tse[ , !duplicated(colData(tse)[, c("Time")])]
@@ -47,8 +49,10 @@ test_that("getStability calculates correctly",{
 # Check that add* equals to get*
 test_that("addStability equals to getStability",{
     tse <- makeTSE(nrow = 10L, ncol = 200L)
+    set.seed(5746)
     assay(tse, "counts", withDimnames = FALSE) <- matrix(
         rnorm(10*200), nrow = 10L, ncol = 200L)
+    set.seed(5374)
     tse[["Time"]] <- sample(seq(1, 5), 200, replace = TRUE)
     #
     res <- getStability(tse, "Time", name = "test") |> expect_message()
@@ -61,8 +65,10 @@ test_that("addStability equals to getStability",{
 # Check that stability is correctly calculated with groups
 test_that("getStability calculates correctly with groups",{
     tse <- makeTSE(nrow = 1000, ncol = 200)
+    set.seed(546)
     assay(tse, "counts", withDimnames = FALSE) <- matrix(
         rnorm(1000*200), nrow = 1000L, ncol = 200L)
+    set.seed(5746)
     tse[["Time"]] <- sample(seq(1, 5), 200, replace = TRUE)
     # Remove duplicated samples
     tse <- tse[ , !duplicated(colData(tse)[, c("group", "Time")])]
@@ -85,12 +91,15 @@ test_that("getStability calculates correctly with groups",{
 # Check with duplicates
 test_that("getStability calculates correctly with duplicates",{
     tse <- makeTSE(nrow = 10L, ncol = 200L)
+    set.seed(52346)
     assay(tse, "counts", withDimnames = FALSE) <- matrix(
         rnorm(10*200), nrow = 10L, ncol = 200L)
+    set.seed(5116)
     tse[["Time"]] <- round(runif(200, 0, 5), 1)
     # Add duplicate samples
     tse[["Time"]][1:20] <- 1
     #
+    set.seed(534436)
     rowData(tse)[["ref_col"]] <- runif(10L, -10, 10)
     res <- getStability(tse, "Time", reference = "ref_col", mode = "lm") |>
         expect_message()

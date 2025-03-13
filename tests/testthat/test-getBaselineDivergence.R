@@ -141,14 +141,14 @@ col_data <- DataFrame(
     row.names = c("Sample1", "Sample2",
         "Sample3", "Sample4", "Sample5", "Sample6"))
 count_data <- matrix(c(10, 20, 30, 40, 50, 60), ncol = 6, byrow = TRUE)
-se <- SummarizedExperiment(assays = list(counts = count_data),
-                           colData = col_data)
+se <- SummarizedExperiment(
+    assays = list(counts = count_data), colData = col_data)
 
 # Input validation for getBaselineDivergence
 test_that("getBaselineDivergence input validations", {
     expect_error(getBaselineDivergence(se, time.col = "nonexistent"))
-    expect_error(getBaselineDivergence(se, time.col = "time",
-        assay.type = "unknown"))
+    expect_error(
+        getBaselineDivergence(se, time.col = "time", assay.type = "unknown"))
     expect_error(getBaselineDivergence(se, group = "nonexistent"))
     expect_error(getBaselineDivergence(se, reference = "nonexistent"))
     expect_error(getBaselineDivergence(se, name = "nonexistent"))
@@ -288,6 +288,7 @@ test_that(".convert_divergence_to_df with NA divergence values", {
 test_that("getBaselineDivergence with replicated samples", {
     tse <- makeTSE(nrow = 1000, ncol = 20)
     assayNames(tse) <- "counts"
+    set.seed(11746)
     colData(tse)[["time"]] <- sample(c(1, 3, 100), 20, replace = TRUE)
     res <- getBaselineDivergence(
         tse, time.col = "time", group = "group", method = "euclidean") |>
