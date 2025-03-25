@@ -52,3 +52,5 @@ data_survival <- TreeSummarizedExperiment(
 owData(data_survival)$Kingdom <- as.character(rowData(data_survival)$Kingdom)
 rowData(data_survival)$Phylum <- as.character(rowData(data_survival)$Phylum)
 rowData(data_survival)$Class <- as.character(rowData(data_survival)$Class)
+
+save(data_survival, file = "~/miaTime/data/data_survival.rda")
