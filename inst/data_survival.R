@@ -5,11 +5,8 @@ library(mia)
 
 data("data_survival", package = "coda4microbiome")
 data_survival <- x
-
 assay_matrix <- as.matrix(data_survival)
-
 assay_matrix <- t(assay_matrix)
-
 taxa_names <- rownames(assay_matrix)
 
 # Function to Parse Taxonomy Labels
@@ -38,11 +35,12 @@ parse_taxonomy <- function(taxa_names) {
   
   return(taxonomy_df)
 }
+
 Event <- as.numeric(Event)  
 Event_time <- as.numeric(Event_time) 
-rowData <- DataFrame(parse_taxonomy(taxa_names), row.names = taxa_names)
 
-colData <- DataFrame(SampleID = colnames(assay_matrix), row.names = colnames(assay_matrix))
+rowData <- DataFrame(parse_taxonomy(taxa_names), row.names = taxa_names)
+colData <- DataFrame(SampleID = colnames(assay_matrix), row.names = colnames(assay_matrix), Event, Event_time)
 
 data_survival <- TreeSummarizedExperiment(
   assays = list(counts = assay_matrix),
@@ -50,20 +48,7 @@ data_survival <- TreeSummarizedExperiment(
   colData = colData
 )
 
-data_survival
-
-checkTaxonomy(data_survival)
-
 # Convert logical columns to character
-rowData(data_survival)$Kingdom <- as.character(rowData(data_survival)$Kingdom)
+owData(data_survival)$Kingdom <- as.character(rowData(data_survival)$Kingdom)
 rowData(data_survival)$Phylum <- as.character(rowData(data_survival)$Phylum)
 rowData(data_survival)$Class <- as.character(rowData(data_survival)$Class)
-
-
-
-
-
-
-
-
-
