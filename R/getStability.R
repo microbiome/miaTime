@@ -25,12 +25,12 @@
 #'
 #' Then difference between consecutive time points, \eqn{\Delta_{f, x}},
 #'
-#' \deqn{\Delta_{f, x} = ∣x_{f, t} - x_{f, t-1}∣}
+#' \deqn{\Delta_{f, x} = \vert x_{f, t} - x_{f, t-1} \vert}
 #'
 #' and difference between the previous time point and reference,
 #' \eqn{\Delta_{f. R}}, are calculated:
 #'
-#' \deqn{\Delta_{f. R} = ∣x_{f, t-1} - R_{f}∣}
+#' \deqn{\Delta_{f. R} = \vert x_{f, t-1} - R_{f} \vert}
 #'
 #' where \eqn{t} denotes time point.
 #'
