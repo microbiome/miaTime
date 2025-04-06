@@ -1,6 +1,6 @@
 Changes in version 0.99.8
 Date: 2025-04-06
-+ Added survival data on Crohn disease
++ Added survival data on Crohn's disease (crohn_survival)
 
 Changes in version 0.99.6
 + Final fixes for Bioconductor submission
