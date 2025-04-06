@@ -29,7 +29,7 @@ diagnosis <- ifelse(event == 1, "CD", "control")
 
 cd <- DataFrame(
     sample_id = colnames(assay_matrix),
-    event,
+    event = as.integer(event),
     event_time,
     diagnosis,
     row.names = colnames(assay_matrix)
