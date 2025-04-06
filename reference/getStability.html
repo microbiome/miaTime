@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">miaTime</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.6</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.7</span>
       </span>
     </div>
 
@@ -57,7 +57,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Estimate stability</h1>
-    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/devel/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/miaTime/blob/devel/R/getStability.R" class="external-link"><code>R/getStability.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/tests/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/miaTime/blob/tests/R/getStability.R" class="external-link"><code>R/getStability.R</code></a></small>
     <div class="hidden name"><code>getStability.Rd</code></div>
     </div>
 
@@ -152,10 +152,10 @@ If reference points are not defined, they are calculated by taking median</p>
 <p>$$R_{f} = median(x_{f})$$</p>
 <p>where \(f\) denotes a single feature and \(x\) abundance.</p>
 <p>Then difference between consecutive time points, \(\Delta_{f, x}\),</p>
-<p>$$\Delta_{f, x} = ∣x_{f, t} - x_{f, t-1}∣$$</p>
+<p>$$\Delta_{f, x} = \vert x_{f, t} - x_{f, t-1} \vert$$</p>
 <p>and difference between the previous time point and reference,
 \(\Delta_{f. R}\), are calculated:</p>
-<p>$$\Delta_{f. R} = ∣x_{f, t-1} - R_{f}∣$$</p>
+<p>$$\Delta_{f. R} = \vert x_{f, t-1} - R_{f} \vert$$</p>
 <p>where \(t\) denotes time point.</p>
 <p>Optionally, time difference \(\Delta_{f, t}\) is calculated</p>
 <p>$$\Delta_{f, t} = t_{f, t-1} - t_{f, t-1}$$</p>
