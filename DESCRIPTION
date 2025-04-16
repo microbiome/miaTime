@@ -14,7 +14,8 @@ Authors@R:
        person(given = "Sudarshan", family = "Shetty", role = c("ctb"),
               email = "sudarshanshetty9@gmail.com"),
        person(given = "Chouaib", family = "Benchraka", role = c("ctb")),
-       person(given = "Muluh", family = "Muluh", role = c("ctb"))
+       person(given = "Muluh", family = "Muluh", role = c("ctb")),
+       person(given = "Ali", family = "Hajj", role = c("ctb"))
       )
 Description:
     The `miaTime` package provides tools for microbiome time series analysis
