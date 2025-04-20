@@ -138,3 +138,50 @@ NULL
 #' @keywords data
 #'
 NULL
+
+#' @title CrestStudyData
+#' @description
+#' The CrestStudyData includes microbiota and metabolite profiling data 
+#' from 78 Indian individuals (40 males, 38 females) and 78 European individuals 
+#' matched for sex, BMI, and age.
+#' Indian subjects were grouped into four diet groups (~20 subjects per group), 
+#' and fecal samples were collected across three seasonal time points.
+#'
+#' The microbiota profiling was performed using HITChip microarray analysis 
+#' (in duplicate), qPCR (in triplicate with eight-point standard curves), and 
+#' LC-HRMS and HPLC metabolite profiling with internal standards.
+#'
+#' Column metadata includes diet group assignment, sampling season, sex, BMI, 
+#' age, and questionnaire-based lifestyle metadata.
+#'
+#' Row metadata for microbiome data contains taxonomic annotations at the 
+#' phylum, class, order, family, and genus levels.
+#'
+#' Quality control metrics include Pearson correlation (>0.98) for HITChip, 
+#' qPCR assay efficiency (>0.99), and technical replicates for HPLC and qPCR.
+#'
+#' Data sources:
+#' - Microbiota HITChip microarray data
+#' - qPCR absolute abundance data
+#' - Chemical profiling data (HPLC, LC-HRMS)
+#' - Sample metadata (diet, lifestyle)
+#'
+#' Processed and raw data are available via:
+#' - Zenodo (DOI: https://doi.org/10.5281/zenodo.14424024)
+#' - NCBI-SRA (fermented foods 16S rRNA sequencing, accession: PRJNA1191989)
+#'
+#' @name CrestStudyData
+#' @docType data
+#' @author Jeyaram, K., Lahti, L., Tims, S. et al
+#' @return Loads the data set in R.
+#' @references
+#' Jeyaram, K., Lahti, L., Tims, S. et al. Fermented foods affect the seasonal 
+#' stability of gut bacteria in an Indian rural population.
+#' Nat Commun 16, 771 \url{https://doi.org/10.1038/s41467-025-56014-6}
+#' @usage data(CrestStudyData)
+#' @format The data set in
+#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
+#' format.
+#' @keywords data
+#'
+NULL
