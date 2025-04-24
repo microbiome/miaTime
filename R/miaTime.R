@@ -139,9 +139,9 @@ NULL
 #'
 NULL
 
-#' @title CrestStudyData
+#' @title Kumaraswamy2024
 #' @description
-#' The CrestStudyData includes microbiota and metabolite profiling data 
+#' The Kumaraswamy2024 includes microbiota and metabolite profiling data 
 #' from 78 Indian individuals (40 males, 38 females) and 78 European individuals 
 #' matched for sex, BMI, and age.
 #' Indian subjects were grouped into four diet groups (~20 subjects per group), 
@@ -170,7 +170,7 @@ NULL
 #' - Zenodo (DOI: https://doi.org/10.5281/zenodo.14424024)
 #' - NCBI-SRA (fermented foods 16S rRNA sequencing, accession: PRJNA1191989)
 #'
-#' @name CrestStudyData
+#' @name Kumaraswamy2024
 #' @docType data
 #' @author Jeyaram, K., Lahti, L., Tims, S. et al
 #' @return Loads the data set in R.
@@ -178,7 +178,7 @@ NULL
 #' Jeyaram, K., Lahti, L., Tims, S. et al. Fermented foods affect the seasonal 
 #' stability of gut bacteria in an Indian rural population.
 #' Nat Commun 16, 771 \url{https://doi.org/10.1038/s41467-025-56014-6}
-#' @usage data(CrestStudyData)
+#' @usage data(Kumaraswamy2024)
 #' @format The data set in
 #' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
 #' format.
