@@ -17,9 +17,9 @@ Loads the data set in R.
 }
 \description{
 The Kumaraswamy2024 includes microbiota and metabolite profiling data
-from 78 Indian individuals (40 males, 38 females) and 78 European individuals
-matched for sex, BMI, and age.
-Indian subjects were grouped into four diet groups (~20 subjects per group),
+from 78 Indian individuals (40 males, 38 females).
+
+The Indian subjects were grouped into four diet groups (~20 subjects per group),
 and fecal samples were collected across three seasonal time points.
 
 The microbiota profiling was performed using HITChip microarray analysis
@@ -28,9 +28,6 @@ LC-HRMS and HPLC metabolite profiling with internal standards.
 
 Column metadata includes diet group assignment, sampling season, sex, BMI,
 age, and questionnaire-based lifestyle metadata.
-
-Row metadata for microbiome data contains taxonomic annotations at the
-phylum, class, order, family, and genus levels.
 
 Quality control metrics include Pearson correlation (>0.98) for HITChip,
 qPCR assay efficiency (>0.99), and technical replicates for HPLC and qPCR.
