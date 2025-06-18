@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">miaTime</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.8</span>
       </span>
     </div>
 
@@ -57,7 +57,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Estimate stability</h1>
-    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/cox/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/miaTime/blob/cox/R/getStability.R" class="external-link"><code>R/getStability.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/bioc/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/miaTime/blob/bioc/R/getStability.R" class="external-link"><code>R/getStability.R</code></a></small>
     <div class="hidden name"><code>getStability.Rd</code></div>
     </div>
 
@@ -219,17 +219,17 @@ Nat Commun. doi: 10.1038/ncomms5344</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Collinsella_aerofaciens        Coriobacteriales   Coriobacteriaceae</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                         Genus                Species stability</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                   &lt;character&gt;            &lt;character&gt; &lt;numeric&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Akkermansia_muciniphila           Akkermansia Akkermansia_muciniph..  0.210974</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Bacteroides_xylanisolvens         Bacteroides Bacteroides_xylaniso..  0.271798</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Faecalibacterium_prausnitzii Faecalibacterium Faecalibacterium_pra..  0.541675</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Anaerobutyricum_soehngenii    Anaerobutyricum Anaerobutyricum_soeh..  0.351807</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Subdoligranulum_variabile     Subdoligranulum Subdoligranulum_vari..  0.216796</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Akkermansia_muciniphila           Akkermansia Akkermansia_muciniph..  0.417707</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bacteroides_xylanisolvens         Bacteroides Bacteroides_xylaniso..  0.406404</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Faecalibacterium_prausnitzii Faecalibacterium Faecalibacterium_pra..  0.473213</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Anaerobutyricum_soehngenii    Anaerobutyricum Anaerobutyricum_soeh..  0.700362</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Subdoligranulum_variabile     Subdoligranulum Subdoligranulum_vari..  0.638634</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ...                                       ...                    ...       ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Roseburia_intestinalis              Roseburia Roseburia_intestinalis 0.1557061</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Coprococcus_catus                 Coprococcus      Coprococcus_catus 0.2932463</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Blautia_obeum                         Blautia          Blautia_obeum 0.0853636</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Ruminococcus_bromii              Ruminococcus    Ruminococcus_bromii 0.1707766</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Collinsella_aerofaciens           Collinsella Collinsella_aerofaci.. 0.4199917</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Roseburia_intestinalis              Roseburia Roseburia_intestinalis  0.461883</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Coprococcus_catus                 Coprococcus      Coprococcus_catus  0.684248</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Blautia_obeum                         Blautia          Blautia_obeum  0.500512</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ruminococcus_bromii              Ruminococcus    Ruminococcus_bromii  0.592303</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Collinsella_aerofaciens           Collinsella Collinsella_aerofaci..  0.512565</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Add custom reference values</span></span></span>
 <span class="r-in"><span><span class="fu">rowData</span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">[[</span><span class="st">"ref_col"</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span></span>
@@ -281,30 +281,30 @@ Nat Commun. doi: 10.1038/ncomms5344</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Collinsella_aerofaciens           Collinsella Collinsella_aerofaci..         1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                              stability_Bioreactor A stability_Bioreactor B</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                           &lt;numeric&gt;              &lt;numeric&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Akkermansia_muciniphila                   0.2671427              0.5479229</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Bacteroides_xylanisolvens                 0.2728461              0.5080847</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Faecalibacterium_prausnitzii              0.3235416              0.4426659</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Anaerobutyricum_soehngenii                0.2696693              0.1627811</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Subdoligranulum_variabile                 0.0993302              0.0676437</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Akkermansia_muciniphila                    0.396804               0.578706</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bacteroides_xylanisolvens                  0.332345               0.328186</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Faecalibacterium_prausnitzii               0.202647               0.184137</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Anaerobutyricum_soehngenii                 0.514116               0.357332</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Subdoligranulum_variabile                  0.638781               0.554206</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ...                                             ...                    ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Roseburia_intestinalis                    0.1469217               0.336963</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Coprococcus_catus                         0.1941561               0.345858</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Blautia_obeum                             0.0462427              -0.123109</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Ruminococcus_bromii                       0.1852228               0.104678</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Collinsella_aerofaciens                   0.4211536               0.495969</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Roseburia_intestinalis                     0.474754               0.880055</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Coprococcus_catus                          0.782203               0.641420</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Blautia_obeum                              0.261029               0.120397</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ruminococcus_bromii                        0.666473               0.408911</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Collinsella_aerofaciens                    0.581596               0.392711</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                              stability_Bioreactor C</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                           &lt;numeric&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Akkermansia_muciniphila                   0.4531121</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Bacteroides_xylanisolvens                 0.3579722</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Faecalibacterium_prausnitzii              0.3261063</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Anaerobutyricum_soehngenii                0.0468848</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Subdoligranulum_variabile                 0.0792569</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Akkermansia_muciniphila                    0.401949</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bacteroides_xylanisolvens                  0.341494</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Faecalibacterium_prausnitzii               0.184140</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Anaerobutyricum_soehngenii                 0.240801</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Subdoligranulum_variabile                  0.398110</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ...                                             ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Roseburia_intestinalis                    0.4889192</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Coprococcus_catus                         0.1413676</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Blautia_obeum                             0.2641749</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Ruminococcus_bromii                       0.0757622</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Collinsella_aerofaciens                   0.8230176</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Roseburia_intestinalis                     0.381917</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Coprococcus_catus                          0.493701</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Blautia_obeum                              0.269027</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ruminococcus_bromii                        0.653763</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Collinsella_aerofaciens                    0.611838</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
@@ -320,7 +320,7 @@ Nat Commun. doi: 10.1038/ncomms5344</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
       </footer></div>
