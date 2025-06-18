@@ -41,9 +41,6 @@ Much of the functionality is also applicable to the
 shows how to use `miaTime` methods as well as the broader R/Bioconductor
 ecosystem to manipulate time series data.
 
-Check also the related package
-[TimeSeriesExperiment](https://github.com/nlhuong/TimeSeriesExperiment).
-
 ## Installation
 
 `miaTime` is hosted on Bioconductor, and can be installed using via

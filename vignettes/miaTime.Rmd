@@ -80,7 +80,7 @@ res |> head()
 ```
 
 A more convenient and preferred approach is to store the values directly in
-`colData` using the `get*Divergence()` functions. In the example below, we
+`colData` using the `add*Divergence()` functions. In the example below, we
 calculate stepwise divergences with a lag of 1, meaning that for each sample,
 the divergence is calculated by comparing it to the previous time point for
 the same subject.
@@ -95,14 +95,17 @@ colData(tse)
 ## Visualize time series
 
 We can visualize time series data with `r BiocStyle::Biocpkg("miaViz")`. Below,
-we visualize 2 most abundant taxa.
+we visualize 5 most abundant taxa.
 
 ```{r}
 #| label: plot_series
 
 library(miaViz)
 
-p <- plotSeries(tse, x = "time", y = getTop(tse, 5))
+p <- plotSeries(tse, assay.type = "counts", 
+                time.col = "time", 
+                features = getTop(tse, 5), 
+                colour.by = "rownames")
 p
 ```
 
