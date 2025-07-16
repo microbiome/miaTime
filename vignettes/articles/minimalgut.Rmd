@@ -115,7 +115,7 @@ p <- plotSeries(
     tse,
     time.col = "Time.hr", 
     features = "Blautia_hydrogenotrophica", 
-    colour_by = "Species",
+    colour.by = "Species",
     assay.type = "relabundance")
 p
 ```

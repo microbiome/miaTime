@@ -103,9 +103,9 @@ we visualize 5 most abundant taxa.
 library(miaViz)
 
 p <- plotSeries(tse, assay.type = "counts", 
-                time.col = "time", 
-                features = getTop(tse, 5), 
-                colour.by = "rownames")
+    time.col = "time", 
+    features = getTop(tse, 5), 
+    colour.by = "rownames")
 p
 ```
 
