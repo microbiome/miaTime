@@ -673,3 +673,11 @@ kable(summary_stats,
 The integration of these methods enables a comprehensive understanding of 
 microbiome temporal behavior, supporting applications in personalized medicine, 
 environmental monitoring, and microbial ecology research.
+
+## Session info
+
+```{r}
+#| label: session_info
+
+sessionInfo()
+```
