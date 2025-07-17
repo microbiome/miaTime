@@ -38,8 +38,7 @@ knitr::opts_chunk$set(
 `r BiocStyle::Biocpkg("TreeSummarizedExperiment")` (`TreeSE`) data container.
 Much of the functionality is also applicable to the
 `r BiocStyle::Biocpkg("SummarizedExperiment")` data objects. This tutorial
-shows how to use `miaTime` methods as well as the broader R/Bioconductor
-ecosystem to manipulate time series data.
+shows how to manipulate time series data using R/Bioconductor tools.
 
 ## Installation
 
