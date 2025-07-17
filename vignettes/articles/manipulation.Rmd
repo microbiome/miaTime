@@ -1,5 +1,5 @@
 ---
-title: "Time series manipulation"
+title: "Basic time series manipulation"
 date: "`r Sys.Date()`"
 package: 
     miaTime
@@ -34,31 +34,8 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-`miaTime` implements tools for time series manipulation based on the
-`r BiocStyle::Biocpkg("TreeSummarizedExperiment")` (`TreeSE`) data container.
-Much of the functionality is also applicable to the
-`r BiocStyle::Biocpkg("SummarizedExperiment")` data objects. This tutorial
-shows how to manipulate time series data using R/Bioconductor tools.
-
-## Installation
-
-`miaTime` is hosted on Bioconductor, and can be installed using via
-`BiocManager`.
-
-```{r}
-#| label: install
-#| eval: false
-
-BiocManager::install("miaTime")
-```
-
-Once installed, `miaTime` is made available in the usual way.
-
-```{r}
-#| label: load_package
-
-library(miaTime)
-```
+This tutorial shows how to manipulate time series data using R/Bioconductor 
+tools.
 
 ## Sorting samples 
 
