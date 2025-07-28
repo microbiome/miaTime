@@ -504,7 +504,7 @@ combined_results <- data.frame(
   Stability = rowData(tse)$`stability_Bioreactor A`,  # Example for one group
   stringsAsFactors = FALSE
 ) %>%
-  left_join(
+  dplyr::left_join(
     data.frame(
       Taxa = rownames(bimodality_results),
       Bimodality = bimodality_results[[1]],
@@ -512,7 +512,7 @@ combined_results <- data.frame(
     ),
     by = "Taxa"
   ) %>%
-  left_join(
+  dplyr::left_join(
     change_results %>%
       group_by(FeatureID) %>%
       summarize(

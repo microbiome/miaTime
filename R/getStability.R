@@ -151,7 +151,7 @@ setMethod("getStability", signature = c(x = "SummarizedExperiment"),
             )
         ########################### Input check end ############################
         # Get data into long format
-        df <- meltSE(x, assay.type, add.col = c(time.col, group))
+        df <- meltSE(x, assay.type = assay.type, add.col = c(time.col, group))
         # If there are duplicated samples, calculate average
         df <- .summarize_duplicates(
             df, assay.type, "FeatureID", time.col, group)
