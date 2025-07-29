@@ -116,7 +116,7 @@ res |> head()
 ```
 
 A more convenient and preferred approach is to store the values directly in
-`colData` using the `add*Divergence()` functions. In the example below, we
+`colData` using the `*Divergence()` functions. In the example below, we
 calculate stepwise divergences with a lag of 1, meaning that for each sample,
 the divergence is calculated by comparing it to the previous time point for
 the same subject.

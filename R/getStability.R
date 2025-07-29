@@ -420,26 +420,11 @@ setMethod("getStability", signature = c(x = "SummarizedExperiment"),
         # difference. Get the correlation between "difference between
         # consecutive time points" and "difference between previous time point
         # and reference point".
-        
-        # Validate inputs for correlation computation
-        ref_var <- var(ref, na.rm = TRUE)
-        values_var <- var(values, na.rm = TRUE)
-        
-        if (is.na(ref_var) || is.na(values_var)) {
-            stop("Cannot compute correlation: insufficient non-NA data.")
-        }
-        
-        if (ref_var == 0) {
-            stop("Cannot compute correlation: reference values are constant ",
-            "(zero variance). This typically occurs with very rare taxa that ",
-            "have the same value across time points.")
-        }
-        
-        if (values_var == 0) {
-            stop("Cannot compute correlation: values are constant ",
-            "(zero variance).")
-        }
-        res <- cor(values, ref, ...)
+        # If taxa is very rare, it might be that its standard deviation of
+        # 'ref' is 0 which causes warning "the standard deviation is zero".
+        # As user has no way to determine which taxa caused this warning, we
+        # suppress it.
+        res <- cor(values, ref, ...) |> suppressWarnings()
     } else if( mode == "lm" ){
         # Apply linear model that takes into account time difference between
         # consecutive time points. Get how much the "difference between previous
