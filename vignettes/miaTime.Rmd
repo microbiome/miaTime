@@ -85,6 +85,7 @@ For rolling or stepwise divergences, the calculation measures how much the
 community shifts from one sampling point to the next.
 
 ### Purpose
+
 Quantifying divergence allows researchers to:
 
 - Track temporal instability or stability of the microbiome.
@@ -93,13 +94,14 @@ Quantifying divergence allows researchers to:
 
 - Identify significant shifts or stable periods in the microbiome composition.
 
-### Practical Application
+### Practical application
+
 For example, in a human gut microbiome time series, calculating divergence helps 
 determine how resistant the microbial ecosystem is to perturbations (such as 
 antibiotics or diet changes) and how long it takes to return (if at all) to 
 its original state.
 
-Divergences can be calculated with `get*Divergence()` functions. In the example
+Divergences can be calculated with `*Divergence()` functions. In the example
 below, for each subject, we calculate the divergence of their samples by
 comparing them to the first time point.
 
@@ -116,7 +118,7 @@ res |> head()
 ```
 
 A more convenient and preferred approach is to store the values directly in
-`colData` using the `*Divergence()` functions. In the example below, we
+`colData` using the `add*Divergence()` functions. In the example below, we
 calculate stepwise divergences with a lag of 1, meaning that for each sample,
 the divergence is calculated by comparing it to the previous time point for
 the same subject.
