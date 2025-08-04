@@ -147,9 +147,6 @@ p <- plotSeries(tse, assay.type = "counts",
 p
 ```
 
-See [articles](https://microbiome.github.io/miaTime/articles/) for more detailed
-example workflows.
-
 ## Session info
 
 ```{r}
