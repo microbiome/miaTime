@@ -3,5 +3,4 @@ pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   miaTime: miaTime.html
-  articles/minimalgut: minimalgut.html
-last_built: 2025-08-04T07:05Z
+last_built: 2025-08-04T07:09Z
