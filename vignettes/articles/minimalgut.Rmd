@@ -113,7 +113,9 @@ library(miaViz)
 # Plot certain feature by time
 p <- plotSeries(
     tse,
-    x = "Time.hr", y = "Blautia_hydrogenotrophica", colour_by = "Species",
+    time.col = "Time.hr", 
+    features = "Blautia_hydrogenotrophica", 
+    colour.by = "Species",
     assay.type = "relabundance")
 p
 ```

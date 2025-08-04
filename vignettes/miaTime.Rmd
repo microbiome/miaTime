@@ -24,7 +24,10 @@ library(knitr)
 knitr::opts_chunk$set(
     collapse = TRUE,
     comment = "#>",
-    cache = TRUE
+    cache = TRUE,
+    message = FALSE,
+    warning = FALSE,
+    echo = TRUE
 )
 ```
 
@@ -58,12 +61,47 @@ library(miaTime)
 
 ## Divergence between time points
 
-`miaTime` offers functions to calculate divergences. These can be calculated
-based on samples and their corresponding base time point, e.g., first sample of
-time series. Moreover, divergences can be calculated in rolling basis meaning
-that a sample is compared to previous ith sample.
+Divergence refers to the quantification of dissimilarity or difference between 
+microbiome samples taken at different time points. This concept is crucial for 
+tracking how microbial communities change or evolve over time, either in 
+individuals or experimental conditions.
 
-Divergences can be calculated with `get*Divergence()` functions. In the example
+### Types of divergence provided
+
+`miaTime` provides several functions for calculating divergences:
+
+ - Baseline divergence: Measures the dissimilarity between each sample and a 
+ reference (typically the first time point) within a group (such as per subject).
+
+ - Stepwise (rolling) divergence: Assesses the change between consecutive (or 
+ defined interval) time points by comparing each sample to the previous ith
+ sample in the series.
+ 
+The divergence is typically calculated using a beta diversity metric, such as 
+Bray-Curtis dissimilarity, which quantifies how different two communities are 
+in terms of their composition.
+
+For rolling or stepwise divergences, the calculation measures how much the 
+community shifts from one sampling point to the next.
+
+### Purpose
+
+Quantifying divergence allows researchers to:
+
+- Track temporal instability or stability of the microbiome.
+
+- Compare change rates between individuals or treatments.
+
+- Identify significant shifts or stable periods in the microbiome composition.
+
+### Practical application
+
+For example, in a human gut microbiome time series, calculating divergence helps 
+determine how resistant the microbial ecosystem is to perturbations (such as 
+antibiotics or diet changes) and how long it takes to return (if at all) to 
+its original state.
+
+Divergences can be calculated with `*Divergence()` functions. In the example
 below, for each subject, we calculate the divergence of their samples by
 comparing them to the first time point.
 
@@ -80,7 +118,7 @@ res |> head()
 ```
 
 A more convenient and preferred approach is to store the values directly in
-`colData` using the `get*Divergence()` functions. In the example below, we
+`colData` using the `add*Divergence()` functions. In the example below, we
 calculate stepwise divergences with a lag of 1, meaning that for each sample,
 the divergence is calculated by comparing it to the previous time point for
 the same subject.
@@ -95,14 +133,17 @@ colData(tse)
 ## Visualize time series
 
 We can visualize time series data with `r BiocStyle::Biocpkg("miaViz")`. Below,
-we visualize 2 most abundant taxa.
+we visualize 5 most abundant taxa.
 
 ```{r}
 #| label: plot_series
 
 library(miaViz)
 
-p <- plotSeries(tse, x = "time", y = getTop(tse, 5))
+p <- plotSeries(tse, assay.type = "counts", 
+    time.col = "time", 
+    features = getTop(tse, 5), 
+    colour.by = "rownames")
 p
 ```
 
