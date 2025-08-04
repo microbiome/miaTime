@@ -79,7 +79,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>miaTime: Microbiome Time Series Analysis</h1>
             
-            <h4 data-toc-skip class="date">2025-07-29</h4>
+            <h4 data-toc-skip class="date">2025-08-04</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/bioc/vignettes/miaTime.Rmd" class="external-link"><code>vignettes/miaTime.Rmd</code></a></small>
       <div class="hidden name"><code>miaTime.Rmd</code></div>
@@ -150,13 +150,13 @@ composition.</p></li>
 </ul>
 </div>
 <div class="section level3">
-<h3 id="practical-application">Practical Application<a class="anchor" aria-label="anchor" href="#practical-application"></a>
+<h3 id="practical-application">Practical application<a class="anchor" aria-label="anchor" href="#practical-application"></a>
 </h3>
 <p>For example, in a human gut microbiome time series, calculating
 divergence helps determine how resistant the microbial ecosystem is to
 perturbations (such as antibiotics or diet changes) and how long it
 takes to return (if at all) to its original state.</p>
-<p>Divergences can be calculated with <code>get*Divergence()</code>
+<p>Divergences can be calculated with <code>*Divergence()</code>
 functions. In the example below, for each subject, we calculate the
 divergence of their samples by comparing them to the first time
 point.</p>
@@ -178,7 +178,7 @@ point.</p>
 <span><span class="co">#&gt; Sample-5         0         0    Sample-5</span></span>
 <span><span class="co">#&gt; Sample-6         0         0    Sample-6</span></span></code></pre></div>
 <p>A more convenient and preferred approach is to store the values
-directly in <code>colData</code> using the <code>*Divergence()</code>
+directly in <code>colData</code> using the <code>add*Divergence()</code>
 functions. In the example below, we calculate stepwise divergences with
 a lag of 1, meaning that for each sample, the divergence is calculated
 by comparing it to the previous time point for the same subject.</p>
