@@ -13,12 +13,10 @@ getSurvival(x, ...)
   status.col,
   assay.type = "counts",
   covar.cols = NULL,
-  lambda = "lambda.1se",
-  nvar = NULL,
+  penalized = TRUE,
   alpha = 0.9,
   nfolds = 10,
-  showPlots = TRUE,
-  coef_threshold = 0,
+  lambda = "lambda.1se",
   ...
 )
 }
@@ -44,12 +42,9 @@ used in the dissimilarity estimation. (Default: \code{"counts"})}
 columns in \code{colData(x)} to adjust for in the survival model.
 (Default: \code{NULL})}
 
-\item{lambda}{\code{Character or numeric}. Penalization parameter passed to
-\code{\link[glmnet]{cv.glmnet}}. Use \code{"lambda.1se"},
-\code{"lambda.min"}, or a numeric value. (Default: \code{"lambda.1se"})}
-
-\item{nvar}{\code{Integer scalar}. Optional. Maximum number of variables
-(log-ratios) to include in the model. (Default: \code{NULL})}
+\item{penalized}{\code{Logical}. If TRUE, fit penalized Cox regression
+using \code{glmnet}. If FALSE, fit standard Cox model using
+\code{survival::coxph}. (Default: \code{TRUE})}
 
 \item{alpha}{\code{Numeric scalar}. Elastic net mixing parameter: 1 = Lasso,
 0 = Ridge. (Default: \code{0.9})}
@@ -57,36 +52,34 @@ columns in \code{colData(x)} to adjust for in the survival model.
 \item{nfolds}{\code{Integer scalar}. Number of cross-validation folds for
 \code{cv.glmnet}. (Default: \code{10})}
 
-\item{showPlots}{\code{Logical}. If \code{TRUE}, generates plots for
-cross-validation, risk scores, and selected signature. (Default: \code{TRUE})}
+\item{lambda}{\code{Character or numeric}. Penalization parameter passed to
+\code{\link[glmnet]{cv.glmnet}}. Use \code{"lambda.1se"},
+\code{"lambda.min"}, or a numeric value. (Default: \code{"lambda.1se"})}
+
+\item{nvar}{\code{Integer scalar}. Optional. Maximum number of variables
+(log-ratios) to include in the model. (Default: \code{NULL})}
 
 \item{coef_threshold}{\code{Numeric scalar}. Minimum absolute value for a
 coefficient to be included in the final model. (Default: \code{0})}
 }
 \value{
-A named \code{list} containing:
+A list with model summaries:
 \itemize{
-\item \code{taxa.num}: indices of selected taxa
-\item \code{taxa.name}: names of selected taxa
-\item \code{log-contrast coefficients}: coefficients of selected taxa in
-the final log-contrast model
-\item \code{risk.score}: predicted risk scores
-\item \code{apparent Cindex}: concordance index on training data
-\item \code{mean cv-Cindex}: mean cross-validated concordance index
-\item \code{sd cv-Cindex}: standard deviation of cross-validated
-concordance index
-\item \code{risk score plot}: ggplot object showing risk score vs survival
-\item \code{signature plot}: ggplot object of selected taxa and coefficients
+\item \code{coefficients}: estimated model coefficients
+\item \code{selected.features}: nonzero features in penalized model
+\item \code{risk.scores}: predicted risk scores
+\item \code{cindex.apparent}: apparent concordance index
+\item \code{cv.cindex.mean}: mean cross-validated C-index (if penalized)
+\item \code{cv.cindex.sd}: SD of cross-validated C-index (if penalized)
+\item \code{fit}: fitted model object (coxph or cv.glmnet)
 }
 }
 \description{
-Survival modeling wrapper for TreeSummarizedExperiment using coda_coxnet
-}
-\details{
-This function extracts compositional count data and survival metadata from a
-\code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
-object and applies penalized Cox regression via \code{\link[coda4microbiome]{coda_coxnet}},
-using pairwise log-ratio transformations.
+Fit a (penalized) Cox proportional hazards model on microbiome data contained
+in a SummarizedExperiment object.
+Data transformations (e.g. pairwise log-ratios) should be handled upstream
+(e.g. with mia::transformAssay). This function focuses on the statistical
+model.
 }
 \examples{
 # data(SurvivalData)
