@@ -24,25 +24,28 @@
 #' columns in \code{colData(x)} to adjust for in the survival model. 
 #' (Default: \code{NULL})
 #' 
-#' @param penalized \code{Logical}. If TRUE, fit penalized Cox regression 
-#' using \code{glmnet}. If FALSE, fit standard Cox model using 
-#' \code{survival::coxph}. (Default: \code{TRUE})
+#' @param ... additional arguments.
+#' \itemize{
+#'   \item \code{penalized}: \code{Logical}. If TRUE, fit penalized Cox 
+#'   regression using \code{glmnet}. If FALSE, fit standard Cox model using 
+#'   \code{survival::coxph}. (Default: \code{TRUE})
 #'
-#' @param lambda \code{Character or numeric}. Penalization parameter passed to 
-#' \code{\link[glmnet]{cv.glmnet}}. Use \code{"lambda.1se"}, 
-#' \code{"lambda.min"}, or a numeric value. (Default: \code{"lambda.1se"})
+#'   \item \code{lambda}: \code{Character or numeric}. Penalization parameter 
+#'   passed to \code{\link[glmnet]{cv.glmnet}}. Use \code{"lambda.1se"}, 
+#'   \code{"lambda.min"}, or a numeric value. (Default: \code{"lambda.1se"})
 #'
-#' @param alpha \code{Numeric scalar}. Elastic net mixing parameter: 1 = Lasso, 
-#' 0 = Ridge. (Default: \code{0.9})
+#'   \item \code{alpha}: \code{Numeric scalar}. Elastic net mixing parameter: 
+#'   1 = Lasso, 0 = Ridge. (Default: \code{0.9})
 #'
-#' @param nfolds \code{Integer scalar}. Number of cross-validation folds for 
-#' \code{cv.glmnet}. (Default: \code{10})
+#'   \item \code{nfolds}: \code{Integer scalar}. Number of cross-validation 
+#'   folds for \code{cv.glmnet}. (Default: \code{10})
 #' 
-#' @param nvar \code{Integer scalar}. Optional. Maximum number of variables 
-#' (log-ratios) to include in the model. (Default: \code{NULL})
+#'   \item \code{nvar}: \code{Integer scalar}. Optional. Maximum number of 
+#'   variables (log-ratios) to include in the model. (Default: \code{NULL})
 #' 
-#' @param coef_threshold \code{Numeric scalar}. Minimum absolute value for a 
-#' coefficient to be included in the final model. (Default: \code{0})
+#'   \item \code{coef_threshold}: \code{Numeric scalar}. Minimum absolute value 
+#'   for a coefficient to be included in the final model. (Default: \code{0})
+#' }  
 #' 
 #' @inheritParams addBaselineDivergence
 #'

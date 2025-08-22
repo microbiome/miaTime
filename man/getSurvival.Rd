@@ -21,8 +21,28 @@ getSurvival(x, ...)
 \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}
 object.}
 
-\item{...}{Optional arguments passed into
-\code{\link[mia:addDivergence]{mia::addDivergence()}}.}
+\item{...}{additional arguments.
+\itemize{
+\item \code{penalized}: \code{Logical}. If TRUE, fit penalized Cox
+regression using \code{glmnet}. If FALSE, fit standard Cox model using
+\code{survival::coxph}. (Default: \code{TRUE})
+
+\item \code{lambda}: \code{Character or numeric}. Penalization parameter
+passed to \code{\link[glmnet]{cv.glmnet}}. Use \code{"lambda.1se"},
+\code{"lambda.min"}, or a numeric value. (Default: \code{"lambda.1se"})
+
+\item \code{alpha}: \code{Numeric scalar}. Elastic net mixing parameter:
+1 = Lasso, 0 = Ridge. (Default: \code{0.9})
+
+\item \code{nfolds}: \code{Integer scalar}. Number of cross-validation
+folds for \code{cv.glmnet}. (Default: \code{10})
+
+\item \code{nvar}: \code{Integer scalar}. Optional. Maximum number of
+variables (log-ratios) to include in the model. (Default: \code{NULL})
+
+\item \code{coef_threshold}: \code{Numeric scalar}. Minimum absolute value
+for a coefficient to be included in the final model. (Default: \code{0})
+}}
 
 \item{time.col}{\code{Character scalar}. Column name in \code{colData(x)}
 representing time to event or follow-up time. Must be numeric.}
@@ -37,26 +57,6 @@ used in the dissimilarity estimation. (Default: \code{"counts"})}
 \item{covar.cols}{\code{Character vector}. Optional. Specifies covariate
 columns in \code{colData(x)} to adjust for in the survival model.
 (Default: \code{NULL})}
-
-\item{penalized}{\code{Logical}. If TRUE, fit penalized Cox regression
-using \code{glmnet}. If FALSE, fit standard Cox model using
-\code{survival::coxph}. (Default: \code{TRUE})}
-
-\item{lambda}{\code{Character or numeric}. Penalization parameter passed to
-\code{\link[glmnet]{cv.glmnet}}. Use \code{"lambda.1se"},
-\code{"lambda.min"}, or a numeric value. (Default: \code{"lambda.1se"})}
-
-\item{alpha}{\code{Numeric scalar}. Elastic net mixing parameter: 1 = Lasso,
-0 = Ridge. (Default: \code{0.9})}
-
-\item{nfolds}{\code{Integer scalar}. Number of cross-validation folds for
-\code{cv.glmnet}. (Default: \code{10})}
-
-\item{nvar}{\code{Integer scalar}. Optional. Maximum number of variables
-(log-ratios) to include in the model. (Default: \code{NULL})}
-
-\item{coef_threshold}{\code{Numeric scalar}. Minimum absolute value for a
-coefficient to be included in the final model. (Default: \code{0})}
 }
 \value{
 A list with model summaries:
