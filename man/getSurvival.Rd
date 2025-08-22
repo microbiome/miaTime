@@ -13,10 +13,6 @@ getSurvival(x, ...)
   status.col,
   assay.type = "counts",
   covar.cols = NULL,
-  penalized = TRUE,
-  alpha = 0.9,
-  nfolds = 10,
-  lambda = "lambda.1se",
   ...
 )
 }
@@ -46,15 +42,15 @@ columns in \code{colData(x)} to adjust for in the survival model.
 using \code{glmnet}. If FALSE, fit standard Cox model using
 \code{survival::coxph}. (Default: \code{TRUE})}
 
+\item{lambda}{\code{Character or numeric}. Penalization parameter passed to
+\code{\link[glmnet]{cv.glmnet}}. Use \code{"lambda.1se"},
+\code{"lambda.min"}, or a numeric value. (Default: \code{"lambda.1se"})}
+
 \item{alpha}{\code{Numeric scalar}. Elastic net mixing parameter: 1 = Lasso,
 0 = Ridge. (Default: \code{0.9})}
 
 \item{nfolds}{\code{Integer scalar}. Number of cross-validation folds for
 \code{cv.glmnet}. (Default: \code{10})}
-
-\item{lambda}{\code{Character or numeric}. Penalization parameter passed to
-\code{\link[glmnet]{cv.glmnet}}. Use \code{"lambda.1se"},
-\code{"lambda.min"}, or a numeric value. (Default: \code{"lambda.1se"})}
 
 \item{nvar}{\code{Integer scalar}. Optional. Maximum number of variables
 (log-ratios) to include in the model. (Default: \code{NULL})}

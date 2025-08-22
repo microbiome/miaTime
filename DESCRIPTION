@@ -25,13 +25,14 @@ Depends:
     R (>= 4.5.0),
     mia
 Imports:
-    coda4microbiome,
     dplyr,
+    glmnet,
     methods,
     S4Vectors,
     SingleCellExperiment,
     stats,
     SummarizedExperiment,
+    survival,
     tidyr,
     TreeSummarizedExperiment
 Suggests:
