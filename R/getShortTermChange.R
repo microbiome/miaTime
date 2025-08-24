@@ -116,7 +116,7 @@ setMethod("getShortTermChange", signature = c(x = "SummarizedExperiment"),
             group, list(NULL, "character scalar"), colnames(colData(x)))
         ########################### Input check end ############################
         # Get data in long format
-        df <- meltSE(x, assay.type, add.col = c(time.col, group))
+        df <- meltSE(x, assay.type = assay.type, add.col = c(time.col, group))
         # Calculate metrics
         res <- .calculate_growth_metrics(df, assay.type, time.col, group, ...)
         return(res)
