@@ -22,7 +22,7 @@ Description:
 biocViews: Microbiome, Software, Sequencing
 License: Artistic-2.0 | file LICENSE
 Depends:
-    R (>= 4.4.0),
+    R (>= 4.5.0),
     mia
 Imports:
     dplyr,
