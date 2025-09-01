@@ -63,13 +63,18 @@ model.</p>
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">getSurvival</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu">addSurvival</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'SummarizedExperiment'</span></span>
+<span><span class="fu">addSurvival</span><span class="op">(</span><span class="va">x</span>, <span class="va">time.col</span>, <span class="va">status.col</span>, name <span class="op">=</span> <span class="st">"survival"</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
 <span><span class="co"># S4 method for class 'SummarizedExperiment'</span></span>
 <span><span class="fu">getSurvival</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  <span class="va">time.col</span>,</span>
 <span>  <span class="va">status.col</span>,</span>
 <span>  assay.type <span class="op">=</span> <span class="st">"counts"</span>,</span>
-<span>  covar.cols <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  col.var <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -97,7 +102,7 @@ passed to <code><a href="https://glmnet.stanford.edu/reference/cv.glmnet.html" c
 folds for <code>cv.glmnet</code>. (Default: <code>10</code>)</p></li>
 <li><p><code>nvar</code>: <code>Integer scalar</code>. Optional. Maximum number of
 variables (log-ratios) to include in the model. (Default: <code>NULL</code>)</p></li>
-<li><p><code>coef_threshold</code>: <code>Numeric scalar</code>. Minimum absolute value
+<li><p><code>coef.threshold</code>: <code>Numeric scalar</code>. Minimum absolute value
 for a coefficient to be included in the final model. (Default: <code>0</code>)</p></li>
 </ul></dd>
 
@@ -113,12 +118,18 @@ representing event occurrence. Accepts numeric (0/1) or logical (FALSE/TRUE)
 values.</p></dd>
 
 
+<dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
+<dd><p><code>Character vector</code>. Specifies a column name for storing
+divergence results.
+(Default: <code>c("divergence", "time_diff", "ref_samples")</code>)</p></dd>
+
+
 <dt id="arg-assay-type">assay.type<a class="anchor" aria-label="anchor" href="#arg-assay-type"></a></dt>
 <dd><p><code>Character scalar</code>. Specifies which assay values are
 used in the dissimilarity estimation. (Default: <code>"counts"</code>)</p></dd>
 
 
-<dt id="arg-covar-cols">covar.cols<a class="anchor" aria-label="anchor" href="#arg-covar-cols"></a></dt>
+<dt id="arg-col-var">col.var<a class="anchor" aria-label="anchor" href="#arg-col-var"></a></dt>
 <dd><p><code>Character vector</code>. Optional. Specifies covariate
 columns in <code>colData(x)</code> to adjust for in the survival model.
 (Default: <code>NULL</code>)</p></dd>
@@ -128,7 +139,7 @@ columns in <code>colData(x)</code> to adjust for in the survival model.
     <h2>Value</h2>
     <p>A list with model summaries:</p><ul><li><p><code>coefficients</code>: estimated model coefficients</p></li>
 <li><p><code>selected.features</code>: nonzero features in penalized model</p></li>
-<li><p><code>risk.scores</code>: predicted risk scores</p></li>
+<li><p><code>risk_scores</code>: predicted risk scores</p></li>
 <li><p><code>cindex.apparent</code>: apparent concordance index</p></li>
 <li><p><code>cv.cindex.mean</code>: mean cross-validated C-index (if penalized)</p></li>
 <li><p><code>cv.cindex.sd</code>: SD of cross-validated C-index (if penalized)</p></li>
@@ -152,7 +163,7 @@ NAR Genomics and Bioinformatics, 6(2), lqae038.
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># data(SurvivalData)</span></span></span>
 <span class="r-in"><span><span class="co"># tse &lt;- SurvivalData</span></span></span>
 <span class="r-in"><span><span class="co"># getSurvival(tse, time.col = "T1Dweek", status.col = "T1D", </span></span></span>
-<span class="r-in"><span><span class="co"># covar.cols = c("Sex", "Antibiotics"))</span></span></span>
+<span class="r-in"><span><span class="co"># col.var = c("Sex", "Antibiotics"))</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
