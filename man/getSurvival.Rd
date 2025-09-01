@@ -2,17 +2,23 @@
 % Please edit documentation in R/AllGenerics.R, R/getSurvival.R
 \name{getSurvival}
 \alias{getSurvival}
+\alias{addSurvival}
+\alias{addSurvival,SummarizedExperiment-method}
 \alias{getSurvival,SummarizedExperiment-method}
 \title{Survival analysis}
 \usage{
 getSurvival(x, ...)
+
+addSurvival(x, ...)
+
+\S4method{addSurvival}{SummarizedExperiment}(x, time.col, status.col, name = "survival", ...)
 
 \S4method{getSurvival}{SummarizedExperiment}(
   x,
   time.col,
   status.col,
   assay.type = "counts",
-  covar.cols = NULL,
+  col.var = NULL,
   ...
 )
 }
@@ -40,7 +46,7 @@ folds for \code{cv.glmnet}. (Default: \code{10})
 \item \code{nvar}: \code{Integer scalar}. Optional. Maximum number of
 variables (log-ratios) to include in the model. (Default: \code{NULL})
 
-\item \code{coef_threshold}: \code{Numeric scalar}. Minimum absolute value
+\item \code{coef.threshold}: \code{Numeric scalar}. Minimum absolute value
 for a coefficient to be included in the final model. (Default: \code{0})
 }}
 
@@ -51,10 +57,14 @@ representing time to event or follow-up time. Must be numeric.}
 representing event occurrence. Accepts numeric (0/1) or logical (FALSE/TRUE)
 values.}
 
+\item{name}{\code{Character vector}. Specifies a column name for storing
+divergence results.
+(Default: \code{c("divergence", "time_diff", "ref_samples")})}
+
 \item{assay.type}{\code{Character scalar}. Specifies which assay values are
 used in the dissimilarity estimation. (Default: \code{"counts"})}
 
-\item{covar.cols}{\code{Character vector}. Optional. Specifies covariate
+\item{col.var}{\code{Character vector}. Optional. Specifies covariate
 columns in \code{colData(x)} to adjust for in the survival model.
 (Default: \code{NULL})}
 }
@@ -63,7 +73,7 @@ A list with model summaries:
 \itemize{
 \item \code{coefficients}: estimated model coefficients
 \item \code{selected.features}: nonzero features in penalized model
-\item \code{risk.scores}: predicted risk scores
+\item \code{risk_scores}: predicted risk scores
 \item \code{cindex.apparent}: apparent concordance index
 \item \code{cv.cindex.mean}: mean cross-validated C-index (if penalized)
 \item \code{cv.cindex.sd}: SD of cross-validated C-index (if penalized)
@@ -81,7 +91,7 @@ model.
 # data(SurvivalData)
 # tse <- SurvivalData
 # getSurvival(tse, time.col = "T1Dweek", status.col = "T1D", 
-# covar.cols = c("Sex", "Antibiotics"))
+# col.var = c("Sex", "Antibiotics"))
 
 }
 \references{
