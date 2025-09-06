@@ -139,6 +139,7 @@ NULL
 #'
 NULL
 
+#' @name crohn_survival
 #' @title
 #' Survival microbiome data from 150 individuals with longitudinal measurements
 #'
@@ -168,8 +169,7 @@ NULL
 #' Disease. Cell Host & Microbe, 15(4).
 #' #' \url{https://doi.org/10.1016/j.chom.2014.02.005}
 #'
-#' @docType
-#' data
+#' @docType data
 #'
 #' @return
 #' Loads the dataset in R.
