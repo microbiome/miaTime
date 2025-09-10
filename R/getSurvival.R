@@ -9,7 +9,8 @@
 #' @description
 #' Fit a (penalized) Cox proportional hazards model on microbiome data contained
 #' in a SummarizedExperiment object. Data transformations (e.g. pairwise
-#' log-ratios) should be handled upstream (e.g. with mia::transformAssay).
+#' log-ratios) should be handled upstream
+#' (e.g. with \code{mia::transformAssay()}).
 #'
 #' @param time.col \code{Character scalar}. Column name in \code{colData(x)}
 #' representing time to event or follow-up time. Must be numeric.
