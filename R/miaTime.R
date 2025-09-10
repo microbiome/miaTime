@@ -138,3 +138,50 @@ NULL
 #' @keywords data
 #'
 NULL
+
+#' @name crohn_survival
+#' @title
+#' Survival microbiome data from 150 individuals with longitudinal measurements
+#'
+#' @description
+#' Simulated dataset based on a Crohn's disease microbiome study. The dataset
+#' is right-censored and includes time-to-event data, representing either the
+#' occurrence of disease or censoring. It contains 150 individuals and 48 taxa.
+#' The dataset originates from the \pkg{coda4microbiome} package under the
+#' name "data_survival".
+#'
+#' @details
+#' Sample metadata includes the following information:
+#'  - diagnosis: Indicates whether an individual has Crohn’s disease (CD) or
+#'    is a control.
+#'  - event: Binary variable indicating disease status (1 = Crohn’s Disease,
+#'    0 = Control).
+#'  - event_time: The time of event occurrence or censoring (unitless time).
+#'
+#' Taxa data do not include additional taxonomy information.
+#'
+#' @references
+#' Calle ML et al. (2023) coda4microbiome: compositional data analysis for
+#' microbiome cross-sectional and longitudinal studies. BMC Bioinformatics,
+#' 24(82). \url{https://doi.org/10.1186/s12859-023-05205-3}
+#'
+#' Gevers D et al. (2018) The Treatment-Naive Microbiome in New-Onset Crohn’s
+#' Disease. Cell Host & Microbe, 15(4).
+#' #' \url{https://doi.org/10.1016/j.chom.2014.02.005}
+#'
+#' @docType data
+#'
+#' @return
+#' Loads the dataset in R.
+#'
+#' @usage
+#' data(crohn_survival)
+#'
+#' @format
+#' The dataset is in the
+#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
+#' format.
+#'
+#' @keywords
+#' data
+NULL

@@ -25,6 +25,7 @@ Other contributors:
   \item Sudarshan Shetty \email{sudarshanshetty9@gmail.com} [contributor]
   \item Chouaib Benchraka [contributor]
   \item Muluh Muluh [contributor]
+  \item Ali Hajj [contributor]
 }
 
 }
