@@ -29,16 +29,20 @@ object.}
 
 \item{...}{additional arguments.
 \itemize{
-\item \code{penalized}: \code{Logical}. If TRUE, fit penalized Cox
-regression using \code{glmnet}. If FALSE, fit standard Cox model using
-\code{survival::coxph}. (Default: \code{TRUE})
+\item \code{penalized}: \code{Logical}. If \code{TRUE}, fit penalized Cox
+regression using \code{glmnet}. If \code{FALSE}, fit standard Cox model
+using \code{survival::coxph}. (Default: \code{TRUE})
 
 \item \code{lambda}: \code{Character or numeric}. Penalization parameter
 passed to \code{\link[glmnet]{cv.glmnet}}. Use \code{"lambda.1se"},
 \code{"lambda.min"}, or a numeric value. (Default: \code{"lambda.1se"})
 
-\item \code{alpha}: \code{Numeric scalar}. Elastic net mixing parameter:
-1 = Lasso, 0 = Ridge. (Default: \code{0.9})
+\item \code{alpha}: \code{Numeric scalar}. Elastic net mixing parameter
+that controls the balance between Lasso and Ridge regression:
+\code{alpha = 1} corresponds to Lasso,
+\code{alpha = 0} corresponds to Ridge.
+Values between 0 and 1 specify a combination of the two.
+(Default: \code{0.9})
 
 \item \code{nfolds}: \code{Integer scalar}. Number of cross-validation
 folds for \code{cv.glmnet}. (Default: \code{10})
@@ -54,8 +58,8 @@ for a coefficient to be included in the final model. (Default: \code{0})
 representing time to event or follow-up time. Must be numeric.}
 
 \item{status.col}{\code{Character scalar}. Column name in \code{colData(x)}
-representing event occurrence. Accepts numeric (0/1) or logical (FALSE/TRUE)
-values.}
+representing event occurrence. Accepts numeric (\code{0}/\code{1}) or
+logical (\code{TRUE}/\code{FALSE}) values.}
 
 \item{name}{\code{Character vector}. Specifies a column name for storing
 divergence results.
@@ -72,7 +76,7 @@ columns in \code{colData(x)} to adjust for in the survival model.
 A list with model summaries:
 \itemize{
 \item \code{coefficients}: estimated model coefficients
-\item \code{selected.features}: nonzero features in penalized model
+\item \code{selected_features}: nonzero features in penalized model
 \item \code{risk_scores}: predicted risk scores
 \item \code{cindex.apparent}: apparent concordance index
 \item \code{cv.cindex.mean}: mean cross-validated C-index (if penalized)
@@ -88,10 +92,13 @@ Data transformations (e.g. pairwise log-ratios) should be handled upstream
 model.
 }
 \examples{
-# data(SurvivalData)
-# tse <- SurvivalData
-# getSurvival(tse, time.col = "T1Dweek", status.col = "T1D", 
-# col.var = c("Sex", "Antibiotics"))
+data(crohn_survival)
+tse <- crohn_survival
+tse <- transformAssay(tse, method = "relabundance")
+fit <- getSurvival(
+    tse, assay.type = "relabundance",
+    time.col = "event_time", status.col = "event"
+)
 
 }
 \references{
