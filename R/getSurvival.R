@@ -15,7 +15,7 @@
 #' @param time.col \code{Character scalar}. Column name in \code{colData(x)}
 #' representing time to event or follow-up time. Must be numeric.
 #'
-#' @param status.col \code{Character scalar}. Column name in \code{colData(x)}
+#' @param event.col \code{Character scalar}. Column name in \code{colData(x)}
 #' representing event occurrence. Accepts numeric (\code{0}/\code{1}) or
 #' logical (\code{TRUE}/\code{FALSE}) values.
 #'
@@ -54,7 +54,7 @@
 #'
 #' @return A list with model summaries:
 #' \itemize{
-#'   \item \code{coefficients}: estimated model coefficients
+#'   \item \code{coef}: estimated model coefficients
 #'   \item \code{risk_scores}: predicted risk scores
 #'   \item \code{c_index}: apparent concordance index
 #'   \item \code{c_index_cv_mean}: mean cross-validated C-index (if penalized)
@@ -77,7 +77,7 @@
 #' tse <- transformAssay(tse, method = "relabundance")
 #' fit <- getSurvival(
 #'     tse, assay.type = "relabundance",
-#'     time.col = "event_time", status.col = "event"
+#'     time.col = "event_time", event.col = "event"
 #' )
 #'
 NULL
@@ -85,12 +85,12 @@ NULL
 #' @rdname getSurvival
 #' @export
 setMethod("addSurvival", signature = c(x = "SummarizedExperiment"),
-    function(x, time.col, status.col, name = "survival", ...){
+    function(x, time.col, event.col, name = "survival", ...){
         .check_input(name, "character scalar")
         x <- .check_and_get_altExp(x, ...)
         # Run analysis
         args <- c(
-            list(x = x, time.col = time.col, status.col = status.col,
+            list(x = x, time.col = time.col, event.col = event.col,
                 name = name),
             list(...)[!names(list(...)) %in% c("altexp")])
         res <- do.call(getSurvival, args)
@@ -103,14 +103,14 @@ setMethod("addSurvival", signature = c(x = "SummarizedExperiment"),
 #' @rdname getSurvival
 #' @export
 setMethod("getSurvival", signature(x = "SummarizedExperiment"),
-    function(x, time.col, status.col, assay.type = "counts", col.var = NULL,
+    function(x, time.col, event.col, assay.type = "counts", col.var = NULL,
         ...){
         # Input checks
         x <- .check_data_for_survival(
-            x, time.col, status.col, col.var, assay.type, ...)
+            x, time.col, event.col, col.var, assay.type, ...)
         # Extract data
         args <- .get_data_for_survival(
-            x, time.col, status.col, col.var, assay.type)
+            x, time.col, event.col, col.var, assay.type)
         args <- c(args, list(...))
         # Fit survival model
         res <- do.call(.calc_survival, args)
@@ -125,13 +125,13 @@ setMethod("getSurvival", signature(x = "SummarizedExperiment"),
 # Ensures that the required columns for survival analysis are present in
 # colData, are of the correct type, and that the requested assay exists.
 .check_data_for_survival <- function(
-        x, time.col, status.col, col.var, assay.type, ...){
+        x, time.col, event.col, col.var, assay.type, ...){
     # Ensure we are working with the correct alternative experiment
     x <- .check_and_get_altExp(x, ...)
     # Check that 'time.col' exists in colData and is a character scalar
     .check_input(time.col, list("character scalar"), colnames(colData(x)))
-    # Check that 'status.col' exists in colData and is a character scalar
-    .check_input(status.col, list("character scalar"), colnames(colData(x)))
+    # Check that 'event.col' exists in colData and is a character scalar
+    .check_input(event.col, list("character scalar"), colnames(colData(x)))
     # Check that the requested assay is present in the object
     .check_assay_present(assay.type, x)
     # Verify that the time column contains numeric values
@@ -139,8 +139,8 @@ setMethod("getSurvival", signature(x = "SummarizedExperiment"),
         stop("'time.col' must be numeric.", call. = FALSE)
     }
     # Verify that the status column is either logical or numeric (0/1)
-    if( !is.logical(x[[status.col]]) && !is.numeric(x[[status.col]]) ){
-        stop("'status.col' must be numeric (0/1) or logical.", call. = FALSE)
+    if( !is.logical(x[[event.col]]) && !is.numeric(x[[event.col]]) ){
+        stop("'event.col' must be numeric (0/1) or logical.", call. = FALSE)
     }
     # If a grouping variable is provided, check it exists in colData
     if( !is.null(col.var) ){
@@ -155,13 +155,13 @@ setMethod("getSurvival", signature(x = "SummarizedExperiment"),
 # and optional covariates from the input object,
 # formatted for downstream survival models.
 .get_data_for_survival <- function(
-        x, time.col, status.col, col.var, assay.type){
+        x, time.col, event.col, col.var, assay.type){
     # Extract assay data (samples as rows, features as columns)
     mat <- assay(x, assay.type) |> t()
     # Extract survival time column and ensure numeric
     time <- x[[time.col]] |> as.numeric()
     # Extract survival status column and ensure numeric (0/1)
-    status <- x[[status.col]] |> as.numeric()
+    status <- x[[event.col]] |> as.numeric()
     # Extract optional covariates from colData
     if( !is.null(col.var) ){
         col.var <- colData(x)[, col.var, drop = FALSE] |> as.data.frame()
@@ -248,11 +248,11 @@ setMethod("getSurvival", signature(x = "SummarizedExperiment"),
 
     # Return all results as a list
     res <- list(
-        coefficients = coefs,
+        coef = coefs,
         risk_scores = risk_scores,
         c_index = c_index,
         c_index_cv_mean = fit[["cvm"]][[id_row]],
-        c_index_cv_sd = fit[["cvsd"]][[id_row]],,
+        c_index_cv_sd = fit[["cvsd"]][[id_row]],
         fit = fit
     )
     return(res)
@@ -267,7 +267,12 @@ setMethod("getSurvival", signature(x = "SummarizedExperiment"),
     y <- Surv(time, status)
     # Combine survival times, status, features, and optional covariates into one
     # data frame
-    df <- data.frame(time = time, status = status, mat, col.var)
+    if( is.null(col.var) ){
+        df <- data.frame(time = time, status = status, mat)
+    } else {
+        df <- data.frame(time = time, status = status, mat, col.var)
+    }
+    
     # Fit standard Cox proportional hazards model
     fit <- coxph(y ~ ., data = df)
 
@@ -282,7 +287,7 @@ setMethod("getSurvival", signature(x = "SummarizedExperiment"),
 
     # Return results as a list
     res <- list(
-        coefficients = coefs,
+        coef = coefs,
         risk_scores = as.numeric(risk_scores),
         c_index = c_index,
         fit = fit

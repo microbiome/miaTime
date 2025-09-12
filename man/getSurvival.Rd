@@ -11,16 +11,9 @@ getSurvival(x, ...)
 
 addSurvival(x, ...)
 
-\S4method{addSurvival}{SummarizedExperiment}(x, time.col, status.col, name = "survival", ...)
+\S4method{addSurvival}{SummarizedExperiment}(x, time.col, event.col, name = "survival", ...)
 
-\S4method{getSurvival}{SummarizedExperiment}(
-  x,
-  time.col,
-  status.col,
-  assay.type = "counts",
-  col.var = NULL,
-  ...
-)
+\S4method{getSurvival}{SummarizedExperiment}(x, time.col, event.col, assay.type = "counts", col.var = NULL, ...)
 }
 \arguments{
 \item{x}{A
@@ -57,7 +50,7 @@ for a coefficient to be included in the final model. (Default: \code{0})
 \item{time.col}{\code{Character scalar}. Column name in \code{colData(x)}
 representing time to event or follow-up time. Must be numeric.}
 
-\item{status.col}{\code{Character scalar}. Column name in \code{colData(x)}
+\item{event.col}{\code{Character scalar}. Column name in \code{colData(x)}
 representing event occurrence. Accepts numeric (\code{0}/\code{1}) or
 logical (\code{TRUE}/\code{FALSE}) values.}
 
@@ -75,21 +68,19 @@ columns in \code{colData(x)} to adjust for in the survival model.
 \value{
 A list with model summaries:
 \itemize{
-\item \code{coefficients}: estimated model coefficients
-\item \code{selected_features}: nonzero features in penalized model
+\item \code{coef}: estimated model coefficients
 \item \code{risk_scores}: predicted risk scores
-\item \code{cindex.apparent}: apparent concordance index
-\item \code{cv.cindex.mean}: mean cross-validated C-index (if penalized)
-\item \code{cv.cindex.sd}: SD of cross-validated C-index (if penalized)
+\item \code{c_index}: apparent concordance index
+\item \code{c_index_cv_mean}: mean cross-validated C-index (if penalized)
+\item \code{c_index_cv_sd}: SD of cross-validated C-index (if penalized)
 \item \code{fit}: fitted model object (coxph or cv.glmnet)
 }
 }
 \description{
 Fit a (penalized) Cox proportional hazards model on microbiome data contained
-in a SummarizedExperiment object.
-Data transformations (e.g. pairwise log-ratios) should be handled upstream
-(e.g. with mia::transformAssay). This function focuses on the statistical
-model.
+in a SummarizedExperiment object. Data transformations (e.g. pairwise
+log-ratios) should be handled upstream
+(e.g. with \code{mia::transformAssay()}).
 }
 \examples{
 data(crohn_survival)
@@ -97,7 +88,7 @@ tse <- crohn_survival
 tse <- transformAssay(tse, method = "relabundance")
 fit <- getSurvival(
     tse, assay.type = "relabundance",
-    time.col = "event_time", status.col = "event"
+    time.col = "event_time", event.col = "event"
 )
 
 }
