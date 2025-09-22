@@ -1,3 +1,7 @@
+Changes in version 0.99.11
+Date: 2025-09-22
++ Added Kumaraswamy2024 data
+
 Changes in version 0.99.10
 Date: 2025-09-06
 + Added survival data on Crohn's disease (crohn_survival)
