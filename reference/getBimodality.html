@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">miaTime</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.10</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.11</span>
       </span>
     </div>
 
@@ -124,7 +124,7 @@ Microbial Diversity. doi: 10.1128/mbio.01371-14</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
-    <div class="dont-index"><p><code><a href="https://rdrr.io/pkg/mia/man/getAbundant.html" class="external-link">mia::getConditionallyLowAbundant()</a></code></p></div>
+    <div class="dont-index"><p><code><a href="https://microbiome.github.io/mia/reference/getAbundant.html" class="external-link">mia::getConditionallyLowAbundant()</a></code></p></div>
     </div>
 
     <div id="ref-examples">
@@ -136,7 +136,7 @@ Microbial Diversity. doi: 10.1128/mbio.01371-14</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># In this example, we are only interested on vessel 1.</span></span></span>
 <span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">tse</span><span class="op">[</span>, <span class="va">tse</span><span class="op">[[</span><span class="st">"Vessel"</span><span class="op">]</span><span class="op">]</span> <span class="op">==</span> <span class="fl">1</span><span class="op">]</span></span></span>
-<span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mia/man/transformAssay.html" class="external-link">transformAssay</a></span><span class="op">(</span><span class="va">tse</span>, method <span class="op">=</span> <span class="st">"relabundance"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://microbiome.github.io/mia/reference/transformAssay.html" class="external-link">transformAssay</a></span><span class="op">(</span><span class="va">tse</span>, method <span class="op">=</span> <span class="st">"relabundance"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Calculate bimodality</span></span></span>
 <span class="r-in"><span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu">getBimodality</span><span class="op">(</span><span class="va">tse</span><span class="op">)</span></span></span>
@@ -144,7 +144,7 @@ Microbial Diversity. doi: 10.1128/mbio.01371-14</p>
 <span class="r-in"><span><span class="va">bimodal_taxa</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">b</span><span class="op">)</span><span class="op">[</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">b</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&gt;</span> <span class="fl">0.95</span><span class="op">)</span> <span class="op">]</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Determine taxa with abundance &gt; 0.5%</span></span></span>
-<span class="r-in"><span><span class="va">abundant</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mia/man/getAbundant.html" class="external-link">getAbundant</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">abundant</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://microbiome.github.io/mia/reference/getAbundant.html" class="external-link">getAbundant</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="va">tse</span>, assay.type <span class="op">=</span> <span class="st">"relabundance"</span>, abundant.th <span class="op">=</span> <span class="fl">0.5</span><span class="op">/</span><span class="fl">100</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># The detected CRT</span></span></span>

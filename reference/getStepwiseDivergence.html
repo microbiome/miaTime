@@ -18,7 +18,7 @@ time difference."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">miaTime</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.10</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.11</span>
       </span>
     </div>
 
@@ -90,7 +90,7 @@ object.</p></dd>
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Optional arguments passed into
-<code><a href="https://rdrr.io/pkg/mia/man/addDivergence.html" class="external-link">mia::addDivergence()</a></code>.</p></dd>
+<code><a href="https://microbiome.github.io/mia/reference/addDivergence.html" class="external-link">mia::addDivergence()</a></code>.</p></dd>
 
 
 <dt id="arg-time-col">time.col<a class="anchor" aria-label="anchor" href="#arg-time-col"></a></dt>
@@ -147,7 +147,7 @@ more meaningful to calculate divergence within a specific patient or group
     </div>
     <div id="see-also">
     <h2>See also</h2>
-    <div class="dont-index"><p><code><a href="https://rdrr.io/pkg/mia/man/addDivergence.html" class="external-link">mia::addDivergence()</a></code></p></div>
+    <div class="dont-index"><p><code><a href="https://microbiome.github.io/mia/reference/addDivergence.html" class="external-link">mia::addDivergence()</a></code></p></div>
     </div>
 
     <div id="ref-examples">
@@ -155,7 +155,7 @@ more meaningful to calculate divergence within a specific patient or group
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/microbiome/miaTime" class="external-link">miaTime</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">hitchip1006</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mia/man/transformAssay.html" class="external-link">transformAssay</a></span><span class="op">(</span><span class="va">hitchip1006</span>, method <span class="op">=</span> <span class="st">"relabundance"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://microbiome.github.io/mia/reference/transformAssay.html" class="external-link">transformAssay</a></span><span class="op">(</span><span class="va">hitchip1006</span>, method <span class="op">=</span> <span class="st">"relabundance"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Calculate divergence</span></span></span>
 <span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu">addStepwiseDivergence</span><span class="op">(</span></span></span>
