@@ -4,25 +4,23 @@ library(Cairo)
 library(dplyr)
 library(readxl)
 
-# Useful function
+# Function to load Excel data
 read_data <- function (f) {
-    
     x <- read_excel(f)
     rownams <- unname(unlist(x[,1]))
     x <- x[, -1]
     x <- as.matrix(x)
     rownames(x) <- rownams
-    x
-    
+    return(x)
 }
 # Get data from : https://zenodo.org/records/14424024
 # Abundance profiles
-gen <- read_data("../data/Genus_hitchip.xlsx")
-phy <- read_data("../data/Phylum_hitchip.xlsx")
-oli <- read_data("../data/Oligo_hitchip.xlsx")
+gen <- read_data(file.path("..", "data", "Genus_hitchip.xlsx"))
+phy <- read_data(file.path("..", "data", "Phylum_hitchip.xlsx"))
+oli <- read_data(file.path("..", "data", "Oligo_hitchip.xlsx"))
 
 # Metadata
-md <- read_data("../data/modified_file.xlsx")
+md <- read_data(file.path("..", "data", "modified_file.xlsx"))
 rownames(md) <- unname(md[, "sample"])
 md <- as.data.frame(md)
 md[14:61] <- lapply(md[14:61], as.logical)
@@ -31,9 +29,9 @@ md[14:61] <- lapply(md[14:61], as.logical)
 # Group-C: consume Hawaijar, not Dahi (n=23)
 # Group-D: consume Dahi, not Hawaijar (n=14)
 md[, "timepoint"] <- as.numeric(unlist(md[, "timepoint"]))
-md[, "season"] <- factor(unlist(md[, "season"]), 
+md[, "season"] <- factor(unlist(md[, "season"]),
                          evels=c("summer", "autumn", "winter"))
-factors <- c("age", "sex", "bmi", "clan", "nature_of_birth", 
+factors <- c("age", "sex", "bmi", "clan", "nature_of_birth",
              "marital_status", "residence", "subject", "group")
 for(f in factors) {
   md[, f] <- factor(unlist(md[, f]), levels=sort(unique(md[, f])))
@@ -57,7 +55,7 @@ assay(altExp(tse, "oligo"), "signal")[is.na(assay(altExp(tse, "oligo"), "signal"
 # tabs 6 and 8 have different sample names
 tabs <- list()
 for (i in 1:11) {
-  tabs[[i]] <- read_excel("../data/AbsoluteloadTaxaspecificqPCRdata.xlsx", sheet = i) 
+  tabs[[i]] <- read_excel(file.path("..", "data", "AbsoluteloadTaxaspecificqPCRdata.xlsx"), sheet = i)
 }
 tabs <- tabs[-c(6,8)]
 d <- Reduce(function(dtf1,dtf2) dplyr::full_join(dtf1,dtf2,by="sample"), tabs)
@@ -70,7 +68,7 @@ rownames(d) <- rownams
 altExp(tse, "total_loads")  <- TreeSummarizedExperiment(assays=SimpleList(signal=t(d)))
 
 # 'Fecal metabolite profile_LC-HRMS Data.xlsx'
-x <- read_excel("../data/Fecal\ metabolite\ profile_LC-HRMS Data.xlsx", sheet = 1) 
+x <- read_excel(file.path("..", "data", "Fecal\ metabolite\ profile_LC-HRMS Data.xlsx"), sheet = 1)
 colnams <- as.character(x[3,])
 x <- x[-c(1,2,3),]
 colnames(x) <- colnams
@@ -86,7 +84,7 @@ altExp(tse, "metabolites")  <- TreeSummarizedExperiment(
     assays=SimpleList(signal=M), rowData=xr)
 
 # 'SCFA data-HPLC.xlsx'
-x <- read_excel("../data/SCFA\ data-HPLC.xlsx") 
+x <- read_excel(file.path("..", "data", "SCFA\ data-HPLC.xlsx"))
 colnams <- unname(unlist(x[1,]))
 x <- x[-1, ]
 colnames(x) <- colnams
