@@ -48,7 +48,8 @@ altExp(tse, "oligo")   <- TreeSummarizedExperiment(
     assays=SimpleList(signal=oli))
 # There is one NA, replace it with min value
 assay(altExp(tse, "oligo"), "signal")[is.na(assay(altExp(tse, "oligo"), "signal"))] <- min(assay(altExp(tse, "oligo"), "signal"), na.rm=TRUE)
-
+# Round the oligo assay to 8 decimal places
+assay(altExp(tse, "oligo")) <- round(assay(altExp(tse, "oligo")), 8)
 # -------------------------------------------
 
 # Total load in LOG10_16S _RNA_gene copies_per_g
@@ -101,5 +102,4 @@ rownames(M) <- colnams[-1]
 altExp(tse, "scfa")  <- TreeSummarizedExperiment(assays=SimpleList(signal=M))
 
 # -----------------------------------------------------------------------------
-
-save(tse, file="Kumaraswamy2024.rda")
+save(tse, file = "Kumaraswamy2024.rda", compress = "xz")
