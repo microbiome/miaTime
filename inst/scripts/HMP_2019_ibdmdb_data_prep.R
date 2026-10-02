@@ -103,9 +103,6 @@ tse <- tse[, tse$subject_id %in% keep_subjects]
 # Define time point label
 tse$time_point <- ifelse(tse$visit_number == 1, "T0", "T1")
 
-# Define treatment: Pre and Post (Baseline vs. Post-baseline)
-tse$treatment <- factor(tse$time_point, levels = c("T0", "T1"))
-
 #############################
 # Standardize the mediators #
 #############################

@@ -240,7 +240,8 @@ NULL
 #'
 #' The dataset contains 44 stool samples (two time points per subject: baseline
 #' \code{T0} and follow-up \code{T1}) from 22 subjects with inflammatory bowel
-#' disease, with 585 microbial species.
+#' disease who received treatment between the two sampling time points, with
+#' 585 microbial species.
 #'
 #' Assays include relative abundance (\code{relabundance}) and a scaled version
 #' of the same data (\code{scaled}). Taxonomic annotation is stored in
