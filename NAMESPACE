@@ -26,27 +26,33 @@ import(SummarizedExperiment)
 import(TreeSummarizedExperiment)
 import(methods)
 import(mia)
-importFrom(dplyr,across)
-importFrom(dplyr,all_of)
-importFrom(dplyr,all_vars)
-importFrom(dplyr,any_of)
-importFrom(dplyr,arrange)
-importFrom(dplyr,distinct)
-importFrom(dplyr,filter_at)
-importFrom(dplyr,group_by)
-importFrom(dplyr,if_else)
-importFrom(dplyr,lag)
-importFrom(dplyr,mutate)
-importFrom(dplyr,rename_with)
-importFrom(dplyr,select)
-importFrom(dplyr,summarise)
-importFrom(dplyr,summarize)
-importFrom(dplyr,sym)
-importFrom(dplyr,ungroup)
-importFrom(dplyr,vars)
-importFrom(stats,coef)
-importFrom(stats,lm)
-importFrom(stats,median)
-importFrom(stats,setNames)
-importFrom(tidyr,pivot_wider)
-importFrom(tidyr,unnest)
+importFrom(dplyr,
+  across,
+  all_of,
+  all_vars,
+  any_of,
+  arrange,
+  distinct,
+  filter_at,
+  group_by,
+  if_else,
+  lag,
+  mutate,
+  rename_with,
+  select,
+  summarise,
+  summarize,
+  sym,
+  ungroup,
+  vars
+)
+importFrom(stats,
+  coef,
+  lm,
+  median,
+  setNames
+)
+importFrom(tidyr,
+  pivot_wider,
+  unnest
+)
