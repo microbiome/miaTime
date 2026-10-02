@@ -188,20 +188,20 @@ NULL
 
 #' @title Kumaraswamy2024
 #' @description
-#' The Kumaraswamy2024 includes microbiota and metabolite profiling data 
+#' The Kumaraswamy2024 includes microbiota and metabolite profiling data
 #' from 78 Indian individuals (40 males, 38 females).
-#' 
-#' The Indian subjects were grouped into four diet groups (~20 subjects per group), 
+#'
+#' The Indian subjects were grouped into four diet groups (~20 subjects per group),
 #' and fecal samples were collected across three seasonal time points.
 #'
-#' The microbiota profiling was performed using HITChip microarray analysis 
-#' (in duplicate), qPCR (in triplicate with eight-point standard curves), and 
+#' The microbiota profiling was performed using HITChip microarray analysis
+#' (in duplicate), qPCR (in triplicate with eight-point standard curves), and
 #' LC-HRMS and HPLC metabolite profiling with internal standards.
 #'
-#' Column metadata includes diet group assignment, sampling season, sex, BMI, 
+#' Column metadata includes diet group assignment, sampling season, sex, BMI,
 #' age, and questionnaire-based lifestyle metadata.
 #'
-#' Quality control metrics include Pearson correlation (>0.98) for HITChip, 
+#' Quality control metrics include Pearson correlation (>0.98) for HITChip,
 #' qPCR assay efficiency (>0.99), and technical replicates for HPLC and qPCR.
 #'
 #' Data sources:
@@ -219,12 +219,47 @@ NULL
 #' @author Jeyaram, K., Lahti, L., Tims, S. et al
 #' @return Loads the data set in R.
 #' @references
-#' Jeyaram, K., Lahti, L., Tims, S. et al. Fermented foods affect the seasonal 
+#' Jeyaram, K., Lahti, L., Tims, S. et al. Fermented foods affect the seasonal
 #' stability of gut bacteria in an Indian rural population.
 #' Nat Commun 16, 771 \url{https://doi.org/10.1038/s41467-025-56014-6}
 #' @usage data(Kumaraswamy2024)
 #' @format The data set in
 #' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
 #' format.
+#' @keywords data
+NULL
+
+#' @title HMP_2019_ibdmdb
+#' @description
+#' An example gut microbiome dataset derived from the
+#' \pkg{curatedMetagenomicData} \code{HMP_2019_ibdmdb} resource (iHMP/HMP2 IBD
+#' cohort; Lloyd-Price et al., 2019).
+#'
+#' The object is provided as a
+#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}.
+#'
+#' The dataset contains 44 stool samples (two time points per subject: baseline
+#' \code{T0} and follow-up \code{T1}) from 22 subjects with inflammatory bowel
+#' disease, with 585 microbial species.
+#'
+#' Assays include relative abundance (\code{relabundance}) and a scaled version
+#' of the same data (\code{scaled}). Taxonomic annotation is stored in
+#' \code{rowData}, and a phylogenetic tree is available via \code{rowTree}.
+#' Sample metadata (\code{colData}) includes subject identifiers, time point,
+#' IBD subtype (CD/UC), and additional technical and demographic variables.
+#'
+#' @name HMP_2019_ibdmdb
+#' @docType data
+#' @return Loads the data set in R.
+#' @source
+#' Derived from \pkg{curatedMetagenomicData} (Lloyd-Price et al., 2019).
+#' @references
+#' Lloyd-Price J, Arze C, Ananthakrishnan AN, et al. (2019).
+#' Multi-omics of the gut microbial ecosystem in inflammatory bowel diseases.
+#' \emph{Nature} 569, 655--662. \doi{10.1038/s41586-019-1237-9}
+#' @usage data(HMP_2019_ibdmdb)
+#' @format The data set in
+#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
+#' format: 585 microbial species (rows) and 44 stool samples (columns).
 #' @keywords data
 NULL
