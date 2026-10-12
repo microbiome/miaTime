@@ -44,7 +44,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Estimate stability</h1>
-    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/devel/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/miaTime/blob/devel/R/getStability.R" class="external-link"><code>R/getStability.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/fix-growth-stability-docs/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/miaTime/blob/fix-growth-stability-docs/R/getStability.R" class="external-link"><code>R/getStability.R</code></a></small>
     <div class="hidden name"><code>getStability.Rd</code></div>
     </div>
 
@@ -141,11 +141,11 @@ If reference points are not defined, they are calculated by taking median</p>
 <p>Then difference between consecutive time points, \(\Delta_{f, x}\),</p>
 <p>$$\Delta_{f, x} = \vert x_{f, t} - x_{f, t-1} \vert$$</p>
 <p>and difference between the previous time point and reference,
-\(\Delta_{f. R}\), are calculated:</p>
-<p>$$\Delta_{f. R} = \vert x_{f, t-1} - R_{f} \vert$$</p>
+\(\Delta_{f, R}\), are calculated:</p>
+<p>$$\Delta_{f, R} = \vert x_{f, t-1} - R_{f} \vert$$</p>
 <p>where \(t\) denotes time point.</p>
 <p>Optionally, time difference \(\Delta_{f, t}\) is calculated</p>
-<p>$$\Delta_{f, t} = t_{f, t-1} - t_{f, t-1}$$</p>
+<p>$$\Delta_{f, t} = t_{f, t} - t_{f, t-1}$$</p>
 <p>The stability coefficient \(s_{f}\) is calculated with correlation</p>
 <p>$$s_{f} = corr(\Delta_{f, x}, \Delta_{f, R})$$</p>
 <p>or with linear model as follows</p>
