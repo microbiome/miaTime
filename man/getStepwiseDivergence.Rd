@@ -16,6 +16,7 @@ addStepwiseDivergence(x, ...)
   time.col,
   assay.type = "counts",
   time.interval = 1L,
+  time.lag = NULL,
   group = NULL,
   method = "bray",
   ...
@@ -45,6 +46,13 @@ used in the dissimilarity estimation. (Default: \code{"counts"})}
 time steps. By default, the function compares each sample to the
 previous one. If you need to take every second, every third, or so, time
 step, then increase this accordingly. (Default: \code{1L})}
+
+\item{time.lag}{\code{NULL} or \code{Numeric scalar}. If specified, each
+sample is compared to the most recent sample that is at least
+\code{time.lag} time units earlier, instead of counting time steps with
+\code{time.interval}. Useful when samples are not evenly spaced in time.
+Samples without such an earlier sample get \code{NA}.
+(Default: \code{NULL})}
 
 \item{group}{\code{Character scalar}. Specifies a name of the column from
 \code{colData} that identifies the grouping of the samples.
@@ -88,6 +96,15 @@ tse <- addStepwiseDivergence(
     tse,
     group = "subject",
     time.interval = 1,
+    time.col = "time",
+    assay.type = "relabundance"
+    )
+
+# Compare each sample to the latest sample at least 1 time unit earlier
+res <- getStepwiseDivergence(
+    tse,
+    group = "subject",
+    time.lag = 1,
     time.col = "time",
     assay.type = "relabundance"
     )

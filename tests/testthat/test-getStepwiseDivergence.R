@@ -323,3 +323,39 @@ test_that("getStepwiseDivergence with replicated samples", {
     rownames(ref) <- rownames(res)
     expect_equal(res, ref)
 })
+
+test_that("getStepwiseDivergence with time.lag uses elapsed time", {
+    mat <- matrix(
+        c(1, 2, 3, 4, 5, 6, 7, 8, 2, 4, 6, 8, 1, 3, 5, 7), nrow = 4L,
+        dimnames = list(paste0("f", 1:4), paste0("s", 1:4)))
+    tse <- SummarizedExperiment(
+        assays = list(counts = mat),
+        colData = DataFrame(time = c(0, 1, 1.5, 4), subject = "a"))
+
+    res <- getStepwiseDivergence(
+        tse, time.col = "time", group = "subject", time.lag = 1)
+
+    expect_equal(res$ref_samples, c(NA, "s1", "s1", "s3"))
+    expect_equal(res$time_diff, c(NA, 1, 1.5, 2.5))
+})
+
+test_that("getStepwiseDivergence time.lag respects the minimum lag", {
+    data(hitchip1006)
+    res <- getStepwiseDivergence(
+        hitchip1006, time.col = "time", group = "subject", time.lag = 1)
+
+    expect_true(all(res$time_diff >= 1, na.rm = TRUE))
+    expect_true(any(!is.na(res$time_diff)))
+})
+
+test_that("getStepwiseDivergence rejects invalid time.lag", {
+    data(hitchip1006)
+    expect_error(
+        getStepwiseDivergence(
+            hitchip1006, time.col = "time", group = "subject", time.lag = 0),
+        "positive")
+    expect_error(
+        getStepwiseDivergence(
+            hitchip1006, time.col = "time", group = "subject",
+            time.lag = "a"))
+})
