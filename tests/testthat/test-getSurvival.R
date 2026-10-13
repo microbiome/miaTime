@@ -228,7 +228,9 @@ test_that("getSurvival handles coefficient filtering", {
     tse <- crohn_survival
     tse <- transformAssay(tse, method = "relabundance")
     
-    # Test with different coefficient thresholds
+    # Test with different coefficient thresholds. Use the same seed so that
+    # cross-validation folds are the same.
+    set.seed(1)
     fit_no_filter <- getSurvival(
         tse, 
         assay.type = "relabundance",
@@ -237,6 +239,7 @@ test_that("getSurvival handles coefficient filtering", {
         coef.threshold = 0  # No filtering
     )
     
+    set.seed(1)
     fit_filtered <- getSurvival(
         tse, 
         assay.type = "relabundance",
@@ -245,12 +248,12 @@ test_that("getSurvival handles coefficient filtering", {
         coef.threshold = 0.1  # Filter small coefficients
     )
     
-    # Filtered result should have fewer or equal coefficients
-    expect_true(length(fit_filtered$coef) <= length(fit_no_filter$coef))
+    # Filtering keeps a subset of the coefficients
+    expect_true(all(names(fit_filtered$coef) %in% names(fit_no_filter$coef)))
     
-    # All remaining coefficients should exceed the threshold
+    # Remaining coefficients are rescaled so that absolute values sum to 2
     if(length(fit_filtered$coef) > 0) {
-        expect_true(all(abs(fit_filtered$coef) > 0.1))
+        expect_equal(sum(abs(fit_filtered$coef)), 2)
     }
     
     # Test with high threshold that might filter out all coefficients
@@ -343,7 +346,6 @@ test_that("getSurvival results are reproducible", {
     expect_identical(fit1$risk_scores, fit2$risk_scores)
     expect_equal(fit1$c_index, fit2$c_index)
 })
-
 # Check that the response is not used as a predictor
 test_that("getSurvival does not use time or event as predictors", {
     data(crohn_survival)
