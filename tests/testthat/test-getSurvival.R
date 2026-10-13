@@ -365,3 +365,32 @@ test_that("getSurvival does not use time or event as predictors", {
         gsub("`", "", names(coef(fit$fit))), c(rownames(tse), "age"))
     expect_setequal(names(fit$coef), c(rownames(tse), "age"))
 })
+
+# Check that addSurvival stores results in rowData, colData and metadata
+test_that("addSurvival adds coefficients, risk scores and results", {
+    data(crohn_survival)
+    tse <- crohn_survival
+    tse <- transformAssay(tse, method = "relabundance")
+
+    set.seed(1)
+    res <- getSurvival(
+        tse,
+        assay.type = "relabundance",
+        time.col = "event_time",
+        event.col = "event"
+    )
+    set.seed(1)
+    tse <- addSurvival(
+        tse,
+        assay.type = "relabundance",
+        time.col = "event_time",
+        event.col = "event"
+    )
+
+    coefs <- rowData(tse)[["survival_coef"]]
+    names(coefs) <- rownames(tse)
+    expect_equal(coefs[names(res$coef)], res$coef)
+    expect_true(all(is.na(coefs[!names(coefs) %in% names(res$coef)])))
+    expect_equal(tse[["survival_risk_score"]], res$risk_scores)
+    expect_equal(metadata(tse)[["survival"]]$c_index, res$c_index)
+})

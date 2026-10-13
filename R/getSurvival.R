@@ -12,6 +12,35 @@
 #' log-ratios) should be handled upstream
 #' (e.g. with \code{mia::transformAssay()}).
 #'
+#' @details
+#' \code{getSurvival()} fits a Cox proportional hazards model with the
+#' features of \code{assay.type} as predictors. By default
+#' (\code{penalized = TRUE}), an elastic net penalized model is fitted with
+#' \code{glmnet::cv.glmnet()}, and the penalty is selected by
+#' cross-validation using the concordance index. With
+#' \code{penalized = FALSE}, a standard model is fitted with
+#' \code{survival::coxph()}.
+#'
+#' If \code{col.var} is specified, the penalized model first fits the
+#' covariates with \code{coxph()} and uses their linear predictor as an
+#' offset, so that the features are evaluated on top of the covariates. In the
+#' standard model, the covariates are included as predictors.
+#'
+#' The features are used as they are. Transformations, such as pairwise
+#' log-ratios, should be applied beforehand.
+#'
+#' Coefficients with absolute value not above \code{coef.threshold} are
+#' removed, and the remaining coefficients are rescaled so that their absolute
+#' values sum to 2, as in log-contrast models (Pujolassos et al. 2024). The
+#' rescaled coefficients show the direction and relative weight of each
+#' feature, but they are not log hazard ratios. The unscaled coefficients are
+#' available from \code{fit}. Risk scores and C-index are calculated from the
+#' fitted model and are not affected by the rescaling.
+#'
+#' \code{addSurvival()} adds the coefficients to \code{rowData} (\code{NA}
+#' for features not in the model), the risk scores to \code{colData}, and the
+#' full results to \code{metadata}.
+#'
 #' @param time.col \code{Character scalar}. Column name in \code{colData(x)}
 #' representing time to event or follow-up time. Must be numeric.
 #'
@@ -50,9 +79,14 @@
 #'   for a coefficient to be included in the final model. (Default: \code{0})
 #' }
 #'
+#' @param name \code{Character vector} of length 3. Names for the
+#' coefficients in \code{rowData}, the risk scores in \code{colData} and the
+#' full results in \code{metadata}.
+#' (Default: \code{c("survival_coef", "survival_risk_score", "survival")})
+#'
 #' @inheritParams addBaselineDivergence
 #'
-#' @return A list with model summaries:
+#' @return \code{getSurvival()} returns a list with model summaries:
 #' \itemize{
 #'   \item \code{coef}: estimated model coefficients
 #'   \item \code{risk_scores}: predicted risk scores
@@ -61,6 +95,7 @@
 #'   \item \code{c_index_cv_sd}: SD of cross-validated C-index (if penalized)
 #'   \item \code{fit}: fitted model object (coxph or cv.glmnet)
 #' }
+#' \code{addSurvival()} returns \code{x} with the results added.
 #'
 #' @seealso \code{\link[coda4microbiome]{coda_coxnet}},
 #' \code{\link[glmnet]{cv.glmnet}}
@@ -85,17 +120,24 @@ NULL
 #' @rdname getSurvival
 #' @export
 setMethod("addSurvival", signature = c(x = "SummarizedExperiment"),
-    function(x, time.col, event.col, name = "survival", ...){
-        .check_input(name, "character scalar")
+    function(
+        x, time.col, event.col,
+        name = c("survival_coef", "survival_risk_score", "survival"), ...){
+        .check_input(name, "character vector", length = 3L)
         x <- .check_and_get_altExp(x, ...)
         # Run analysis
         args <- c(
-            list(x = x, time.col = time.col, event.col = event.col,
-                name = name),
+            list(x = x, time.col = time.col, event.col = event.col),
             list(...)[!names(list(...)) %in% c("altexp")])
         res <- do.call(getSurvival, args)
-        # Add results to metadata
-        x <- .add_values_to_metadata(x, name, res, ...)
+        # Add feature coefficients to rowData. Features that are not in the
+        # model get NA.
+        coefs <- unname(res[["coef"]][rownames(x)])
+        x <- .add_values_to_colData(x, list(coefs), name[[1L]], MARGIN = 1L)
+        # Add risk scores to colData
+        x <- .add_values_to_colData(x, list(res[["risk_scores"]]), name[[2L]])
+        # Add all results to metadata
+        x <- .add_values_to_metadata(x, name[[3L]], res, ...)
         return(x)
     }
 )

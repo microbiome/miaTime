@@ -11,7 +11,13 @@ getSurvival(x, ...)
 
 addSurvival(x, ...)
 
-\S4method{addSurvival}{SummarizedExperiment}(x, time.col, event.col, name = "survival", ...)
+\S4method{addSurvival}{SummarizedExperiment}(
+  x,
+  time.col,
+  event.col,
+  name = c("survival_coef", "survival_risk_score", "survival"),
+  ...
+)
 
 \S4method{getSurvival}{SummarizedExperiment}(x, time.col, event.col, assay.type = "counts", col.var = NULL, ...)
 }
@@ -54,9 +60,10 @@ representing time to event or follow-up time. Must be numeric.}
 representing event occurrence. Accepts numeric (\code{0}/\code{1}) or
 logical (\code{TRUE}/\code{FALSE}) values.}
 
-\item{name}{\code{Character vector}. Specifies a column name for storing
-divergence results.
-(Default: \code{c("divergence", "time_diff", "ref_samples")})}
+\item{name}{\code{Character vector} of length 3. Names for the
+coefficients in \code{rowData}, the risk scores in \code{colData} and the
+full results in \code{metadata}.
+(Default: \code{c("survival_coef", "survival_risk_score", "survival")})}
 
 \item{assay.type}{\code{Character scalar}. Specifies which assay values are
 used in the dissimilarity estimation. (Default: \code{"counts"})}
@@ -66,7 +73,7 @@ columns in \code{colData(x)} to adjust for in the survival model.
 (Default: \code{NULL})}
 }
 \value{
-A list with model summaries:
+\code{getSurvival()} returns a list with model summaries:
 \itemize{
 \item \code{coef}: estimated model coefficients
 \item \code{risk_scores}: predicted risk scores
@@ -75,12 +82,42 @@ A list with model summaries:
 \item \code{c_index_cv_sd}: SD of cross-validated C-index (if penalized)
 \item \code{fit}: fitted model object (coxph or cv.glmnet)
 }
+\code{addSurvival()} returns \code{x} with the results added.
 }
 \description{
 Fit a (penalized) Cox proportional hazards model on microbiome data contained
 in a SummarizedExperiment object. Data transformations (e.g. pairwise
 log-ratios) should be handled upstream
 (e.g. with \code{mia::transformAssay()}).
+}
+\details{
+\code{getSurvival()} fits a Cox proportional hazards model with the
+features of \code{assay.type} as predictors. By default
+(\code{penalized = TRUE}), an elastic net penalized model is fitted with
+\code{glmnet::cv.glmnet()}, and the penalty is selected by
+cross-validation using the concordance index. With
+\code{penalized = FALSE}, a standard model is fitted with
+\code{survival::coxph()}.
+
+If \code{col.var} is specified, the penalized model first fits the
+covariates with \code{coxph()} and uses their linear predictor as an
+offset, so that the features are evaluated on top of the covariates. In the
+standard model, the covariates are included as predictors.
+
+The features are used as they are. Transformations, such as pairwise
+log-ratios, should be applied beforehand.
+
+Coefficients with absolute value not above \code{coef.threshold} are
+removed, and the remaining coefficients are rescaled so that their absolute
+values sum to 2, as in log-contrast models (Pujolassos et al. 2024). The
+rescaled coefficients show the direction and relative weight of each
+feature, but they are not log hazard ratios. The unscaled coefficients are
+available from \code{fit}. Risk scores and C-index are calculated from the
+fitted model and are not affected by the rescaling.
+
+\code{addSurvival()} adds the coefficients to \code{rowData} (\code{NA}
+for features not in the model), the risk scores to \code{colData}, and the
+full results to \code{metadata}.
 }
 \examples{
 data(crohn_survival)
