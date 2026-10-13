@@ -102,47 +102,148 @@ antibiotics or diet changes) and how long it takes to return (if at all) to
 its original state.
 
 Divergences can be calculated with `*Divergence()` functions. In the example
-below, for each subject, we calculate the divergence of their samples by
-comparing them to the first time point.
+below, we use a subset of the HMP2 inflammatory bowel disease cohort, where
+each subject was sampled before and after treatment. For each subject, we
+compare the follow-up sample to the first sample.
 
 ```{r}
 #| label: base_divergence
 
-data(hitchip1006)
-tse <- hitchip1006
+data(HMP_2019_ibdmdb)
+tse <- HMP_2019_ibdmdb
 
-res <- getBaselineDivergence(
-    tse, time.col = "time", group = "sample", 
-    name = c("baseline", "time_diff", "ref_samples"))
-res |> head()
+tse <- addBaselineDivergence(
+    tse,
+    time.col = "days_from_first_collection",
+    group = "subject_id",
+    assay.type = "relabundance",
+    method = "bray")
 ```
 
-A more convenient and preferred approach is to store the values directly in
-`colData` using the `add*Divergence()` functions. In the example below, we
-calculate stepwise divergences with a lag of 1, meaning that for each sample,
-the divergence is calculated by comparing it to the previous time point for
-the same subject.
+The results are stored in `colData`. Divergence is zero for the baseline
+samples, so we compare the follow-up samples between IBD subtypes.
+
+```{r}
+#| label: base_divergence_plot
+
+library(ggplot2)
+
+df <- as.data.frame(colData(tse))
+df <- df[df[["time_diff"]] > 0, ]
+
+ggplot(df, aes(x = disease_subtype, y = divergence)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_jitter(width = 0.1) +
+    labs(x = "IBD subtype", y = "Bray-Curtis divergence from baseline")
+```
+
+Stepwise divergence compares each sample to the previous sample of the same
+subject. In `hitchip1006`, some subjects have up to five samples.
 
 ```{r}
 #| label: time_divergence
 
-tse <- addStepwiseDivergence(tse, time.col = "time")
-colData(tse)
+data(hitchip1006)
+tse <- hitchip1006
+tse <- transformAssay(tse, method = "relabundance")
+
+res <- getStepwiseDivergence(
+    tse,
+    time.col = "time",
+    group = "subject",
+    assay.type = "relabundance",
+    method = "bray")
+res[!is.na(res[["divergence"]]), ] |> head()
+```
+
+The `time_diff` column shows how much time separates each sample from the one
+it is compared to. The intervals vary between subjects, which is worth keeping
+in mind when comparing divergences.
+
+## Short term change
+
+Short term change measures how the abundance of each feature changes between
+consecutive time points. `getShortTermChange()` returns the absolute change,
+growth rate and rate of change for each feature (Ji et al. 2020). Below, we
+use `minimalgut`, a time series of a synthetic gut community in bioreactors.
+
+```{r}
+#| label: short_term_change
+
+data(minimalgut)
+tse <- minimalgut
+tse <- transformAssay(tse, method = "relabundance")
+
+df <- getShortTermChange(
+    tse,
+    assay.type = "relabundance",
+    time.col = "Time.hr",
+    group = "StudyIdentifier")
+df |> head()
+```
+
+## Stability
+
+Intermediate stability (Lahti et al. 2014) relates the change of a feature
+between consecutive time points to how far it was from a reference point,
+by default its median abundance. See `?getStability` for the formulas.
+
+```{r}
+#| label: stability
+
+tse <- transformAssay(tse, method = "rclr")
+tse <- addStability(
+    tse,
+    assay.type = "rclr",
+    time.col = "Time.hr",
+    group = "StudyIdentifier")
+rowData(tse)[, grepl("stability", colnames(rowData(tse))), drop = FALSE] |>
+    head()
+```
+
+## Bimodality
+
+The coefficient of bimodality tells whether the abundance of a feature has
+two modes, for instance high in some time points and rare in others. Together
+with abundance, it can be used to find conditionally rare taxa (Shade et al.
+2014). Below, we use one vessel of an artificial gut time series.
+
+```{r}
+#| label: bimodality
+
+data(SilvermanAGutData)
+tse <- SilvermanAGutData
+tse <- tse[, tse[["Vessel"]] == 1]
+# Remove samples without any counts, as their relative abundances are undefined
+tse <- tse[, colSums(assay(tse, "counts")) > 0]
+tse <- transformAssay(tse, method = "relabundance")
+
+tse <- addBimodality(tse, assay.type = "relabundance")
+bimodal <- rownames(tse)[which(rowData(tse)[["bimodality"]] > 0.95)]
+abundant <- getAbundant(
+    tse, assay.type = "relabundance", abundant.th = 0.5/100)
+intersect(bimodal, abundant)
 ```
 
 ## Visualize time series
 
 We can visualize time series data with `r BiocStyle::Biocpkg("miaViz")`. Below,
-we visualize 5 most abundant taxa.
+we visualize the five most abundant taxa in one bioreactor of `minimalgut`.
 
 ```{r}
 #| label: plot_series
 
 library(miaViz)
 
-p <- plotSeries(tse, assay.type = "counts", 
-    time.col = "time", 
-    features = getTop(tse, 5), 
+tse <- minimalgut
+tse <- tse[, tse[["StudyIdentifier"]] == "Bioreactor A"]
+tse <- transformAssay(tse, method = "relabundance")
+
+p <- plotSeries(
+    tse,
+    assay.type = "relabundance",
+    time.col = "Time.hr",
+    features = getTop(tse, 5),
     colour.by = "rownames")
 p
 ```
