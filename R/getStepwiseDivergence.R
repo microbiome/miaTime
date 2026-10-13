@@ -33,11 +33,10 @@
 #' step, then increase this accordingly. (Default: \code{1L})
 #'
 #' @param time.lag \code{NULL} or \code{Numeric scalar}. If specified, each
-#' sample is compared to the most recent sample that is at least
-#' \code{time.lag} time units earlier, instead of counting time steps with
+#' sample is compared to the earlier sample whose time is closest to
+#' \code{time.lag} time units before it, instead of counting time steps with
 #' \code{time.interval}. Useful when samples are not evenly spaced in time.
-#' Samples without such an earlier sample get \code{NA}.
-#' (Default: \code{NULL})
+#' The first sample of each group gets \code{NA}. (Default: \code{NULL})
 #
 #' @examples
 #' library(miaTime)
@@ -54,7 +53,7 @@
 #'     assay.type = "relabundance"
 #'     )
 #'
-#' # Compare each sample to the latest sample at least 1 time unit earlier
+#' # Compare each sample to the sample closest to 1 time unit earlier
 #' res <- getStepwiseDivergence(
 #'     tse,
 #'     group = "subject",

@@ -368,17 +368,18 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
 }
 
 # This function gets df as input. The data must be already grouped if grouping
-# exists. For each sample, this function finds the most recent timepoint that
-# is at least 'time.lag' earlier. If there are multiple samples from that
-# timepoint, all are returned.
+# exists. For each sample, this function finds the earlier timepoint that is
+# closest to 'time.lag' before it. If two timepoints are equally close, the
+# earlier one is used. If there are multiple samples from that timepoint, all
+# are returned.
 .get_samples_by_time_lag <- function(.data, time.col, rowname_col, time.lag){
     time_points <- unique(sort(.data[[time.col]]))
-    # Small tolerance so that floating point differences do not exclude a
-    # timepoint that is exactly 'time.lag' earlier
-    tol <- sqrt(.Machine$double.eps)
     prev_time <- vapply(.data[[time.col]], function(t){
-        earlier <- time_points[ time_points <= t - time.lag + tol ]
-        if( length(earlier) == 0L ) NA_real_ else max(earlier)
+        earlier <- time_points[ time_points < t ]
+        if( length(earlier) == 0L ){
+            return(NA_real_)
+        }
+        earlier[ which.min(abs(earlier - (t - time.lag))) ]
     }, numeric(1L))
     # Split sample names so that they are grouped into timepoints
     timepoint_samples <- split(.data[[rowname_col]], .data[[time.col]])
