@@ -45,7 +45,7 @@ time difference."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Beta diversity between consecutive time steps</h1>
-    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/sampling-summary/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/miaTime/blob/sampling-summary/R/getStepwiseDivergence.R" class="external-link"><code>R/getStepwiseDivergence.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/stepwise-time-lag/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/miaTime/blob/stepwise-time-lag/R/getStepwiseDivergence.R" class="external-link"><code>R/getStepwiseDivergence.R</code></a></small>
     <div class="hidden name"><code>getStepwiseDivergence.Rd</code></div>
     </div>
 
@@ -65,6 +65,7 @@ time difference.</p>
 <span>  <span class="va">time.col</span>,</span>
 <span>  assay.type <span class="op">=</span> <span class="st">"counts"</span>,</span>
 <span>  time.interval <span class="op">=</span> <span class="fl">1L</span>,</span>
+<span>  time.lag <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"bray"</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -108,6 +109,15 @@ used in the dissimilarity estimation. (Default: <code>"counts"</code>)</p></dd>
 time steps. By default, the function compares each sample to the
 previous one. If you need to take every second, every third, or so, time
 step, then increase this accordingly. (Default: <code>1L</code>)</p></dd>
+
+
+<dt id="arg-time-lag">time.lag<a class="anchor" aria-label="anchor" href="#arg-time-lag"></a></dt>
+<dd><p><code>NULL</code> or <code>Numeric scalar</code>. If specified, each
+sample is compared to the most recent sample that is at least
+<code>time.lag</code> time units earlier, instead of counting time steps with
+<code>time.interval</code>. Useful when samples are not evenly spaced in time.
+Samples without such an earlier sample get <code>NA</code>.
+(Default: <code>NULL</code>)</p></dd>
 
 
 <dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
@@ -162,6 +172,15 @@ more meaningful to calculate divergence within a specific patient or group
 <span class="r-in"><span>    <span class="va">tse</span>,</span></span>
 <span class="r-in"><span>    group <span class="op">=</span> <span class="st">"subject"</span>,</span></span>
 <span class="r-in"><span>    time.interval <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>    time.col <span class="op">=</span> <span class="st">"time"</span>,</span></span>
+<span class="r-in"><span>    assay.type <span class="op">=</span> <span class="st">"relabundance"</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Compare each sample to the latest sample at least 1 time unit earlier</span></span></span>
+<span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">getStepwiseDivergence</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">tse</span>,</span></span>
+<span class="r-in"><span>    group <span class="op">=</span> <span class="st">"subject"</span>,</span></span>
+<span class="r-in"><span>    time.lag <span class="op">=</span> <span class="fl">1</span>,</span></span>
 <span class="r-in"><span>    time.col <span class="op">=</span> <span class="st">"time"</span>,</span></span>
 <span class="r-in"><span>    assay.type <span class="op">=</span> <span class="st">"relabundance"</span></span></span>
 <span class="r-in"><span>    <span class="op">)</span></span></span>
