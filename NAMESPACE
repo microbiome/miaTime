@@ -59,6 +59,7 @@ importFrom(stats,
   coef,
   lm,
   median,
+  predict,
   setNames
 )
 importFrom(survival,

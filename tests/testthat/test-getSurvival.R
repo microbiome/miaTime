@@ -343,3 +343,25 @@ test_that("getSurvival results are reproducible", {
     expect_identical(fit1$risk_scores, fit2$risk_scores)
     expect_equal(fit1$c_index, fit2$c_index)
 })
+
+# Check that the response is not used as a predictor
+test_that("getSurvival does not use time or event as predictors", {
+    data(crohn_survival)
+    tse <- crohn_survival
+    tse <- transformAssay(tse, method = "relabundance")
+    tse <- tse[order(-rowMeans(assay(tse, "relabundance")))[1:5], ]
+    colData(tse)[["age"]] <- seq_len(ncol(tse))
+
+    fit <- getSurvival(
+        tse,
+        assay.type = "relabundance",
+        time.col = "event_time",
+        event.col = "event",
+        col.var = "age",
+        penalized = FALSE
+    )
+
+    expect_setequal(
+        gsub("`", "", names(coef(fit$fit))), c(rownames(tse), "age"))
+    expect_setequal(names(fit$coef), c(rownames(tse), "age"))
+})

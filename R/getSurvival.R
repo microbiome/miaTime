@@ -197,6 +197,7 @@ setMethod("getSurvival", signature(x = "SummarizedExperiment"),
 # can be included via an offset.
 #' @importFrom survival Surv coxph
 #' @importFrom glmnet cv.glmnet glmnet
+#' @importFrom stats predict
 .fit_penalized_cox <- function(
         mat, time, status, col.var, alpha = 0.9, nfolds = 10,
         lambda = "lambda.1se", ...){
@@ -210,7 +211,7 @@ setMethod("getSurvival", signature(x = "SummarizedExperiment"),
     offset <- NULL
     if( !is.null(col.var) ){
         # Fit standard Cox on covariates only
-        df_covar <- data.frame(time = time, status = status, col.var)
+        df_covar <- data.frame(col.var, check.names = FALSE)
         model_covar <- coxph(y ~ ., data = df_covar)
         # Compute the linear predictor (log-hazard ratio) from the
         # covariate-only Cox model.
@@ -265,19 +266,22 @@ setMethod("getSurvival", signature(x = "SummarizedExperiment"),
 .fit_standard_cox <- function(mat, time, status, col.var, ...){
     # Create survival response object as it is required input format for coxph
     y <- Surv(time, status)
-    # Combine survival times, status, features, and optional covariates into one
-    # data frame
+    # Combine features and optional covariates into one data frame. The
+    # response is not included, as all columns are used as predictors. Keep
+    # the original feature names.
     if( is.null(col.var) ){
-        df <- data.frame(time = time, status = status, mat)
+        df <- data.frame(mat, check.names = FALSE)
     } else {
-        df <- data.frame(time = time, status = status, mat, col.var)
+        df <- data.frame(mat, col.var, check.names = FALSE)
     }
-    
+
     # Fit standard Cox proportional hazards model
     fit <- coxph(y ~ ., data = df)
 
-    # Extract raw coefficients
+    # Extract raw coefficients. Non-syntactic names are backquoted in the
+    # model terms.
     coefs <- coef(fit)
+    names(coefs) <- gsub("^`|`$", "", names(coefs))
     # Filter and normalize coefficients
     coefs <- .filter_and_normalize_coefs(coefs, ...)
     #  Compute risk scores for all samples
