@@ -323,3 +323,45 @@ test_that("getStepwiseDivergence with replicated samples", {
     rownames(ref) <- rownames(res)
     expect_equal(res, ref)
 })
+
+test_that("getStepwiseDivergence with time.lag uses elapsed time", {
+    mat <- matrix(
+        c(1, 2, 3, 4, 5, 6, 7, 8, 2, 4, 6, 8, 1, 3, 5, 7), nrow = 4L,
+        dimnames = list(paste0("f", 1:4), paste0("s", 1:4)))
+    tse <- SummarizedExperiment(
+        assays = list(counts = mat),
+        colData = DataFrame(time = c(0, 1, 1.8, 4), subject = "a"))
+
+    res <- getStepwiseDivergence(
+        tse, time.col = "time", group = "subject", time.lag = 1)
+
+    expect_equal(res$ref_samples, c(NA, "s1", "s2", "s3"))
+    expect_equal(res$time_diff, c(NA, 1, 0.8, 2.2))
+})
+
+test_that("getStepwiseDivergence time.lag picks the closest earlier sample", {
+    data(hitchip1006)
+    lag <- getStepwiseDivergence(
+        hitchip1006, time.col = "time", group = "subject", time.lag = 1)
+    pos <- getStepwiseDivergence(
+        hitchip1006, time.col = "time", group = "subject")
+
+    # The previous sample is one of the candidates, so the chosen reference
+    # is never further from the requested lag
+    keep <- !is.na(lag$time_diff) & !is.na(pos$time_diff)
+    expect_true(any(keep))
+    expect_true(all(
+        abs(lag$time_diff[keep] - 1) <= abs(pos$time_diff[keep] - 1) + 1e-8))
+})
+
+test_that("getStepwiseDivergence rejects invalid time.lag", {
+    data(hitchip1006)
+    expect_error(
+        getStepwiseDivergence(
+            hitchip1006, time.col = "time", group = "subject", time.lag = 0),
+        "positive")
+    expect_error(
+        getStepwiseDivergence(
+            hitchip1006, time.col = "time", group = "subject",
+            time.lag = "a"))
+})
