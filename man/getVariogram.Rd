@@ -19,9 +19,9 @@ addVariogram(x, ...)
   group,
   assay.type = "counts",
   method = "bray",
-  lags = NULL,
+  time.lag = NULL,
   split.by = NULL,
-  at.time = NULL,
+  time.point = NULL,
   window = 2,
   squared = FALSE,
   conf.level = 0.95,
@@ -53,7 +53,7 @@ used in the dissimilarity estimation. (Default: \code{"counts"})}
 Method is passed to the function that is specified by \code{dis.fun}.
 (Default: \code{"bray"})}
 
-\item{lags}{\code{NULL} or \code{numeric vector}. The lags \eqn{L}, in
+\item{time.lag}{\code{NULL} or \code{numeric vector}. The lags \eqn{L}, in
 the units of \code{time.col}, at which \eqn{D(L)} is estimated. If
 \code{NULL}, ten lags between the shortest and longest supported lag.
 (Default: \code{NULL})}
@@ -63,7 +63,7 @@ of a column from \code{colData} with one value per subject. \eqn{D(L)} is
 estimated for each of its levels, and each level is compared with the
 first. (Default: \code{NULL})}
 
-\item{at.time}{\code{NULL}, \code{numeric vector} or \code{"median"}. The
+\item{time.point}{\code{NULL}, \code{numeric vector} or \code{"median"}. The
 time at which \eqn{D(L)} is estimated, for communities whose change
 depends on time since a common origin; one value, or one per lag. See
 details. (Default: \code{NULL})}
@@ -94,8 +94,8 @@ with the confidence interval.}
 is 1.}
 \item{n.subjects, n.pairs}{Subjects and pairs in the lag window.}
 \item{supported}{Whether the design supports \eqn{D(L)} at this lag.}
-\item{at.time}{The time at which \eqn{D(L)} was estimated, when
-\code{at.time} is given.}
+\item{time.point}{The time at which \eqn{D(L)} was estimated, when
+\code{time.point} is given.}
 }
 \code{addVariogram} returns \code{x} with this table in its
 \code{metadata}.
@@ -132,7 +132,7 @@ up to \eqn{L} and three at lags from \eqn{L}, so that \eqn{D(L)} is
 interpolated, not extrapolated. Elsewhere the estimate is \code{NA} and
 \code{supported} is \code{FALSE}.
 
-When \code{lags = NULL}, ten lags are spread evenly on the log scale
+When \code{time.lag = NULL}, ten lags are spread evenly on the log scale
 between the shortest and longest supported lag of the whole data: the
 smallest and largest lag reached by at least \eqn{\max(5, 20\%)} of the
 subjects.
@@ -147,12 +147,12 @@ comparisons.
 \strong{Developing communities.} When change at a given lag depends on
 the time since a common origin (age in infant cohorts, time since an
 intervention), groups whose samples were taken at different ages differ
-in \eqn{D(L)} even with the same development. \code{at.time} estimates
+in \eqn{D(L)} even with the same development. \code{time.point} estimates
 \eqn{D(L)} at a stated time \eqn{a}: only pairs whose midpoint \eqn{m}
 satisfies \eqn{(1 + m) / (1 + a)} in \eqn{[1/2, 2]} are used, the
 regression adds \eqn{z = \log(1 + m) - \log(1 + a)} and \eqn{z^2}, and
 at least three subjects must have midpoints up to \eqn{a} and three from
-\eqn{a}. With \code{at.time = "median"}, \eqn{a} is the median midpoint of
+\eqn{a}. With \code{time.point = "median"}, \eqn{a} is the median midpoint of
 all pairs in the lag window, pooled over the levels of \code{split.by}, so
 that every group is evaluated at the same time. Time must then be
 measured from the common origin and be non-negative.
@@ -181,7 +181,7 @@ res <- getVariogram(
     assay.type = "hellinger",
     method = "euclidean",
     squared = TRUE,
-    lags = c(1, 3, 6, 9)
+    time.lag = c(1, 3, 6, 9)
     )
 res
 
@@ -193,7 +193,7 @@ res <- getVariogram(
     assay.type = "hellinger",
     method = "euclidean",
     squared = TRUE,
-    lags = c(1, 3),
+    time.lag = c(1, 3),
     split.by = "sex"
     )
 res[res$type == "ratio", ]

@@ -8,18 +8,18 @@ test_that("getVariogram input checks", {
     expect_error(getVariogram(tse, time.col = "time",
         group = "subject", assay.type = "x"))
     expect_error(getVariogram(tse, time.col = "time",
-        group = "subject", lags = -1))
+        group = "subject", time.lag = -1))
     expect_error(getVariogram(tse, time.col = "time",
-        group = "subject", lags = 1, window = 1))
+        group = "subject", time.lag = 1, window = 1))
     expect_error(getVariogram(tse, time.col = "time",
-        group = "subject", lags = 1, at.time = "mean"))
+        group = "subject", time.lag = 1, time.point = "mean"))
     expect_error(getVariogram(tse, time.col = "time",
-        group = "subject", lags = c(1, 2), at.time = c(1, 2, 3)))
+        group = "subject", time.lag = c(1, 2), time.point = c(1, 2, 3)))
     expect_error(getVariogram(tse, time.col = "time",
-        group = "subject", lags = 1, conf.level = 1))
+        group = "subject", time.lag = 1, conf.level = 1))
     # split.by must be constant within subjects
     expect_error(getVariogram(tse, time.col = "time",
-        group = "subject", lags = 1, split.by = "time"))
+        group = "subject", time.lag = 1, split.by = "time"))
 })
 
 # Pairs of n subjects with lags spread around 10 and d an exact quadratic in
@@ -63,7 +63,7 @@ test_that("getVariogram output", {
     tse <- transformAssay(hitchip1006, method = "hellinger")
     res <- getVariogram(tse, time.col = "time", group = "subject",
         assay.type = "hellinger", method = "euclidean", squared = TRUE,
-        lags = c(1, 3, 6))
+        time.lag = c(1, 3, 6))
     expect_s4_class(res, "DataFrame")
     expect_equal(res$lag, c(1, 3, 6))
     expect_true(all(res$type == "dissimilarity"))
@@ -74,12 +74,12 @@ test_that("getVariogram output", {
     expect_true(all(is.na(res$estimate[!ok])))
     # Squaring changes the dissimilarity
     res2 <- getVariogram(tse, time.col = "time", group = "subject",
-        assay.type = "hellinger", method = "euclidean", lags = c(1, 3, 6))
+        assay.type = "hellinger", method = "euclidean", time.lag = c(1, 3, 6))
     expect_false(isTRUE(all.equal(res$estimate[ok], res2$estimate[ok])))
     # Wider intervals at a higher confidence level
     res3 <- getVariogram(tse, time.col = "time", group = "subject",
         assay.type = "hellinger", method = "euclidean", squared = TRUE,
-        lags = c(1, 3, 6), conf.level = 0.99)
+        time.lag = c(1, 3, 6), conf.level = 0.99)
     expect_equal(res3$estimate, res$estimate)
     expect_true(all(res3$upper[ok] > res$upper[ok]))
     # Default lags
@@ -94,7 +94,7 @@ test_that("getVariogram compares groups", {
     tse <- transformAssay(hitchip1006, method = "hellinger")
     expect_message(res <- getVariogram(tse, time.col = "time",
         group = "subject", assay.type = "hellinger", method = "euclidean",
-        squared = TRUE, lags = c(3, 6), split.by = "sex"))
+        squared = TRUE, time.lag = c(3, 6), split.by = "sex"))
     expect_true("sex" %in% colnames(res))
     expect_equal(nrow(res), 6L)
     est <- res[res$type == "dissimilarity", ]
@@ -112,17 +112,17 @@ test_that("getVariogram compares groups", {
     # Comparison at a common time
     expect_message(res <- getVariogram(tse, time.col = "time",
         group = "subject", assay.type = "hellinger", method = "euclidean",
-        squared = TRUE, lags = c(3, 6), split.by = "sex",
-        at.time = "median"))
-    expect_true("at.time" %in% colnames(res))
-    expect_equal(length(unique(res$at.time[res$lag == 6])), 1L)
+        squared = TRUE, time.lag = c(3, 6), split.by = "sex",
+        time.point = "median"))
+    expect_true("time.point" %in% colnames(res))
+    expect_equal(length(unique(res$time.point[res$lag == 6])), 1L)
 })
 
 test_that("addVariogram stores results in metadata", {
     data(hitchip1006, package = "miaTime")
     tse <- transformAssay(hitchip1006, method = "hellinger")
     args <- list(time.col = "time", group = "subject",
-        assay.type = "hellinger", method = "euclidean", lags = c(3, 6))
+        assay.type = "hellinger", method = "euclidean", time.lag = c(3, 6))
     res <- do.call(getVariogram, c(list(x = tse), args))
     tse <- do.call(addVariogram, c(list(x = tse), args))
     expect_equal(metadata(tse)[["variogram"]], res)

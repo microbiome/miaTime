@@ -38,7 +38,7 @@
 #' interpolated, not extrapolated. Elsewhere the estimate is \code{NA} and
 #' \code{supported} is \code{FALSE}.
 #'
-#' When \code{lags = NULL}, ten lags are spread evenly on the log scale
+#' When \code{time.lag = NULL}, ten lags are spread evenly on the log scale
 #' between the shortest and longest supported lag of the whole data: the
 #' smallest and largest lag reached by at least \eqn{\max(5, 20\%)} of the
 #' subjects.
@@ -53,12 +53,12 @@
 #' \strong{Developing communities.} When change at a given lag depends on
 #' the time since a common origin (age in infant cohorts, time since an
 #' intervention), groups whose samples were taken at different ages differ
-#' in \eqn{D(L)} even with the same development. \code{at.time} estimates
+#' in \eqn{D(L)} even with the same development. \code{time.point} estimates
 #' \eqn{D(L)} at a stated time \eqn{a}: only pairs whose midpoint \eqn{m}
 #' satisfies \eqn{(1 + m) / (1 + a)} in \eqn{[1/2, 2]} are used, the
 #' regression adds \eqn{z = \log(1 + m) - \log(1 + a)} and \eqn{z^2}, and
 #' at least three subjects must have midpoints up to \eqn{a} and three from
-#' \eqn{a}. With \code{at.time = "median"}, \eqn{a} is the median midpoint of
+#' \eqn{a}. With \code{time.point = "median"}, \eqn{a} is the median midpoint of
 #' all pairs in the lag window, pooled over the levels of \code{split.by}, so
 #' that every group is evaluated at the same time. Time must then be
 #' measured from the common origin and be non-negative.
@@ -102,8 +102,8 @@
 #'   is 1.}
 #'   \item{n.subjects, n.pairs}{Subjects and pairs in the lag window.}
 #'   \item{supported}{Whether the design supports \eqn{D(L)} at this lag.}
-#'   \item{at.time}{The time at which \eqn{D(L)} was estimated, when
-#'   \code{at.time} is given.}
+#'   \item{time.point}{The time at which \eqn{D(L)} was estimated, when
+#'   \code{time.point} is given.}
 #' }
 #' \code{addVariogram} returns \code{x} with this table in its
 #' \code{metadata}.
@@ -114,7 +114,7 @@
 #' \code{colData} that identifies the subject (or other unit followed over
 #' time) of each sample. Pairs are formed within subjects.
 #'
-#' @param lags \code{NULL} or \code{numeric vector}. The lags \eqn{L}, in
+#' @param time.lag \code{NULL} or \code{numeric vector}. The lags \eqn{L}, in
 #' the units of \code{time.col}, at which \eqn{D(L)} is estimated. If
 #' \code{NULL}, ten lags between the shortest and longest supported lag.
 #' (Default: \code{NULL})
@@ -124,7 +124,7 @@
 #' estimated for each of its levels, and each level is compared with the
 #' first. (Default: \code{NULL})
 #'
-#' @param at.time \code{NULL}, \code{numeric vector} or \code{"median"}. The
+#' @param time.point \code{NULL}, \code{numeric vector} or \code{"median"}. The
 #' time at which \eqn{D(L)} is estimated, for communities whose change
 #' depends on time since a common origin; one value, or one per lag. See
 #' details. (Default: \code{NULL})
@@ -158,7 +158,7 @@
 #'     assay.type = "hellinger",
 #'     method = "euclidean",
 #'     squared = TRUE,
-#'     lags = c(1, 3, 6, 9)
+#'     time.lag = c(1, 3, 6, 9)
 #'     )
 #' res
 #'
@@ -170,7 +170,7 @@
 #'     assay.type = "hellinger",
 #'     method = "euclidean",
 #'     squared = TRUE,
-#'     lags = c(1, 3),
+#'     time.lag = c(1, 3),
 #'     split.by = "sex"
 #'     )
 #' res[res$type == "ratio", ]
@@ -213,9 +213,9 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         group,
         assay.type = "counts",
         method = "bray",
-        lags = NULL,
+        time.lag = NULL,
         split.by = NULL,
-        at.time = NULL,
+        time.point = NULL,
         window = 2,
         squared = FALSE,
         conf.level = 0.95,
@@ -232,19 +232,21 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
             group, list("character scalar"), colnames(colData(x)))
         .check_assay_present(assay.type, x)
         temp <- .check_input(method, list("character scalar"))
-        temp <- .check_input(lags, list(NULL, "numeric vector"))
-        if( !is.null(lags) && (anyNA(lags) || any(lags <= 0)) ){
-            stop("'lags' must be positive.", call. = FALSE)
+        temp <- .check_input(time.lag, list(NULL, "numeric vector"))
+        if( !is.null(time.lag) && (anyNA(time.lag) || any(time.lag <= 0)) ){
+            stop("'time.lag' must be positive.", call. = FALSE)
         }
         temp <- .check_input(
             split.by, list(NULL, "character scalar"), colnames(colData(x)))
-        if( !(is.null(at.time) || identical(at.time, "median") ||
-                (is.numeric(at.time) && !anyNA(at.time))) ){
-            stop("'at.time' must be NULL, numeric or \"median\".",
+        if( !(is.null(time.point) || identical(time.point, "median") ||
+                (is.numeric(time.point) && !anyNA(time.point))) ){
+            stop("'time.point' must be NULL, numeric or \"median\".",
                 call. = FALSE)
         }
-        if( is.numeric(at.time) && !length(at.time) %in% c(1L, length(lags)) ){
-            stop("'at.time' must have length 1 or the length of 'lags'.",
+        if( is.numeric(time.point) &&
+                !length(time.point) %in% c(1L, length(time.lag)) ){
+            stop("'time.point' must have length 1 or the length of ",
+                "'time.lag'.",
                 call. = FALSE)
         }
         temp <- .check_input(window, list("numeric scalar"))
@@ -260,11 +262,11 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         args <- list(...)[!names(list(...)) %in% c("altexp")]
         pairs <- .get_within_subject_pairs(
             x, time.col, group, assay.type, method, split.by, squared, args)
-        if( is.null(lags) ){
-            lags <- .default_lags(pairs)
+        if( is.null(time.lag) ){
+            time.lag <- .default_lags(pairs)
         }
         res <- .variogram(
-            pairs, lags, split.by, at.time, window, conf.level)
+            pairs, time.lag, split.by, time.point, window, conf.level)
         res <- DataFrame(res, check.names = FALSE)
         return(res)
     }
@@ -356,11 +358,11 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
 
 # D(L) for all lags, levels of split.by, and comparisons with the first level
 .variogram <- function(
-        pairs, lags, split.by, at.time, window, conf.level){
-    a0 <- .get_at_time(pairs, lags, at.time, window)
+        pairs, lags, split.by, time.point, window, conf.level){
+    a0 <- .get_at_time(pairs, lags, time.point, window)
     if( is.null(split.by) ){
         res <- .local_variogram(pairs, lags, window, conf.level, a0)
-        res <- .format_variogram(res, at.time, conf.level)
+        res <- .format_variogram(res, time.point, conf.level)
         return(res)
     }
     lev <- levels(droplevels(pairs$level))
@@ -373,11 +375,11 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     })
     est <- lapply(seq_along(lev), function(i){
         cbind(level = lev[[i]],
-            .format_variogram(est[[i]], at.time, conf.level))
+            .format_variogram(est[[i]], time.point, conf.level))
     })
     comp <- lapply(seq_along(comp), function(i){
         lab <- paste(lev[[i + 1L]], "/", lev[[1L]])
-        cbind(level = lab, .format_variogram(comp[[i]], at.time, conf.level))
+        cbind(level = lab, .format_variogram(comp[[i]], time.point, conf.level))
     })
     res <- do.call(rbind, c(est, comp))
     res <- res[order(res$lag), , drop = FALSE]
@@ -389,12 +391,12 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
 
 # The time at which D(L) is estimated: NA (no adjustment), the values given,
 # or the median midpoint of all pairs in each lag window
-.get_at_time <- function(pairs, lags, at.time, window){
-    if( is.null(at.time) ){
+.get_at_time <- function(pairs, lags, time.point, window){
+    if( is.null(time.point) ){
         return(rep(NA_real_, length(lags)))
     }
-    if( is.numeric(at.time) ){
-        return(rep_len(as.numeric(at.time), length(lags)))
+    if( is.numeric(time.point) ){
+        return(rep_len(as.numeric(time.point), length(lags)))
     }
     a0 <- vapply(lags, function(l){
         in_window <- pairs$h >= l / window & pairs$h <= l * window
@@ -427,7 +429,7 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     G <- length(ns)
     res <- data.frame(
         lag = l, estimate = NA_real_, se = NA_real_, df = NA_real_,
-        n.subjects = G, n.pairs = nrow(q), supported = FALSE, at.time = a0)
+        n.subjects = G, n.pairs = nrow(q), supported = FALSE, time.point = a0)
     # Interpolation only: pairs from at least three subjects on each side
     below <- length(unique(subj[q$h <= l]))
     above <- length(unique(subj[q$h >= l]))
@@ -477,13 +479,13 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         lag = e1$lag, estimate = exp(lr), se = se, df = df,
         n.subjects = e1$n.subjects + e2$n.subjects,
         n.pairs = e1$n.pairs + e2$n.pairs, supported = ok,
-        at.time = e1$at.time,
+        time.point = e1$time.point,
         p.value = ifelse(ok, 2 * stats::pt(-abs(lr / se), df), NA_real_),
         type = "ratio")
 }
 
 # Confidence intervals on the log scale, and columns in a fixed order
-.format_variogram <- function(res, at.time, conf.level){
+.format_variogram <- function(res, time.point, conf.level){
     if( is.null(res$type) ){
         res$type <- "dissimilarity"
         res$p.value <- NA_real_
@@ -493,8 +495,8 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     res$upper <- res$estimate * exp(q * res$se)
     cols <- c("lag", "type", "estimate", "lower", "upper", "se", "df",
         "p.value", "n.subjects", "n.pairs", "supported")
-    if( !is.null(at.time) ){
-        cols <- c(cols, "at.time")
+    if( !is.null(time.point) ){
+        cols <- c(cols, "time.point")
     }
     res <- res[, cols]
     return(res)
