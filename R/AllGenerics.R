@@ -50,3 +50,13 @@ setGeneric("getStability", signature = "x", function(x, ...)
 #' @export
 setGeneric("addStability", signature = "x", function(x, ...)
     standardGeneric("addStability"))
+
+#' @rdname getTemporalVariogram
+#' @export
+setGeneric("getTemporalVariogram", signature = "x", function(x, ...)
+    standardGeneric("getTemporalVariogram"))
+
+#' @rdname getTemporalVariogram
+#' @export
+setGeneric("addTemporalVariogram", signature = "x", function(x, ...)
+    standardGeneric("addTemporalVariogram"))
