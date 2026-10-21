@@ -1,5 +1,5 @@
 #' @name
-#' getTemporalVariogram
+#' getVariogram
 #'
 #' @export
 #'
@@ -77,8 +77,16 @@
 #' Diggle P.J. (1988) An approach to the analysis of repeated measurements.
 #' Biometrics 44, 959–971. doi: 10.2307/2531727
 #'
+#' Lloyd-Price J., et al. (2019) Multi-omics of the gut microbial ecosystem in
+#' inflammatory bowel diseases. Nature 569, 655–662.
+#' doi: 10.1038/s41586-019-1237-9
+#'
+#' Björk J.R., et al. (2022) Synchrony and idiosyncrasy in the gut microbiome
+#' of wild baboons. Nature Ecology & Evolution 6, 955–964.
+#' doi: 10.1038/s41559-022-01773-4
+#'
 #' @return
-#' \code{getTemporalVariogram} returns a \code{DataFrame} with one row per
+#' \code{getVariogram} returns a \code{DataFrame} with one row per
 #' lag (and level of \code{split.by}, and comparison) and the columns
 #' \describe{
 #'   \item{lag}{The lag \eqn{L}.}
@@ -97,7 +105,7 @@
 #'   \item{at.time}{The time at which \eqn{D(L)} was estimated, when
 #'   \code{at.time} is given.}
 #' }
-#' \code{addTemporalVariogram} returns \code{x} with this table in its
+#' \code{addVariogram} returns \code{x} with this table in its
 #' \code{metadata}.
 #'
 #' @inheritParams addBaselineDivergence
@@ -131,7 +139,7 @@
 #' intervals. (Default: \code{0.95})
 #'
 #' @param name \code{Character scalar}. Specifies a name for storing the
-#' results in \code{metadata}. (Default: \code{"temporal_variogram"})
+#' results in \code{metadata}. (Default: \code{"variogram"})
 #'
 #' @param ... additional arguments passed to
 #' \code{\link[mia:getDissimilarity]{getDissimilarity()}}.
@@ -143,7 +151,7 @@
 #' tse <- transformAssay(hitchip1006, method = "hellinger")
 #'
 #' # Change over 1 to 9 time units, as squared Hellinger distance
-#' res <- getTemporalVariogram(
+#' res <- getVariogram(
 #'     tse,
 #'     time.col = "time",
 #'     group = "subject",
@@ -155,7 +163,7 @@
 #' res
 #'
 #' # Compare the sexes
-#' res <- getTemporalVariogram(
+#' res <- getVariogram(
 #'     tse,
 #'     time.col = "time",
 #'     group = "subject",
@@ -168,7 +176,7 @@
 #' res[res$type == "ratio", ]
 #'
 #' # Store the results in metadata
-#' tse <- addTemporalVariogram(
+#' tse <- addVariogram(
 #'     tse,
 #'     time.col = "time",
 #'     group = "subject",
@@ -176,29 +184,29 @@
 #'     method = "euclidean",
 #'     squared = TRUE
 #'     )
-#' metadata(tse)[["temporal_variogram"]]
+#' metadata(tse)[["variogram"]]
 #'
 #' @seealso
 #' \code{\link[miaTime:getStepwiseDivergence]{getStepwiseDivergence()}}
 #'
 NULL
 
-#' @rdname getTemporalVariogram
+#' @rdname getVariogram
 #' @export
-setMethod("addTemporalVariogram", signature = c(x = "SummarizedExperiment"),
-    function(x, name = "temporal_variogram", ...){
+setMethod("addVariogram", signature = c(x = "SummarizedExperiment"),
+    function(x, name = "variogram", ...){
         temp <- .check_input(name, list("character scalar"))
         x <- .check_and_get_altExp(x, ...)
         args <- c(list(x = x), list(...)[!names(list(...)) %in% c("altexp")])
-        res <- do.call(getTemporalVariogram, args)
+        res <- do.call(getVariogram, args)
         x <- .add_values_to_metadata(x, name, res, ...)
         return(x)
     }
 )
 
-#' @rdname getTemporalVariogram
+#' @rdname getVariogram
 #' @export
-setMethod("getTemporalVariogram", signature = c(x = "SummarizedExperiment"),
+setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     function(
         x,
         time.col,
@@ -255,7 +263,7 @@ setMethod("getTemporalVariogram", signature = c(x = "SummarizedExperiment"),
         if( is.null(lags) ){
             lags <- .default_lags(pairs)
         }
-        res <- .temporal_variogram(
+        res <- .variogram(
             pairs, lags, split.by, at.time, window, conf.level)
         res <- DataFrame(res, check.names = FALSE)
         return(res)
@@ -347,7 +355,7 @@ setMethod("getTemporalVariogram", signature = c(x = "SummarizedExperiment"),
 }
 
 # D(L) for all lags, levels of split.by, and comparisons with the first level
-.temporal_variogram <- function(
+.variogram <- function(
         pairs, lags, split.by, at.time, window, conf.level){
     a0 <- .get_at_time(pairs, lags, at.time, window)
     if( is.null(split.by) ){

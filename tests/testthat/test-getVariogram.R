@@ -1,24 +1,24 @@
-test_that("getTemporalVariogram input checks", {
+test_that("getVariogram input checks", {
     data(hitchip1006, package = "miaTime")
     tse <- hitchip1006
-    expect_error(getTemporalVariogram(tse, time.col = "x", group = "subject"))
-    expect_error(getTemporalVariogram(tse, time.col = "sex",
+    expect_error(getVariogram(tse, time.col = "x", group = "subject"))
+    expect_error(getVariogram(tse, time.col = "sex",
         group = "subject"))
-    expect_error(getTemporalVariogram(tse, time.col = "time", group = "x"))
-    expect_error(getTemporalVariogram(tse, time.col = "time",
+    expect_error(getVariogram(tse, time.col = "time", group = "x"))
+    expect_error(getVariogram(tse, time.col = "time",
         group = "subject", assay.type = "x"))
-    expect_error(getTemporalVariogram(tse, time.col = "time",
+    expect_error(getVariogram(tse, time.col = "time",
         group = "subject", lags = -1))
-    expect_error(getTemporalVariogram(tse, time.col = "time",
+    expect_error(getVariogram(tse, time.col = "time",
         group = "subject", lags = 1, window = 1))
-    expect_error(getTemporalVariogram(tse, time.col = "time",
+    expect_error(getVariogram(tse, time.col = "time",
         group = "subject", lags = 1, at.time = "mean"))
-    expect_error(getTemporalVariogram(tse, time.col = "time",
+    expect_error(getVariogram(tse, time.col = "time",
         group = "subject", lags = c(1, 2), at.time = c(1, 2, 3)))
-    expect_error(getTemporalVariogram(tse, time.col = "time",
+    expect_error(getVariogram(tse, time.col = "time",
         group = "subject", lags = 1, conf.level = 1))
     # split.by must be constant within subjects
-    expect_error(getTemporalVariogram(tse, time.col = "time",
+    expect_error(getVariogram(tse, time.col = "time",
         group = "subject", lags = 1, split.by = "time"))
 })
 
@@ -58,10 +58,10 @@ test_that("D(L) is reported only at supported lags", {
     expect_false(res$supported)
 })
 
-test_that("getTemporalVariogram output", {
+test_that("getVariogram output", {
     data(hitchip1006, package = "miaTime")
     tse <- transformAssay(hitchip1006, method = "hellinger")
-    res <- getTemporalVariogram(tse, time.col = "time", group = "subject",
+    res <- getVariogram(tse, time.col = "time", group = "subject",
         assay.type = "hellinger", method = "euclidean", squared = TRUE,
         lags = c(1, 3, 6))
     expect_s4_class(res, "DataFrame")
@@ -73,26 +73,26 @@ test_that("getTemporalVariogram output", {
     expect_true(all(res$estimate[ok] < res$upper[ok]))
     expect_true(all(is.na(res$estimate[!ok])))
     # Squaring changes the dissimilarity
-    res2 <- getTemporalVariogram(tse, time.col = "time", group = "subject",
+    res2 <- getVariogram(tse, time.col = "time", group = "subject",
         assay.type = "hellinger", method = "euclidean", lags = c(1, 3, 6))
     expect_false(isTRUE(all.equal(res$estimate[ok], res2$estimate[ok])))
     # Wider intervals at a higher confidence level
-    res3 <- getTemporalVariogram(tse, time.col = "time", group = "subject",
+    res3 <- getVariogram(tse, time.col = "time", group = "subject",
         assay.type = "hellinger", method = "euclidean", squared = TRUE,
         lags = c(1, 3, 6), conf.level = 0.99)
     expect_equal(res3$estimate, res$estimate)
     expect_true(all(res3$upper[ok] > res$upper[ok]))
     # Default lags
-    res4 <- getTemporalVariogram(tse, time.col = "time", group = "subject",
+    res4 <- getVariogram(tse, time.col = "time", group = "subject",
         assay.type = "hellinger", method = "euclidean", squared = TRUE)
     expect_true(nrow(res4) > 1L)
     expect_true(all(diff(res4$lag) > 0))
 })
 
-test_that("getTemporalVariogram compares groups", {
+test_that("getVariogram compares groups", {
     data(hitchip1006, package = "miaTime")
     tse <- transformAssay(hitchip1006, method = "hellinger")
-    expect_message(res <- getTemporalVariogram(tse, time.col = "time",
+    expect_message(res <- getVariogram(tse, time.col = "time",
         group = "subject", assay.type = "hellinger", method = "euclidean",
         squared = TRUE, lags = c(3, 6), split.by = "sex"))
     expect_true("sex" %in% colnames(res))
@@ -110,7 +110,7 @@ test_that("getTemporalVariogram compares groups", {
     }
     expect_true(all(is.na(est$p.value)))
     # Comparison at a common time
-    expect_message(res <- getTemporalVariogram(tse, time.col = "time",
+    expect_message(res <- getVariogram(tse, time.col = "time",
         group = "subject", assay.type = "hellinger", method = "euclidean",
         squared = TRUE, lags = c(3, 6), split.by = "sex",
         at.time = "median"))
@@ -118,15 +118,15 @@ test_that("getTemporalVariogram compares groups", {
     expect_equal(length(unique(res$at.time[res$lag == 6])), 1L)
 })
 
-test_that("addTemporalVariogram stores results in metadata", {
+test_that("addVariogram stores results in metadata", {
     data(hitchip1006, package = "miaTime")
     tse <- transformAssay(hitchip1006, method = "hellinger")
     args <- list(time.col = "time", group = "subject",
         assay.type = "hellinger", method = "euclidean", lags = c(3, 6))
-    res <- do.call(getTemporalVariogram, c(list(x = tse), args))
-    tse <- do.call(addTemporalVariogram, c(list(x = tse), args))
-    expect_equal(metadata(tse)[["temporal_variogram"]], res)
-    tse <- do.call(addTemporalVariogram,
+    res <- do.call(getVariogram, c(list(x = tse), args))
+    tse <- do.call(addVariogram, c(list(x = tse), args))
+    expect_equal(metadata(tse)[["variogram"]], res)
+    tse <- do.call(addVariogram,
         c(list(x = tse, name = "vario"), args))
     expect_equal(metadata(tse)[["vario"]], res)
 })
