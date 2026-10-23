@@ -33,9 +33,9 @@ Summarizes how each group, for instance a subject, was sampled over time.
 Temporal metrics, such as stepwise divergence or stability, depend on how
 many time points each group has and how far apart they are. This function
 reports, for each group, the number of samples and distinct time points,
-the first and last time point, the time span, and the median and maximum
-gap between consecutive time points. Gaps are \code{NA} for groups with a
-single time point.
+the first and last time point, the time span, and the minimum, median and
+maximum gap between consecutive time points. Gaps are \code{NA} for groups
+with a single time point.
 }
 \examples{
 library(miaTime)
