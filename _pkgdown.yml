@@ -1,2 +1,27 @@
 url: ~
 
+reference:
+- title: Divergence
+  contents:
+  - getBaselineDivergence
+  - getStepwiseDivergence
+
+- title: Feature dynamics
+  contents:
+  - getShortTermChange
+  - getStability
+  - getBimodality
+
+- title: Datasets
+  contents:
+  - crohn_survival
+  - hitchip1006
+  - HMP_2019_ibdmdb
+  - Kumaraswamy2024
+  - minimalgut
+  - SilvermanAGutData
+  - temporalMicrobiome20
+
+- title: Package
+  contents:
+  - miaTime-package
