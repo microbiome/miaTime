@@ -126,14 +126,13 @@ samples, so we compare the follow-up samples between IBD subtypes.
 ```{r}
 #| label: base_divergence_plot
 
+library(miaViz)
 library(ggplot2)
 
-df <- as.data.frame(colData(tse))
-df <- df[df[["time_diff"]] > 0, ]
-
-ggplot(df, aes(x = disease_subtype, y = divergence)) +
-    geom_boxplot(outlier.shape = NA) +
-    geom_jitter(width = 0.1) +
+plotBoxplot(
+    tse[, tse[["time_diff"]] > 0],
+    col.var = "divergence",
+    x = "disease_subtype") +
     labs(x = "IBD subtype", y = "Bray-Curtis divergence from baseline")
 ```
 
