@@ -5,21 +5,27 @@ export(addBimodality)
 export(addShortTermChange)
 export(addStability)
 export(addStepwiseDivergence)
+export(addSurvival)
 export(getBaselineDivergence)
 export(getBimodality)
+export(getSamplingSummary)
 export(getShortTermChange)
 export(getStability)
 export(getStepwiseDivergence)
+export(getSurvival)
 exportMethods(addBaselineDivergence)
 exportMethods(addBimodality)
 exportMethods(addShortTermChange)
 exportMethods(addStability)
 exportMethods(addStepwiseDivergence)
+exportMethods(addSurvival)
 exportMethods(getBaselineDivergence)
 exportMethods(getBimodality)
+exportMethods(getSamplingSummary)
 exportMethods(getShortTermChange)
 exportMethods(getStability)
 exportMethods(getStepwiseDivergence)
+exportMethods(getSurvival)
 import(S4Vectors)
 import(SingleCellExperiment)
 import(SummarizedExperiment)
@@ -46,11 +52,21 @@ importFrom(dplyr,
   ungroup,
   vars
 )
+importFrom(glmnet,
+  Cindex,
+  cv.glmnet,
+  glmnet
+)
 importFrom(stats,
   coef,
   lm,
   median,
+  predict,
   setNames
+)
+importFrom(survival,
+  Surv,
+  coxph
 )
 importFrom(tidyr,
   pivot_wider,

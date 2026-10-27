@@ -19,9 +19,9 @@
 #'
 #' \deqn{abundance\_diff = abundance_{t} - abundance_{t-1}}
 #'
-#' \deqn{growth\_rate = abundance\_diff - abundance_{t-1}}
+#' \deqn{growth\_rate = \frac{abundance\_diff}{abundance_{t-1}}}
 #'
-#' \deqn{rate\_of\_change = abundance\_diff - time\_diff}
+#' \deqn{rate\_of\_change = \frac{abundance\_diff}{time\_diff}}
 #'
 #' @references
 #' Ji, B.W., et al. (2020) Macroecological dynamics of gut microbiota.
@@ -68,7 +68,7 @@
 #'   tse, assay.type = "log10", time.col = "Time.hr", group = "StudyIdentifier")
 #'
 #' # Select certain bacteria that have highest growth rate
-#' select <- df[["growth_rate"]] |> abs() |> order(decreasing = FALSE)
+#' select <- df[["growth_rate"]] |> abs() |> order(decreasing = TRUE)
 #' select <- df[select, "FeatureID"] |> unique() |> head(3)
 #' df <- df[ which(df[["FeatureID"]] %in% select), ]
 #'
