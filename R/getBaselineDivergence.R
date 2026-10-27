@@ -181,6 +181,7 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         ref.name = "temporal_reference_for_divergence",
         group.name = "temporal_group_for_divergence",
         time.interval = NULL,
+        time.lag = NULL,
         reference.method = "baseline",
         ...){
     #
@@ -193,6 +194,11 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     temp <- .check_input(group.name, list("character scalar"))
     #
     temp <- .check_input(time.interval, list(NULL, "numeric scalar"))
+    #
+    temp <- .check_input(time.lag, list(NULL, "numeric scalar"))
+    if( !is.null(time.lag) && time.lag <= 0 ){
+        stop("'time.lag' must be positive.", call. = FALSE)
+    }
     #
     temp <- .check_input(
         reference.method, list("character scalar"),
@@ -230,7 +236,8 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     # Get the reference samples.
     if( is.null(reference) ){
         ref <- .get_reference_samples(
-            cd, time.col, time.interval, group, reference.method)
+            cd, time.col, time.interval, group, reference.method,
+            time.lag = time.lag)
         # If the data includes repeated timepoints, the data has multiple
         # reference samples for each sample.
         ref <- ref[ rownames(cd) ]
@@ -288,7 +295,8 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
 #' @importFrom dplyr group_by mutate arrange ungroup lag
 #' @importFrom tidyr unnest
 .get_reference_samples <- function(
-        df, time.col, time.interval, group, reference.method){
+        df, time.col, time.interval, group, reference.method,
+        time.lag = NULL){
     # This following line is to suppress "no visible binding for" messages
     # in cmdcheck
     .data <- ":=" <- NULL
@@ -312,8 +320,13 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
         # For each sample, get the previous ith sample.
         # For each subject, get previous sample based on time.
         df <- df |>
-            mutate(!!reference_col := .get_previous_samples(
-                .data, time.col, rowname_col, time.interval))
+            mutate(!!reference_col := if( is.null(time.lag) ){
+                .get_previous_samples(
+                    .data, time.col, rowname_col, time.interval)
+            } else{
+                .get_samples_by_time_lag(
+                    .data, time.col, rowname_col, time.lag)
+            })
     }
     res <- df[[reference_col]]
     names(res) <- df[[rowname_col]]
@@ -345,6 +358,29 @@ setMethod("addBaselineDivergence", signature = c(x = "SummarizedExperiment"),
     current_time <- unique(sort(.data[[time.col]]))
     prev_time <- lag(current_time, n = time.interval)
     prev_time <- prev_time[match(.data[[time.col]], current_time)]
+    # Split sample names so that they are grouped into timepoints
+    timepoint_samples <- split(.data[[rowname_col]], .data[[time.col]])
+    # For each sample, assign previous samples
+    prev_samples <- timepoint_samples[
+        match(prev_time, names(timepoint_samples)) ]
+    prev_samples[ lengths(prev_samples) == 0L ] <- NA_character_
+    return(prev_samples)
+}
+
+# This function gets df as input. The data must be already grouped if grouping
+# exists. For each sample, this function finds the earlier timepoint that is
+# closest to 'time.lag' before it. If two timepoints are equally close, the
+# earlier one is used. If there are multiple samples from that timepoint, all
+# are returned.
+.get_samples_by_time_lag <- function(.data, time.col, rowname_col, time.lag){
+    time_points <- unique(sort(.data[[time.col]]))
+    prev_time <- vapply(.data[[time.col]], function(t){
+        earlier <- time_points[ time_points < t ]
+        if( length(earlier) == 0L ){
+            return(NA_real_)
+        }
+        earlier[ which.min(abs(earlier - (t - time.lag))) ]
+    }, numeric(1L))
     # Split sample names so that they are grouped into timepoints
     timepoint_samples <- split(.data[[rowname_col]], .data[[time.col]])
     # For each sample, assign previous samples
