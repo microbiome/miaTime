@@ -35,7 +35,10 @@
 #' \eqn{\max(5, 20\%)} of the subjects with two or more samples must have
 #' pairs in the window, and at least three subjects must have pairs at lags
 #' up to \eqn{L} and three at lags from \eqn{L}, so that \eqn{D(L)} is
-#' interpolated, not extrapolated. Elsewhere the estimate is \code{NA} and
+#' interpolated, not extrapolated. The window must also contain at least
+#' twice as many subjects as regression coefficients (6, or 10 with
+#' \code{time.point}), because the sandwich variance is singular when there
+#' are as many subjects as coefficients. Elsewhere the estimate is \code{NA} and
 #' \code{supported} is \code{FALSE}.
 #'
 #' When \code{time.lag = NULL}, ten lags are spread evenly on the log scale
@@ -445,6 +448,11 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         }
         z <- log1p(pmax(q$mid, 0)) - log1p(max(a0, 0))
         X <- cbind(X, z, z^2)
+    }
+    # The subjects' scores sum to zero, so the sandwich needs clearly more
+    # subjects than coefficients
+    if( G < 2L * ncol(X) ){
+        return(res)
     }
     # Each subject's pairs in the window count as one subject
     w <- as.numeric(1 / ns[subj])

@@ -50,6 +50,15 @@ test_that("D(L) is reported only at supported lags", {
         conf.level = 0.95, a0 = NA_real_)
     expect_false(res$supported)
     expect_true(is.na(res$estimate))
+    # At least twice as many subjects as coefficients
+    pairs <- .make_quadratic_pairs(n = 5)
+    res <- miaTime:::.local_variogram(pairs, lags = 10, window = 2,
+        conf.level = 0.95, a0 = NA_real_)
+    expect_false(res$supported)
+    pairs <- .make_quadratic_pairs(n = 6)
+    res <- miaTime:::.local_variogram(pairs, lags = 10, window = 2,
+        conf.level = 0.95, a0 = NA_real_)
+    expect_true(res$supported)
     # No pairs above L: extrapolation is not reported
     pairs <- .make_quadratic_pairs()
     pairs <- pairs[pairs$h < 10, ]
