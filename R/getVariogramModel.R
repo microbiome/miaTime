@@ -263,6 +263,8 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
             names(.VARIOGRAM_FORMS))
         temp <- .check_input(
             split.by, list(NULL, "character scalar"), colnames(colData(x)))
+        .check_split_by_name(split.by, c(.VARIOGRAM_COLUMNS, "form",
+            "parameter", "identified", "min.lag", "max.lag"))
         temp <- .check_input(time.point, list(NULL, "numeric scalar"))
         temp <- .check_input(squared, list("logical scalar"))
         temp <- .check_input(bounded, list("logical scalar"))
