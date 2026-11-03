@@ -394,6 +394,7 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         time <- time[keep]
         subject <- subject[keep]
     }
+    samples <- which(keep)
     subject <- as.character(subject)
     level <- NULL
     if( !is.null(split.by) ){
@@ -425,17 +426,18 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         l <- idx[ut[, 2L]]
         data.frame(
             subject = subject[k], h = abs(time[l] - time[k]),
-            mid = (time[k] + time[l]) / 2, d = d[ut],
-            first = ifelse(time[k] <= time[l], k, l))
+            mid = (time[k] + time[l]) / 2, d = d[ut], k = k, l = l)
     })
     pairs <- do.call(rbind, unname(res))
     pairs$d <- .dissimilarity_scale(pairs$d, squared, bounded)
     if( !is.null(split.by) ){
         # The level of the earlier sample
-        pairs$level <- level[pairs$first]
+        first <- ifelse(time[pairs$k] <= time[pairs$l], pairs$k, pairs$l)
+        pairs$level <- level[first]
         attr(pairs, "pair.level") <- pair_level
     }
-    pairs$first <- NULL
+    # Columns of the input that k and l index
+    attr(pairs, "samples") <- samples
     return(pairs)
 }
 
@@ -580,6 +582,34 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
 }
 
 .local_variogram_at <- function(pairs, l, a0, k, window, conf.level){
+    f <- .local_design(pairs, l, a0, k, window)
+    res <- data.frame(
+        lag = l, estimate = NA_real_, se = NA_real_, df = NA_real_,
+        n.subjects = f$G, n.pairs = length(f$rows), supported = FALSE,
+        time.point = a0)
+    if( !f$ok ){
+        return(res)
+    }
+    G <- f$G
+    d <- pairs$d[f$rows]
+    b <- f$Ai %*% crossprod(f$X, f$w * d)
+    r <- d - drop(f$X %*% b)
+    U <- rowsum(f$X * (f$w * r), f$subj)
+    V <- f$Ai %*% crossprod(U) %*% f$Ai * G / (G - 1)
+    D <- b[[1L]]
+    if( !is.finite(D) || D <= 0 ){
+        return(res)
+    }
+    res$estimate <- D
+    res$se <- sqrt(V[1L, 1L]) / D
+    res$df <- G - 1
+    res$supported <- TRUE
+    return(res)
+}
+
+# The pairs in the window of lag l (and time a0), the support rules, and the
+# design of the local regression
+.local_design <- function(pairs, l, a0, k, window){
     rows <- which(pairs$h >= l / window & pairs$h <= l * window)
     if( !is.na(a0) ){
         # Local in time too: midpoints within a factor of two of the target
@@ -591,9 +621,7 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     subj <- q$subject
     ns <- table(subj)
     G <- length(ns)
-    res <- data.frame(
-        lag = l, estimate = NA_real_, se = NA_real_, df = NA_real_,
-        n.subjects = G, n.pairs = nrow(q), supported = FALSE, time.point = a0)
+    res <- list(ok = FALSE, rows = rows, G = G)
     # Interpolation only: pairs from at least three subjects on each side
     below <- length(unique(subj[q$h <= l]))
     above <- length(unique(subj[q$h >= l]))
@@ -621,19 +649,9 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     if( qr(A)$rank < ncol(X) ){
         return(res)
     }
-    Ai <- solve(A)
-    b <- Ai %*% crossprod(X, w * q$d)
-    r <- q$d - drop(X %*% b)
-    U <- rowsum(X * (w * r), subj)
-    V <- Ai %*% crossprod(U) %*% Ai * G / (G - 1)
-    D <- b[[1L]]
-    if( !is.finite(D) || D <= 0 ){
-        return(res)
-    }
-    res$estimate <- D
-    res$se <- sqrt(V[1L, 1L]) / D
-    res$df <- G - 1
-    res$supported <- TRUE
+    res <- list(
+        ok = TRUE, rows = rows, G = G, X = X, w = w, subj = subj,
+        Ai = solve(A))
     return(res)
 }
 
@@ -667,47 +685,25 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
             n.subjects = NA_integer_, n.pairs = NA_integer_,
             supported = FALSE, time.point = a0[[i]], p.value = NA_real_,
             type = "ratio")
-        rows <- which(p$h >= l / window & p$h <= l * window)
-        if( !is.na(a0[[i]]) ){
-            r <- (1 + pmax(p$mid[rows], 0)) / (1 + max(a0[[i]], 0))
-            rows <- rows[r >= 1 / 2 & r <= 2]
-        }
-        q <- p[rows, , drop = FALSE]
-        subj <- q$subject
-        ns <- table(subj)
-        G <- length(ns)
+        f <- .pair_level_design(p, lev2, l, a0[[i]], window)
+        G <- f$G
         out$n.subjects <- G
-        out$n.pairs <- nrow(q)
+        out$n.pairs <- length(f$rows)
         # Each level must be supported on its own
-        if( !e1$supported[[i]] || !e2$supported[[i]] ){
+        if( !e1$supported[[i]] || !e2$supported[[i]] || !f$ok ){
             return(out)
         }
-        g <- as.numeric(q$level == lev2)
-        u <- log(q$h / l)
-        X <- cbind(1, g, u, u^2, g * u, g * u^2)
-        if( !is.na(a0[[i]]) ){
-            z <- log1p(pmax(q$mid, 0)) - log1p(max(a0[[i]], 0))
-            X <- cbind(X, z, z^2)
-        }
-        if( G < 2L * ncol(X) ){
-            return(out)
-        }
-        w <- as.numeric(1 / ns[subj])
-        A <- crossprod(X, X * w)
-        if( qr(A)$rank < ncol(X) ){
-            return(out)
-        }
-        Ai <- solve(A)
-        b <- drop(Ai %*% crossprod(X, w * q$d))
+        d <- p$d[f$rows]
+        b <- drop(f$Ai %*% crossprod(f$X, f$w * d))
         if( b[[1L]] <= 0 || b[[1L]] + b[[2L]] <= 0 ){
             return(out)
         }
-        r <- q$d - drop(X %*% b)
-        U <- rowsum(X * (w * r), subj)
-        V <- Ai %*% crossprod(U) %*% Ai * G / (G - 1)
+        r <- d - drop(f$X %*% b)
+        U <- rowsum(f$X * (f$w * r), f$subj)
+        V <- f$Ai %*% crossprod(U) %*% f$Ai * G / (G - 1)
         lr <- log(b[[1L]] + b[[2L]]) - log(b[[1L]])
         grad <- c(1 / (b[[1L]] + b[[2L]]) - 1 / b[[1L]],
-            1 / (b[[1L]] + b[[2L]]), rep(0, ncol(X) - 2L))
+            1 / (b[[1L]] + b[[2L]]), rep(0, ncol(f$X) - 2L))
         se <- sqrt(drop(t(grad) %*% V %*% grad))
         out$estimate <- exp(lr)
         out$se <- se
@@ -717,6 +713,41 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         return(out)
     })
     res <- do.call(rbind, res)
+    return(res)
+}
+
+# Design of the regression on the pairs of two levels of a sample-level state
+# in the window of lag l (and time a0); the second coefficient is that of the
+# indicator of lev2
+.pair_level_design <- function(p, lev2, l, a0, window){
+    rows <- which(p$h >= l / window & p$h <= l * window)
+    if( !is.na(a0) ){
+        r <- (1 + pmax(p$mid[rows], 0)) / (1 + max(a0, 0))
+        rows <- rows[r >= 1 / 2 & r <= 2]
+    }
+    q <- p[rows, , drop = FALSE]
+    subj <- q$subject
+    ns <- table(subj)
+    G <- length(ns)
+    res <- list(ok = FALSE, rows = rows, G = G)
+    g <- as.numeric(q$level == lev2)
+    u <- log(q$h / l)
+    X <- cbind(1, g, u, u^2, g * u, g * u^2)
+    if( !is.na(a0) ){
+        z <- log1p(pmax(q$mid, 0)) - log1p(max(a0, 0))
+        X <- cbind(X, z, z^2)
+    }
+    if( G < 2L * ncol(X) ){
+        return(res)
+    }
+    w <- as.numeric(1 / ns[subj])
+    A <- crossprod(X, X * w)
+    if( qr(A)$rank < ncol(X) ){
+        return(res)
+    }
+    res <- list(
+        ok = TRUE, rows = rows, G = G, X = X, w = w, subj = subj,
+        Ai = solve(A))
     return(res)
 }
 
