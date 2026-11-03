@@ -21,6 +21,7 @@ addVariogram(x, ...)
   method = "bray",
   time.lag = NULL,
   split.by = NULL,
+  pair.level = "earlier",
   subset.by = NULL,
   time.point = NULL,
   window = 2,
@@ -66,6 +67,11 @@ the units of \code{time.col}, at which \eqn{D(L)} is estimated. If
 of a column from \code{colData}, with one value per subject or a
 sample-level state. \eqn{D(L)} is estimated for each of its levels, and
 each level is compared with the first. (Default: \code{NULL})}
+
+\item{pair.level}{\code{Character scalar}. When \code{split.by} varies
+within subjects, the level of a pair: \code{"earlier"}, that of its
+earlier sample, or \code{"highest"}, the higher of the levels of its two
+samples. See details. (Default: \code{"earlier"})}
 
 \item{subset.by}{\code{NULL} or \code{Character scalar}. Specifies a name
 of a logical column of \code{colData}; only pairs whose earlier sample is
@@ -196,6 +202,14 @@ cluster-robust by subject, by the delta method, with \eqn{G - 1} degrees
 of freedom. Both levels must meet the support rules on their own. The
 permutation test is not available, as levels are not assigned to
 subjects.
+
+With \code{pair.level = "highest"}, a pair takes the higher of the levels
+of its two samples, in the order of the levels of \code{split.by}: with
+levels \code{"baseline"} and \code{"exacerbation"}, pairs that span an
+exacerbation are compared with pairs of two baseline samples. A sample
+without a level (\code{NA}) classifies its pair only when the other
+sample has the highest level, which decides the pair whatever the missing
+level; other pairs with such a sample are left out.
 
 With \code{subset.by}, only pairs whose earlier sample is \code{TRUE} in
 a logical column of \code{colData} are used, for example pairs starting

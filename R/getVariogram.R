@@ -79,6 +79,14 @@
 #' permutation test is not available, as levels are not assigned to
 #' subjects.
 #'
+#' With \code{pair.level = "highest"}, a pair takes the higher of the levels
+#' of its two samples, in the order of the levels of \code{split.by}: with
+#' levels \code{"baseline"} and \code{"exacerbation"}, pairs that span an
+#' exacerbation are compared with pairs of two baseline samples. A sample
+#' without a level (\code{NA}) classifies its pair only when the other
+#' sample has the highest level, which decides the pair whatever the missing
+#' level; other pairs with such a sample are left out.
+#'
 #' With \code{subset.by}, only pairs whose earlier sample is \code{TRUE} in
 #' a logical column of \code{colData} are used, for example pairs starting
 #' from a given community type. Subjects are then compared on those pairs,
@@ -178,6 +186,11 @@
 #' of a column from \code{colData}, with one value per subject or a
 #' sample-level state. \eqn{D(L)} is estimated for each of its levels, and
 #' each level is compared with the first. (Default: \code{NULL})
+#'
+#' @param pair.level \code{Character scalar}. When \code{split.by} varies
+#' within subjects, the level of a pair: \code{"earlier"}, that of its
+#' earlier sample, or \code{"highest"}, the higher of the levels of its two
+#' samples. See details. (Default: \code{"earlier"})
 #'
 #' @param subset.by \code{NULL} or \code{Character scalar}. Specifies a name
 #' of a logical column of \code{colData}; only pairs whose earlier sample is
@@ -286,6 +299,7 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         method = "bray",
         time.lag = NULL,
         split.by = NULL,
+        pair.level = "earlier",
         subset.by = NULL,
         time.point = NULL,
         window = 2,
@@ -314,6 +328,8 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         temp <- .check_input(
             split.by, list(NULL, "character scalar"), colnames(colData(x)))
         .check_split_by_name(split.by, .VARIOGRAM_COLUMNS)
+        temp <- .check_input(
+            pair.level, list("character scalar"), c("earlier", "highest"))
         temp <- .check_input(
             subset.by, list(NULL, "character scalar"), colnames(colData(x)))
         if( !is.null(subset.by) && !is.logical(x[[subset.by]]) ){
@@ -351,7 +367,7 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         args <- list(...)[!names(list(...)) %in% c("altexp")]
         pairs <- .get_within_subject_pairs(
             x, time.col, group, assay.type, method, split.by, squared,
-            bounded, args)
+            bounded, args, pair.level)
         if( !is.null(subset.by) ){
             pairs <- .subset_pairs(pairs, x, time.col, subset.by)
         }
@@ -397,11 +413,13 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
 # dissimilarity.
 .get_within_subject_pairs <- function(
         x, time.col, group, assay.type, method, split.by, squared, bounded,
-        args){
+        args, pair.level = "earlier"){
     time <- x[[time.col]]
     subject <- x[[group]]
     keep <- !is.na(time) & !is.na(subject)
-    if( !is.null(split.by) ){
+    # With pair.level = "highest", samples without a level can still
+    # classify their pairs
+    if( !is.null(split.by) && pair.level == "earlier" ){
         keep <- keep & !is.na(x[[split.by]])
     }
     if( any(!keep) ){
@@ -418,13 +436,15 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     level <- NULL
     if( !is.null(split.by) ){
         level <- as.character(x[[split.by]])
-        n_levels <- tapply(level, subject, function(v) length(unique(v)))
-        pair_level <- any(n_levels > 1L)
-        if( pair_level ){
+        n_levels <- tapply(level, subject, function(v){
+            length(unique(v[!is.na(v)]))
+        })
+        pair_level <- any(n_levels > 1L) || pair.level == "highest"
+        if( pair_level && pair.level == "earlier" ){
             message("'split.by' varies within subjects: each pair takes ",
                 "the value of its earlier sample.")
         }
-        if( length(unique(level)) < 2L ){
+        if( length(unique(level[!is.na(level)])) < 2L ){
             stop("'split.by' must have at least two levels.", call. = FALSE)
         }
         # The first level is the reference of the comparisons
@@ -450,14 +470,31 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     pairs <- do.call(rbind, unname(res))
     pairs$d <- .dissimilarity_scale(pairs$d, squared, bounded)
     if( !is.null(split.by) ){
-        # The level of the earlier sample
-        first <- ifelse(time[pairs$k] <= time[pairs$l], pairs$k, pairs$l)
-        pairs$level <- level[first]
+        if( pair.level == "earlier" ){
+            first <- ifelse(time[pairs$k] <= time[pairs$l], pairs$k, pairs$l)
+            pairs$level <- level[first]
+        } else{
+            pairs$level <- .highest_level(level[pairs$k], level[pairs$l])
+            pairs <- pairs[!is.na(pairs$level), , drop = FALSE]
+        }
         attr(pairs, "pair.level") <- pair_level
     }
     # Columns of the input that k and l index
     attr(pairs, "samples") <- samples
     return(pairs)
+}
+
+# The higher of two levels in the order of the factor levels. A missing level
+# decides nothing, unless the other sample has the highest level
+.highest_level <- function(a, b){
+    top <- nlevels(a)
+    ia <- as.integer(a)
+    ib <- as.integer(b)
+    h <- pmax(ia, ib)
+    h[is.na(ia) & ib %in% top] <- top
+    h[is.na(ib) & ia %in% top] <- top
+    res <- factor(levels(a)[h], levels = levels(a))
+    return(res)
 }
 
 # The pairs whose earlier sample is TRUE in the logical column subset.by

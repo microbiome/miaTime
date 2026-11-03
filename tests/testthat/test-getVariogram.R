@@ -279,3 +279,37 @@ test_that("Pairs are restricted to those from samples with subset.by TRUE", {
     args[[1]] <- tse
     expect_error(do.call(getVariogram, c(args, subset.by = "none")))
 })
+
+test_that("Pairs take the highest level of their two samples", {
+    lev <- c("baseline", "exacerbation")
+    a <- factor(c("baseline", "baseline", "exacerbation", NA, NA, NA),
+        levels = lev)
+    b <- factor(c("baseline", "exacerbation", "baseline", "exacerbation",
+        "baseline", NA), levels = lev)
+    expect_identical(as.character(miaTime:::.highest_level(a, b)),
+        c("baseline", "exacerbation", "exacerbation", "exacerbation", NA, NA))
+    # Every pair with an exacerbation sample, against pairs of two baseline
+    # samples; samples of other states are kept for their pairs
+    set.seed(1)
+    n <- 160
+    mat <- matrix(runif(5 * n), 5, dimnames = list(paste0("f", 1:5), NULL))
+    tse <- SummarizedExperiment(assays = list(x = mat),
+        colData = DataFrame(subject = rep(1:20, each = 8),
+            time = rep(0:7, 20) + runif(n, 0, 0.5),
+            state = factor(sample(c("baseline", "exacerbation", NA), n,
+                replace = TRUE, prob = c(0.5, 0.3, 0.2)), levels = lev)))
+    args <- list(tse, time.col = "time", group = "subject", assay.type = "x",
+        method = "euclidean", squared = TRUE, time.lag = 2,
+        split.by = "state")
+    res <- do.call(getVariogram, c(args, pair.level = "highest"))
+    pairs <- miaTime:::.get_within_subject_pairs(tse, "time", "subject", "x",
+        "euclidean", "state", TRUE, FALSE, list(), "highest")
+    st <- tse$state
+    expect_true(all(pairs$level[st[pairs$k] %in% "exacerbation" |
+        st[pairs$l] %in% "exacerbation"] == "exacerbation"))
+    expect_true(all(pairs$level == "baseline" | st[pairs$k] %in%
+        "exacerbation" | st[pairs$l] %in% "exacerbation"))
+    expect_identical(unique(res$state), c("baseline", "exacerbation",
+        "exacerbation / baseline"))
+    expect_error(do.call(getVariogram, c(args, pair.level = "later")))
+})
