@@ -230,8 +230,10 @@ lag at all: its estimate is the subject-weighted mean dissimilarity of
 pairs in the upper quartile of the lags minus that of pairs in the lower
 quartile, and its p-value compares it with the same statistic after the
 sampling times are permuted within each subject, which leaves the
-dissimilarities unchanged. It uses the pairs at all lags, and is computed
-for each level of \code{split.by}.
+dissimilarities unchanged. When the times can be permuted within subjects
+in at most a million ways, every permutation is used and the p-value is
+exact; otherwise \code{permutations} random permutations are used. It uses
+the pairs at all lags, and is computed for each level of \code{split.by}.
 
 \strong{Technical replicates.} The nugget contains measurement noise and
 change faster than the shortest lag. When some samples were sequenced

@@ -247,3 +247,38 @@ test_that("Technical replicates split the nugget", {
     expect_error(getVariogramModel(tse, time.col = "time",
         group = "subject", assay.type = "x", replicate.by = "x"))
 })
+
+test_that("The test for temporal structure is exact for small designs", {
+    # Four subjects with three samples each: 6^4 permutations of the times
+    set.seed(2)
+    time <- rep(c(0, 3, 9), 4) + runif(12)
+    subject <- rep(paste0("s", 1:4), each = 3)
+    ij <- do.call(rbind, lapply(split(seq_along(time), subject), function(i){
+        t(combn(i, 2))
+    }))
+    x <- ave(rnorm(12), subject, FUN = cumsum)
+    pairs <- data.frame(subject = subject[ij[, 1]],
+        h = abs(time[ij[, 2]] - time[ij[, 1]]),
+        mid = (time[ij[, 1]] + time[ij[, 2]]) / 2,
+        d = (x[ij[, 1]] - x[ij[, 2]])^2, k = ij[, 1], l = ij[, 2])
+    res <- miaTime:::.temporal_structure(pairs, time, 19)
+    # Every permutation, one at a time
+    q <- quantile(pairs$h, c(0.25, 0.75))
+    stat <- function(h){
+        lo <- h <= q[[1]]
+        hi <- h >= q[[2]]
+        wl <- 1 / as.numeric(table(pairs$subject[lo])[pairs$subject[lo]])
+        wh <- 1 / as.numeric(table(pairs$subject[hi])[pairs$subject[hi]])
+        weighted.mean(pairs$d[hi], wh) - weighted.mean(pairs$d[lo], wl)
+    }
+    pm <- miaTime:::.permutations(3)
+    expect_identical(nrow(unique(pm)), 6L)
+    grid <- expand.grid(rep(list(1:6), 4))
+    st <- apply(grid, 1, function(r){
+        tp <- unlist(lapply(1:4, function(j) time[(3 * j - 2):(3 * j)][
+            pm[r[[j]], ]]))
+        stat(abs(tp[pairs$l] - tp[pairs$k]))
+    })
+    expect_equal(res$statistic, stat(pairs$h))
+    expect_equal(res$p.value, mean(st >= stat(pairs$h) - 1e-12))
+})
