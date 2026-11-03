@@ -24,6 +24,7 @@ addVariogram(x, ...)
   time.point = NULL,
   window = 2,
   squared = FALSE,
+  bounded = FALSE,
   conf.level = 0.95,
   permutations = 0,
   ...
@@ -74,6 +75,10 @@ details. (Default: \code{NULL})}
 
 \item{squared}{\code{Logical scalar}. Whether the dissimilarities are
 squared. (Default: \code{FALSE})}
+
+\item{bounded}{\code{Logical scalar}. Whether the dissimilarities are
+bounded by 1 and analysed on the scale \eqn{-\log(1 - d)}. See details.
+(Default: \code{FALSE})}
 
 \item{conf.level}{\code{Numeric scalar}. Confidence level of the
 intervals. (Default: \code{0.95})}
@@ -186,6 +191,13 @@ additively, so the noise does not change the shape of the variogram, only
 its level. Dissimilarities depend on sequencing depth; rarefy the counts
 first (\code{\link[mia:rarefyAssay]{rarefyAssay()}}) when depth differs
 between samples or groups.
+
+Dissimilarities bounded by 1, such as Bray–Curtis and Jaccard, approach
+their bound as communities share fewer features, so \eqn{D(L)} flattens
+near 1 whatever the dynamics. With \code{bounded = TRUE} they are analysed
+on the scale \eqn{-\log(1 - d)}, which is unbounded and close to \eqn{d}
+for small dissimilarities. Pairs without shared features (\eqn{d = 1}) are
+set to \eqn{d = 1 - 10^{-9}}.
 }
 \examples{
 library(miaTime)
