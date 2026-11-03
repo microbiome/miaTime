@@ -25,6 +25,7 @@ addVariogram(x, ...)
   window = 2,
   squared = FALSE,
   bounded = FALSE,
+  relative = FALSE,
   conf.level = 0.95,
   permutations = 0,
   ...
@@ -80,6 +81,10 @@ squared. (Default: \code{FALSE})}
 bounded by 1 and analysed on the scale \eqn{-\log(1 - d)}. See details.
 (Default: \code{FALSE})}
 
+\item{relative}{\code{Logical scalar}. Whether \eqn{D(L)} is also
+reported relative to the dissimilarity between subjects. See details.
+(Default: \code{FALSE})}
+
 \item{conf.level}{\code{Numeric scalar}. Confidence level of the
 intervals. (Default: \code{0.95})}
 
@@ -108,6 +113,8 @@ comparisons, the permutation p-value (see details).}
 \item{supported}{Whether the design supports \eqn{D(L)} at this lag.}
 \item{time.point}{The time at which \eqn{D(L)} was estimated, when
 \code{time.point} is given.}
+\item{relative}{When \code{relative = TRUE}: \eqn{D(L) / B}, for
+estimates of \eqn{D(L)}.}
 }
 \code{addVariogram} returns \code{x} with this table in its
 \code{metadata}.
@@ -198,6 +205,16 @@ near 1 whatever the dynamics. With \code{bounded = TRUE} they are analysed
 on the scale \eqn{-\log(1 - d)}, which is unbounded and close to \eqn{d}
 for small dissimilarities. Pairs without shared features (\eqn{d = 1}) are
 set to \eqn{d = 1 - 10^{-9}}.
+
+\strong{Relative change.} \eqn{D(L)} is on the scale of the
+dissimilarity, so it cannot be compared between dissimilarities, studies
+or body sites. With \code{relative = TRUE}, \eqn{D(L)} is also reported
+relative to \eqn{B}, the mean dissimilarity between samples of different
+subjects, where every pair of subjects counts equally: a value of 0.5
+means that over \eqn{L} a subject's community changes half as much as it
+differs from another subject's. \eqn{B} is computed from the samples of
+all subjects, so it is the same for every level of \code{split.by}, and
+it is treated as fixed.
 }
 \examples{
 library(miaTime)
