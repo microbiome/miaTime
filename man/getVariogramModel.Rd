@@ -21,6 +21,7 @@ addVariogramModel(x, ...)
   method = "bray",
   form = c("exponential", "two.timescale", "power", "linear"),
   period = NULL,
+  replicate.by = NULL,
   split.by = NULL,
   time.point = NULL,
   squared = FALSE,
@@ -66,6 +67,11 @@ by cross-validation: \code{"exponential"}, \code{"two.timescale"},
 seasonal forms, in the units of \code{time.col} (for example 365 for
 days). (Default: \code{NULL})}
 
+\item{replicate.by}{\code{NULL} or \code{Character scalar}. Specifies a
+name of a column of \code{colData} in which technical replicates of a
+sample share a value (\code{NA} for samples without replicates). See
+details. (Default: \code{NULL})}
+
 \item{split.by}{\code{NULL} or \code{Character scalar}. Specifies a name
 of a column from \code{colData} with one value per subject. The form is
 fitted to each of its levels, and each level is compared with the first.
@@ -110,7 +116,9 @@ between levels, or \code{"test"}.}
 \code{"sill"} and \code{"timescale"} (with suffixes \code{.1} and
 \code{.2} for the two-timescale form), \code{"scale"} and
 \code{"exponent"} (power form) or \code{"slope"} (linear form), and
-\code{"seasonal"} (the amplitude \eqn{c_p} of seasonal forms).}
+\code{"seasonal"} (the amplitude \eqn{c_p} of seasonal forms); with
+\code{replicate.by}, also \code{"nugget.technical"} and
+\code{"nugget.fast"}.}
 \item{estimate, lower, upper}{The estimate, or the ratio between
 levels, with its confidence interval.}
 \item{se}{Standard error on the log scale (without \code{split.by}).}
@@ -224,6 +232,17 @@ quartile, and its p-value compares it with the same statistic after the
 sampling times are permuted within each subject, which leaves the
 dissimilarities unchanged. It uses the pairs at all lags, and is computed
 for each level of \code{split.by}.
+
+\strong{Technical replicates.} The nugget contains measurement noise and
+change faster than the shortest lag. When some samples were sequenced
+more than once, \code{replicate.by} names a column of \code{colData} in
+which technical replicates of a sample share a value. Only the first
+replicate of each group enters the pairs of different samples, the pairs
+within each group are added at their lag (usually 0), and the nugget is
+split into a technical part \eqn{c_{tech}}, which applies to every pair,
+and a fast part \eqn{c_{fast}}, which applies only to pairs of different
+samples: \eqn{g(0) = c_{tech}} for replicates and the nugget is
+\eqn{c_{tech} + c_{fast}}.
 
 The dissimilarities are those of
 \code{\link[miaTime:getVariogram]{getVariogram()}}; see its details for
