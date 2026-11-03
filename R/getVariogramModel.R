@@ -1,0 +1,496 @@
+#' @name
+#' getVariogramModel
+#'
+#' @export
+#'
+#' @title
+#' Nugget, sill and timescale of community change (variogram model)
+#'
+#' @description
+#' Fits a form to the temporal variogram \eqn{g(h)}, the expected
+#' dissimilarity between two samples of the same subject taken \eqn{h} time
+#' units apart, and reports its nugget, sill and timescale. The nugget
+#' separates measurement noise and change faster than the shortest lag from
+#' slower change.
+#'
+#' @details
+#' The forms are
+#' \describe{
+#'   \item{exponential}{\eqn{g(h) = c_0 + c_1 (1 - e^{-h / \phi})}: change
+#'   that levels off at the sill \eqn{c_0 + c_1}, with timescale \eqn{\phi}.}
+#'   \item{two.timescale}{\eqn{g(h) = c_0 + c_1 (1 - e^{-h / \phi_1}) +
+#'   c_2 (1 - e^{-h / \phi_2})}, with \eqn{\phi_2 > \phi_1}.}
+#'   \item{power}{\eqn{g(h) = c_0 + b h^\alpha}, \eqn{0 < \alpha \le 2}:
+#'   change without a sill.}
+#'   \item{linear}{\eqn{g(h) = c_0 + b h}.}
+#' }
+#' In every form \eqn{c_0 = g(0)} is the nugget: the dissimilarity between
+#' samples taken at the same time, from measurement noise and change faster
+#' than the shortest lag. Pairs of samples taken at the same time, such as
+#' technical replicates, inform it directly.
+#'
+#' The form is fitted to all pairs of samples of the same subject by weighted
+#' least squares with variance proportional to \eqn{g(h)^2}, with iterated
+#' weights (Cressie 1985); the pairs of each subject are weighted so that
+#' every subject counts equally. Pairs with lags longer than the longest
+#' lag reached by at least \eqn{\max(5, 20\%)} of the subjects are left out,
+#' because they come from few subjects and are dominated by them.
+#'
+#' When several forms are given, the form is chosen by ten-fold
+#' cross-validation over subjects: each form is fitted to the subjects of
+#' nine folds, and the held-out subjects' variogram, binned at quantiles of
+#' the lags, is compared with the fitted one by the mean squared relative
+#' difference. The simplest form whose loss is within one standard error of
+#' the smallest is chosen. The losses are in \code{metadata(res)$cv}. Set a
+#' seed (\code{set.seed()}) for reproducible folds.
+#'
+#' Standard errors are cluster-robust by subject (CR1) and are computed on
+#' the log scale of each parameter, by the delta method; intervals use a t
+#' distribution with \eqn{G - 1} degrees of freedom, where \eqn{G} is the
+#' number of subjects. A timescale is identified only when its interval lies
+#' within the fitted lag range, from the shortest positive lag to the
+#' longest lag used; otherwise the data do not determine it, and change at
+#' stated lags
+#' (\code{\link[miaTime:getVariogram]{getVariogram()}}) is the quantity to
+#' report.
+#'
+#' The dissimilarities are those of
+#' \code{\link[miaTime:getVariogram]{getVariogram()}}; see its details for
+#' the choice of dissimilarity and for bounded dissimilarities.
+#'
+#' @references
+#' Cressie N. (1985) Fitting variogram models by weighted least squares.
+#' Mathematical Geology 17, 563–586. doi: 10.1007/BF01032109
+#'
+#' Diggle P.J. (1988) An approach to the analysis of repeated measurements.
+#' Biometrics 44, 959–971. doi: 10.2307/2531727
+#'
+#' @return
+#' \code{getVariogramModel} returns a \code{DataFrame} with one row per
+#' parameter and the columns
+#' \describe{
+#'   \item{form}{The fitted form.}
+#'   \item{parameter}{\code{"nugget"}, \code{"partial.sill"},
+#'   \code{"sill"} and \code{"timescale"} (with suffixes \code{.1} and
+#'   \code{.2} for the two-timescale form), \code{"scale"} and
+#'   \code{"exponent"} (power form) or \code{"slope"} (linear form).}
+#'   \item{estimate, lower, upper}{The estimate with its confidence
+#'   interval.}
+#'   \item{se}{Standard error on the log scale.}
+#'   \item{df}{Degrees of freedom of the t distribution.}
+#'   \item{identified}{For timescales, whether the interval lies within the
+#'   fitted lag range.}
+#'   \item{n.subjects, n.pairs}{Subjects and pairs in the fit.}
+#'   \item{min.lag, max.lag}{The fitted lag range.}
+#' }
+#' \code{addVariogramModel} returns \code{x} with this table in its
+#' \code{metadata}.
+#'
+#' @inheritParams getVariogram
+#'
+#' @param form \code{Character vector}. The forms among which one is chosen
+#' by cross-validation: \code{"exponential"}, \code{"two.timescale"},
+#' \code{"power"} and \code{"linear"}. See details. (Default: all four)
+#'
+#' @param name \code{Character scalar}. Specifies a name for storing the
+#' results in \code{metadata}. (Default: \code{"variogram_model"})
+#'
+#' @param ... additional arguments passed to
+#' \code{\link[mia:getDissimilarity]{getDissimilarity()}}.
+#'
+#' @examples
+#' library(miaTime)
+#'
+#' data(hitchip1006)
+#' tse <- transformAssay(hitchip1006, method = "hellinger")
+#'
+#' # Nugget, sill and timescale of the exponential form, as squared
+#' # Hellinger distance
+#' res <- getVariogramModel(
+#'     tse,
+#'     time.col = "time",
+#'     group = "subject",
+#'     assay.type = "hellinger",
+#'     method = "euclidean",
+#'     squared = TRUE,
+#'     form = "exponential"
+#'     )
+#' res
+#'
+#' # Choose among three forms by cross-validation and store the results in
+#' # metadata
+#' set.seed(1)
+#' tse <- addVariogramModel(
+#'     tse,
+#'     time.col = "time",
+#'     group = "subject",
+#'     assay.type = "hellinger",
+#'     method = "euclidean",
+#'     squared = TRUE,
+#'     form = c("exponential", "power", "linear")
+#'     )
+#' metadata(tse)[["variogram_model"]]
+#'
+#' @seealso
+#' \code{\link[miaTime:getVariogram]{getVariogram()}}
+#'
+NULL
+
+#' @rdname getVariogramModel
+#' @export
+setMethod("addVariogramModel", signature = c(x = "SummarizedExperiment"),
+    function(x, name = "variogram_model", ...){
+        temp <- .check_input(name, list("character scalar"))
+        x <- .check_and_get_altExp(x, ...)
+        args <- c(list(x = x), list(...)[!names(list(...)) %in% c("altexp")])
+        res <- do.call(getVariogramModel, args)
+        x <- .add_values_to_metadata(x, name, res, ...)
+        return(x)
+    }
+)
+
+#' @rdname getVariogramModel
+#' @export
+setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
+    function(
+        x,
+        time.col,
+        group,
+        assay.type = "counts",
+        method = "bray",
+        form = c("exponential", "two.timescale", "power", "linear"),
+        squared = FALSE,
+        bounded = FALSE,
+        conf.level = 0.95,
+        ...){
+        ############################# INPUT CHECK ##############################
+        x <- .check_and_get_altExp(x, ...)
+        temp <- .check_input(
+            time.col, list("character scalar"), colnames(colData(x)))
+        if( !is.numeric(x[[time.col]]) ){
+            stop("'time.col' must specify numeric column from colData(x)",
+                call. = FALSE)
+        }
+        temp <- .check_input(
+            group, list("character scalar"), colnames(colData(x)))
+        .check_assay_present(assay.type, x)
+        temp <- .check_input(method, list("character scalar"))
+        temp <- .check_input(form, list("character vector"),
+            names(.VARIOGRAM_FORMS))
+        temp <- .check_input(squared, list("logical scalar"))
+        temp <- .check_input(bounded, list("logical scalar"))
+        temp <- .check_input(conf.level, list("numeric scalar"))
+        if( conf.level <= 0 || conf.level >= 1 ){
+            stop("'conf.level' must be between 0 and 1.", call. = FALSE)
+        }
+        ########################### INPUT CHECK END ############################
+        args <- list(...)[!names(list(...)) %in% c("altexp")]
+        pairs <- .get_within_subject_pairs(
+            x, time.col, group, assay.type, method, NULL, squared, bounded,
+            args)
+        pairs <- pairs[pairs$h <= .max_lag(pairs), , drop = FALSE]
+        form <- unique(form)
+        cv <- NULL
+        if( length(form) > 1L ){
+            cv <- .cv_forms(pairs, form)
+            form <- cv$form[cv$chosen]
+        }
+        fit <- .fit_variogram(pairs, form)
+        if( !fit$converged ){
+            warning("The fit of the ", form, " form did not converge.",
+                call. = FALSE)
+        }
+        res <- .variogram_parameters(fit, conf.level)
+        res <- DataFrame(res, check.names = FALSE)
+        metadata(res)$cv <- cv
+        return(res)
+    }
+)
+
+################################ HELP FUNCTIONS ################################
+
+# Each form: names of its coefficients (positive parameters on the log scale,
+# the exponent of the power form on the logit scale of alpha / 2), the
+# variogram given the natural parameters, and the reported parameters
+.VARIOGRAM_FORMS <- list(
+    exponential = list(
+        coef = c("log_c0", "log_c1", "log_phi"),
+        g = function(h, P) P$c0 + P$c1 * (1 - exp(-h / P$phi)),
+        report = function(P) c(
+            nugget = P$c0, partial.sill = P$c1, sill = P$c0 + P$c1,
+            timescale = P$phi)),
+    two.timescale = list(
+        coef = c("log_c0", "log_c1", "log_phi1", "log_c2", "log_r"),
+        g = function(h, P) P$c0 + P$c1 * (1 - exp(-h / P$phi1)) +
+            P$c2 * (1 - exp(-h / P$phi2)),
+        report = function(P) c(
+            nugget = P$c0, partial.sill.1 = P$c1, partial.sill.2 = P$c2,
+            sill = P$c0 + P$c1 + P$c2, timescale.1 = P$phi1,
+            timescale.2 = P$phi2)),
+    power = list(
+        coef = c("log_c0", "log_b", "logit_a"),
+        g = function(h, P) P$c0 + P$b * h^P$alpha,
+        report = function(P) c(nugget = P$c0, scale = P$b,
+            exponent = P$alpha)),
+    linear = list(
+        coef = c("log_c0", "log_b"),
+        g = function(h, P) P$c0 + P$b * h,
+        report = function(P) c(nugget = P$c0, slope = P$b))
+)
+
+# Natural parameters from the coefficients
+.natural_parameters <- function(b, form){
+    names(b) <- .VARIOGRAM_FORMS[[form]]$coef
+    P <- list()
+    for( n in names(b) ){
+        if( n == "logit_a" ){
+            P$alpha <- 2 * stats::plogis(b[[n]])
+        } else{
+            P[[sub("^log_", "", n)]] <- exp(b[[n]])
+        }
+    }
+    if( !is.null(P$r) ){
+        P$phi2 <- P$phi1 * (1 + P$r)
+    }
+    return(P)
+}
+
+.variogram_form <- function(h, b, form){
+    .VARIOGRAM_FORMS[[form]]$g(h, .natural_parameters(b, form))
+}
+
+# The longest lag reached by at least max(5, 20%) of the subjects
+.max_lag <- function(pairs){
+    hs <- sort(tapply(pairs$h, pairs$subject, max), decreasing = TRUE)
+    k <- max(5L, ceiling(0.2 * length(hs)))
+    if( length(hs) < k ){
+        return(max(hs))
+    }
+    return(unname(hs[k]))
+}
+
+# Weights that make every subject count equally, with mean one
+.subject_weights <- function(subject){
+    w <- as.numeric(1 / table(subject)[subject])
+    return(w / mean(w))
+}
+
+# Starting values from the lag-binned empirical variogram
+.start_values <- function(pairs, form){
+    p <- pairs[pairs$h > 0, ]
+    n_bins <- min(10L, max(3L, floor(nrow(p) / 20)))
+    breaks <- unique(stats::quantile(log(p$h),
+        probs = seq(0, 1, length.out = n_bins + 1L)))
+    breaks <- exp(breaks)
+    breaks[1L] <- breaks[1L] * 0.999
+    bin <- cut(p$h, breaks, include.lowest = TRUE)
+    w <- as.numeric(1 / table(p$subject)[p$subject])
+    h_bin <- tapply(w * p$h, bin, sum) / tapply(w, bin, sum)
+    d_bin <- tapply(w * p$d, bin, sum) / tapply(w, bin, sum)
+    d_bin <- d_bin[order(h_bin)]
+    d_bin <- d_bin[!is.na(d_bin)]
+    d_low <- d_bin[[1L]]
+    sill <- mean(utils::tail(d_bin, min(3L, length(d_bin))))
+    c0 <- max(0.5 * d_low, 1e-6 * sill)
+    c1 <- max(sill - c0, 0.1 * sill)
+    hmin <- max(min(p$h), 1e-3 * max(p$h))
+    hmax <- max(p$h)
+    phis <- exp(seq(log(hmin), log(hmax), length.out = 6L))
+    hmed <- stats::median(p$h)
+    starts <- switch(form,
+        exponential = lapply(phis, function(ph){
+            c(log(c0), log(c1), log(ph))
+        }),
+        two.timescale = unlist(lapply(phis[-length(phis)], function(ph){
+            lapply(c(5, 30), function(r){
+                c(log(c0), log(c1 / 2), log(ph), log(c1 / 2), log(r - 1))
+            })
+        }), recursive = FALSE),
+        power = lapply(c(0.3, 1, 1.7), function(a){
+            c(log(c0), log(c1 / hmed^a), stats::qlogis(a / 2))
+        }),
+        linear = list(c(log(c0), log(c1 / hmed))))
+    return(starts)
+}
+
+# Weighted least squares with variance proportional to g(h)^2, by iterated
+# weights from several starting values; the fit with the smallest deviance
+# is kept
+.fit_variogram <- function(pairs, form, starts = NULL, maxit = 30L){
+    w <- .subject_weights(pairs$subject)
+    d <- pairs$d
+    h <- pairs$h
+    floor_g <- 1e-8 * mean(d)
+    if( is.null(starts) ){
+        starts <- .start_values(pairs, form)
+    }
+    fits <- lapply(starts, function(b){
+        g <- pmax(.variogram_form(h, b, form), floor_g)
+        if( any(!is.finite(g)) ){
+            return(list(beta = b, deviance = Inf, converged = FALSE))
+        }
+        converged <- FALSE
+        for( it in seq_len(maxit) ){
+            sw <- sqrt(w) / g
+            res_fn <- function(bb){
+                r <- sw * (d - .variogram_form(h, bb, form))
+                r[!is.finite(r)] <- 1e10
+                r
+            }
+            b_new <- .levenberg_marquardt(b, res_fn)
+            g_new <- pmax(.variogram_form(h, b_new, form), floor_g)
+            if( any(!is.finite(g_new)) ){
+                break
+            }
+            change <- max(abs(b_new - b) / (abs(b) + 0.1))
+            b <- b_new
+            g <- g_new
+            if( change < 1e-5 ){
+                converged <- TRUE
+                break
+            }
+        }
+        dev <- sum(w * (d / g - 1)^2)
+        list(beta = b, deviance = if( is.finite(dev) ) dev else Inf,
+            converged = converged)
+    })
+    dev <- vapply(fits, function(f) f$deviance, numeric(1L))
+    if( all(!is.finite(dev)) ){
+        stop("The fit of the ", form, " form failed from all starting ",
+            "values.", call. = FALSE)
+    }
+    best <- fits[[which.min(dev)]]
+    res <- list(
+        beta = best$beta, form = form, converged = best$converged,
+        deviance = best$deviance, pairs = pairs, w = w,
+        fitted = .variogram_form(h, best$beta, form))
+    return(res)
+}
+
+# Levenberg-Marquardt minimisation of the sum of squared residuals
+# (MINPACK), with quasi-Newton minimisation if it fails
+.levenberg_marquardt <- function(b, res_fn){
+    res <- tryCatch(minpack.lm::nls.lm(par = b, fn = res_fn,
+        control = minpack.lm::nls.lm.control(maxiter = 200L)),
+        error = function(e) NULL)
+    if( !is.null(res) && all(is.finite(res$par)) ){
+        return(res$par)
+    }
+    res <- stats::optim(b, function(bb) sum(res_fn(bb)^2), method = "BFGS",
+        control = list(maxit = 500L))
+    return(res$par)
+}
+
+# Central differences of f with respect to each element of b
+.numerical_jacobian <- function(f, b, step = 1e-6){
+    J <- vapply(seq_along(b), function(j){
+        e <- step * max(1, abs(b[[j]]))
+        bp <- b
+        bm <- b
+        bp[[j]] <- b[[j]] + e
+        bm[[j]] <- b[[j]] - e
+        (f(bp) - f(bm)) / (2 * e)
+    }, numeric(length(f(b))))
+    return(matrix(J, ncol = length(b)))
+}
+
+# Cluster-robust (CR1) covariance of the coefficients, subjects as clusters
+.fit_vcov <- function(fit){
+    p <- fit$pairs
+    J <- .numerical_jacobian(
+        function(b) .variogram_form(p$h, b, fit$form), fit$beta, 1e-5)
+    wv <- fit$w / pmax(fit$fitted, 1e-8 * mean(p$d))^2
+    A <- crossprod(J, J * wv)
+    U <- rowsum(J * (wv * (p$d - fit$fitted)), p$subject)
+    G <- nrow(U)
+    Ai <- tryCatch(solve(A), error = function(e) .generalised_inverse(A))
+    V <- Ai %*% crossprod(U) %*% Ai * G / (G - 1)
+    return(V)
+}
+
+.generalised_inverse <- function(A){
+    s <- svd(A)
+    pos <- s$d > max(dim(A)) * max(s$d) * .Machine$double.eps
+    s$v[, pos, drop = FALSE] %*% (t(s$u[, pos, drop = FALSE]) / s$d[pos])
+}
+
+# Reported parameters with intervals on the log scale (delta method)
+.variogram_parameters <- function(fit, conf.level){
+    rep_fn <- .VARIOGRAM_FORMS[[fit$form]]$report
+    est <- rep_fn(.natural_parameters(fit$beta, fit$form))
+    V <- .fit_vcov(fit)
+    J <- .numerical_jacobian(
+        function(b) log(rep_fn(.natural_parameters(b, fit$form))), fit$beta)
+    se <- sqrt(pmax(rowSums((J %*% V) * J), 0))
+    G <- length(unique(fit$pairs$subject))
+    q <- stats::qt(1 - (1 - conf.level) / 2, G - 1)
+    h <- fit$pairs$h
+    min_lag <- min(h[h > 0])
+    max_lag <- max(h)
+    lower <- est * exp(-q * se)
+    upper <- est * exp(q * se)
+    timescale <- grepl("^timescale", names(est))
+    res <- data.frame(
+        form = fit$form, parameter = names(est), estimate = unname(est),
+        lower = unname(lower), upper = unname(upper), se = se, df = G - 1,
+        identified = ifelse(timescale,
+            is.finite(se) & lower >= min_lag & upper <= max_lag, NA),
+        n.subjects = G, n.pairs = nrow(fit$pairs), min.lag = min_lag,
+        max.lag = max_lag)
+    rownames(res) <- NULL
+    return(res)
+}
+
+# Ten-fold cross-validation over subjects. Single pairs are too noisy to
+# separate forms, so the held-out subjects' variogram is binned at quantiles
+# of the lags and compared with the fitted variogram by the mean squared
+# relative difference. The simplest form within one standard error of the
+# best is chosen.
+.cv_forms <- function(pairs, forms, K = 10L, n_bins = 12L){
+    subj <- unique(pairs$subject)
+    K <- min(K, length(subj))
+    fold <- stats::setNames(sample(rep_len(seq_len(K), length(subj))), subj)
+    hp <- pairs$h[pairs$h > 0]
+    breaks <- unique(stats::quantile(hp, seq(0, 1, length.out = n_bins + 1L)))
+    breaks[1L] <- 0
+    losses <- vapply(forms, function(form){
+        vapply(seq_len(K), function(k){
+            test_s <- names(fold)[fold == k]
+            train <- pairs[!pairs$subject %in% test_s, , drop = FALSE]
+            test <- pairs[pairs$subject %in% test_s, , drop = FALSE]
+            f <- tryCatch(.fit_variogram(train, form),
+                error = function(e) NULL)
+            if( is.null(f) ){
+                return(NA_real_)
+            }
+            g <- .variogram_form(test$h, f$beta, form)
+            bin <- as.integer(cut(test$h, breaks, include.lowest = TRUE))
+            w <- as.numeric(1 / table(test$subject)[test$subject])
+            dbar <- tapply(w * test$d, bin, sum) / tapply(w, bin, sum)
+            gbar <- tapply(w * g, bin, sum) / tapply(w, bin, sum)
+            mean((dbar / gbar - 1)^2)
+        }, numeric(1L))
+    }, numeric(K))
+    losses <- matrix(losses, ncol = length(forms),
+        dimnames = list(NULL, forms))
+    m <- colMeans(losses, na.rm = TRUE)
+    n_coef <- vapply(forms, function(f) length(.VARIOGRAM_FORMS[[f]]$coef),
+        integer(1L))
+    if( all(is.na(m)) ){
+        stop("No form could be fitted in the cross-validation.",
+            call. = FALSE)
+    }
+    best <- which.min(m)
+    diff <- losses - losses[, best]
+    se_diff <- apply(diff, 2L, stats::sd, na.rm = TRUE) /
+        sqrt(colSums(!is.na(diff)))
+    se_diff[best] <- 0
+    eligible <- names(m)[m - m[best] <= se_diff & !is.na(m)]
+    eligible <- eligible[n_coef[eligible] == min(n_coef[eligible])]
+    choice <- eligible[which.min(m[eligible])]
+    res <- data.frame(
+        form = forms, loss = unname(m), difference = unname(m - m[best]),
+        se = unname(se_diff), n.coefficients = unname(n_coef),
+        chosen = forms == choice)
+    return(res)
+}

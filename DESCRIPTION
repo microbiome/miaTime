@@ -29,6 +29,7 @@ Imports:
     dplyr,
     glmnet,
     methods,
+    minpack.lm,
     S4Vectors,
     SingleCellExperiment,
     stats,

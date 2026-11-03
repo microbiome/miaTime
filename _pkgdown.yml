@@ -10,6 +10,7 @@ reference:
   contents:
   - getVariogram
   - getVariogramContribution
+  - getVariogramModel
 
 - title: Feature dynamics
   contents:
