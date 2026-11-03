@@ -103,6 +103,17 @@
 #' dissimilarities unchanged. It uses the pairs at all lags, and is computed
 #' for each level of \code{split.by}.
 #'
+#' \strong{Technical replicates.} The nugget contains measurement noise and
+#' change faster than the shortest lag. When some samples were sequenced
+#' more than once, \code{replicate.by} names a column of \code{colData} in
+#' which technical replicates of a sample share a value. Only the first
+#' replicate of each group enters the pairs of different samples, the pairs
+#' within each group are added at their lag (usually 0), and the nugget is
+#' split into a technical part \eqn{c_{tech}}, which applies to every pair,
+#' and a fast part \eqn{c_{fast}}, which applies only to pairs of different
+#' samples: \eqn{g(0) = c_{tech}} for replicates and the nugget is
+#' \eqn{c_{tech} + c_{fast}}.
+#'
 #' The dissimilarities are those of
 #' \code{\link[miaTime:getVariogram]{getVariogram()}}; see its details for
 #' the choice of dissimilarity and for bounded dissimilarities.
@@ -127,7 +138,9 @@
 #'   \code{"sill"} and \code{"timescale"} (with suffixes \code{.1} and
 #'   \code{.2} for the two-timescale form), \code{"scale"} and
 #'   \code{"exponent"} (power form) or \code{"slope"} (linear form), and
-#'   \code{"seasonal"} (the amplitude \eqn{c_p} of seasonal forms).}
+#'   \code{"seasonal"} (the amplitude \eqn{c_p} of seasonal forms); with
+#'   \code{replicate.by}, also \code{"nugget.technical"} and
+#'   \code{"nugget.fast"}.}
 #'   \item{estimate, lower, upper}{The estimate, or the ratio between
 #'   levels, with its confidence interval.}
 #'   \item{se}{Standard error on the log scale (without \code{split.by}).}
@@ -155,6 +168,11 @@
 #' @param period \code{NULL} or \code{Numeric scalar}. The period of the
 #' seasonal forms, in the units of \code{time.col} (for example 365 for
 #' days). (Default: \code{NULL})
+#'
+#' @param replicate.by \code{NULL} or \code{Character scalar}. Specifies a
+#' name of a column of \code{colData} in which technical replicates of a
+#' sample share a value (\code{NA} for samples without replicates). See
+#' details. (Default: \code{NULL})
 #'
 #' @param split.by \code{NULL} or \code{Character scalar}. Specifies a name
 #' of a column from \code{colData} with one value per subject. The form is
@@ -260,6 +278,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         method = "bray",
         form = c("exponential", "two.timescale", "power", "linear"),
         period = NULL,
+        replicate.by = NULL,
         split.by = NULL,
         time.point = NULL,
         squared = FALSE,
@@ -291,6 +310,8 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         if( any(grepl("\\.seasonal$", form)) && is.null(period) ){
             stop("Seasonal forms need 'period'.", call. = FALSE)
         }
+        temp <- .check_input(replicate.by, list(NULL, "character scalar"),
+            colnames(colData(x)))
         temp <- .check_input(
             split.by, list(NULL, "character scalar"), colnames(colData(x)))
         .check_split_by_name(split.by, c(.VARIOGRAM_COLUMNS, "form",
@@ -317,20 +338,33 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         }
         ########################### INPUT CHECK END ############################
         args <- list(...)[!names(list(...)) %in% c("altexp")]
+        # With technical replicates, only the first sample of each group
+        # enters the pairs of different samples
+        x_pairs <- x
+        if( !is.null(replicate.by) ){
+            rg <- x[[replicate.by]]
+            x_pairs <- x[, is.na(rg) | !duplicated(rg)]
+        }
         pairs <- .get_within_subject_pairs(
-            x, time.col, group, assay.type, method, split.by, squared,
+            x_pairs, time.col, group, assay.type, method, split.by, squared,
             bounded, args)
         if( isTRUE(attr(pairs, "pair.level")) ){
             stop("'split.by' must have one value per subject.", call. = FALSE)
         }
-        time <- x[[time.col]][attr(pairs, "samples")]
+        time <- x_pairs[[time.col]][attr(pairs, "samples")]
+        pairs$rep <- FALSE
+        if( !is.null(replicate.by) ){
+            pairs <- rbind(pairs, .replicate_pairs(
+                x, time.col, group, assay.type, method, replicate.by,
+                split.by, squared, bounded, args, pairs))
+        }
         if( !is.null(time.point) ){
             r <- (1 + pmax(pairs$mid, 0)) / (1 + max(time.point, 0))
             pairs <- pairs[r >= 1 / 2 & r <= 2, , drop = FALSE]
         }
         all_pairs <- pairs
         form <- lapply(stats::setNames(nm = unique(form)), .form_spec,
-            period = period)
+            period = period, replicates = !is.null(replicate.by))
         if( is.null(split.by) ){
             pairs <- pairs[pairs$h <= .max_lag(pairs), , drop = FALSE]
             cv <- NULL
@@ -368,6 +402,42 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
 
 ################################ HELP FUNCTIONS ################################
 
+# All pairs of samples within each group of technical replicates, flagged as
+# replicate pairs
+.replicate_pairs <- function(
+        x, time.col, group, assay.type, method, replicate.by, split.by,
+        squared, bounded, args, pairs){
+    rg <- x[[replicate.by]]
+    time <- x[[time.col]]
+    subject <- as.character(x[[group]])
+    ok <- which(!is.na(rg) & !is.na(time) & !is.na(subject))
+    idx_list <- split(ok, rg[ok])
+    idx_list <- idx_list[lengths(idx_list) >= 2L]
+    if( length(idx_list) == 0L ){
+        stop("No group of 'replicate.by' has two or more samples.",
+            call. = FALSE)
+    }
+    mat <- t(assay(x, assay.type))
+    res <- lapply(idx_list, function(idx){
+        d <- as.matrix(do.call(getDissimilarity, c(
+            list(x = mat[idx, , drop = FALSE], method = method), args)))
+        ut <- which(upper.tri(d), arr.ind = TRUE)
+        k <- idx[ut[, 1L]]
+        l <- idx[ut[, 2L]]
+        data.frame(
+            subject = subject[k], h = abs(time[l] - time[k]),
+            mid = (time[k] + time[l]) / 2, d = d[ut], k = NA_integer_,
+            l = NA_integer_)
+    })
+    res <- do.call(rbind, unname(res))
+    res$d <- .dissimilarity_scale(res$d, squared, bounded)
+    if( !is.null(split.by) ){
+        res$level <- pairs$level[match(res$subject, pairs$subject)]
+    }
+    res$rep <- TRUE
+    return(res)
+}
+
 # Each form: names of its coefficients (positive parameters on the log scale,
 # the exponent of the power form on the logit scale of alpha / 2), the
 # variogram given the natural parameters, and the reported parameters
@@ -398,19 +468,44 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
 )
 
 # A form, with an annual term c_p (1 - cos(2 pi h / period)) for names ending
-# in ".seasonal"
-.form_spec <- function(form, period = NULL){
+# in ".seasonal", and with the nugget split into a technical part (c_tech,
+# all pairs) and a fast part (c_fast, pairs of different samples only) when
+# there are technical replicates
+.form_spec <- function(form, period = NULL, replicates = FALSE){
     base <- sub("\\.seasonal$", "", form)
-    spec <- c(list(name = form, base = base, seasonal = base != form),
-        .VARIOGRAM_FORMS[[base]])
-    if( spec$seasonal ){
-        g <- spec$g
-        report <- spec$report
+    seasonal <- base != form
+    spec <- c(list(name = form, base = base, seasonal = seasonal,
+        replicates = replicates), .VARIOGRAM_FORMS[[base]])
+    g <- spec$g
+    report <- spec$report
+    if( seasonal ){
         spec$coef <- c(spec$coef, "log_cp")
-        spec$g <- function(h, P){
-            g(h, P) + P$cp * (1 - cos(2 * pi * h / period))
+    }
+    if( replicates ){
+        spec$coef <- c("log_ctech", "log_cfast", spec$coef[-1L])
+    }
+    spec$g <- function(h, P, rep = FALSE){
+        if( replicates ){
+            P$c0 <- P$ctech + ifelse(rep, 0, P$cfast)
         }
-        spec$report <- function(P) c(report(P), seasonal = P$cp)
+        res <- g(h, P)
+        if( seasonal ){
+            res <- res + P$cp * (1 - cos(2 * pi * h / period))
+        }
+        res
+    }
+    spec$report <- function(P){
+        if( replicates ){
+            P$c0 <- P$ctech + P$cfast
+        }
+        res <- report(P)
+        if( replicates ){
+            res <- c(res, nugget.technical = P$ctech, nugget.fast = P$cfast)
+        }
+        if( seasonal ){
+            res <- c(res, seasonal = P$cp)
+        }
+        res
     }
     return(spec)
 }
@@ -432,12 +527,18 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
     return(P)
 }
 
-.variogram_form <- function(h, b, form){
-    form$g(h, .natural_parameters(b, form))
+.variogram_form <- function(h, b, form, rep = FALSE){
+    form$g(h, .natural_parameters(b, form), rep)
+}
+
+# Whether each pair is a pair of technical replicates
+.is_replicate <- function(pairs){
+    if( is.null(pairs$rep) ) rep(FALSE, nrow(pairs)) else pairs$rep
 }
 
 # The longest lag reached by at least max(5, 20%) of the subjects
 .max_lag <- function(pairs){
+    pairs <- pairs[!.is_replicate(pairs), , drop = FALSE]
     hs <- sort(tapply(pairs$h, pairs$subject, max), decreasing = TRUE)
     k <- max(5L, ceiling(0.2 * length(hs)))
     if( length(hs) < k ){
@@ -454,7 +555,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
 
 # Starting values from the lag-binned empirical variogram
 .start_values <- function(pairs, form){
-    p <- pairs[pairs$h > 0, ]
+    p <- pairs[pairs$h > 0 & !.is_replicate(pairs), ]
     n_bins <- min(10L, max(3L, floor(nrow(p) / 20)))
     breaks <- unique(stats::quantile(log(p$h),
         probs = seq(0, 1, length.out = n_bins + 1L)))
@@ -490,6 +591,13 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
     if( form$seasonal ){
         starts <- lapply(starts, function(b) c(b, log(0.1 * c1)))
     }
+    if( form$replicates ){
+        r <- .is_replicate(pairs)
+        ct <- if( any(r) ) mean(pairs$d[r]) else 0.5 * c0
+        ct <- max(min(ct, 0.95 * d_low), 1e-6 * sill)
+        cfast <- max(d_low - ct, 0.05 * ct)
+        starts <- lapply(starts, function(b) c(log(ct), log(cfast), b[-1L]))
+    }
     return(starts)
 }
 
@@ -500,12 +608,13 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
     w <- .subject_weights(pairs$subject)
     d <- pairs$d
     h <- pairs$h
+    r <- .is_replicate(pairs)
     floor_g <- 1e-8 * mean(d)
     if( is.null(starts) ){
         starts <- .start_values(pairs, form)
     }
     fits <- lapply(starts, function(b){
-        g <- pmax(.variogram_form(h, b, form), floor_g)
+        g <- pmax(.variogram_form(h, b, form, r), floor_g)
         if( any(!is.finite(g)) ){
             return(list(beta = b, deviance = Inf, converged = FALSE))
         }
@@ -513,12 +622,12 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         for( it in seq_len(maxit) ){
             sw <- sqrt(w) / g
             res_fn <- function(bb){
-                r <- sw * (d - .variogram_form(h, bb, form))
-                r[!is.finite(r)] <- 1e10
-                r
+                e <- sw * (d - .variogram_form(h, bb, form, r))
+                e[!is.finite(e)] <- 1e10
+                e
             }
             b_new <- .levenberg_marquardt(b, res_fn)
-            g_new <- pmax(.variogram_form(h, b_new, form), floor_g)
+            g_new <- pmax(.variogram_form(h, b_new, form, r), floor_g)
             if( any(!is.finite(g_new)) ){
                 break
             }
@@ -543,7 +652,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
     res <- list(
         beta = best$beta, form = form$name, spec = form,
         converged = best$converged, deviance = best$deviance, pairs = pairs,
-        w = w, fitted = .variogram_form(h, best$beta, form))
+        w = w, fitted = .variogram_form(h, best$beta, form, r))
     return(res)
 }
 
@@ -578,7 +687,8 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
 .fit_vcov <- function(fit){
     p <- fit$pairs
     J <- .numerical_jacobian(
-        function(b) .variogram_form(p$h, b, fit$spec), fit$beta, 1e-5)
+        function(b) .variogram_form(p$h, b, fit$spec, .is_replicate(p)),
+        fit$beta, 1e-5)
     wv <- fit$w / pmax(fit$fitted, 1e-8 * mean(p$d))^2
     A <- crossprod(J, J * wv)
     U <- rowsum(J * (wv * (p$d - fit$fitted)), p$subject)
@@ -605,7 +715,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
     G <- length(unique(fit$pairs$subject))
     q <- stats::qt(1 - (1 - conf.level) / 2, G - 1)
     h <- fit$pairs$h
-    min_lag <- min(h[h > 0])
+    min_lag <- min(h[h > 0 & !.is_replicate(fit$pairs)])
     max_lag <- max(h)
     lower <- est * exp(-q * se)
     upper <- est * exp(q * se)
@@ -653,7 +763,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         ci <- apply(boot, 2L, stats::quantile, probs = c(a, 1 - a),
             na.rm = TRUE)
         h <- p$h
-        min_lag <- min(h[h > 0])
+        min_lag <- min(h[h > 0 & !.is_replicate(p)])
         timescale <- grepl("^timescale", names(est))
         res <- data.frame(
             level = g, type = "parameter", form = fit$form,
@@ -728,8 +838,9 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
 # Slope of the relative residuals d / g(h) - 1 on the pair midpoint, with
 # subjects weighted equally and a CR1 standard error clustered by subject
 .stationarity <- function(fit, conf.level){
-    p <- fit$pairs
-    r <- p$d / fit$fitted - 1
+    keep <- !.is_replicate(fit$pairs)
+    p <- fit$pairs[keep, , drop = FALSE]
+    r <- p$d / fit$fitted[keep] - 1
     w <- as.numeric(1 / table(p$subject)[p$subject])
     X <- cbind(1, p$mid - stats::weighted.mean(p$mid, w))
     A <- crossprod(X, X * w)
@@ -769,7 +880,8 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
             lower = NA_real_, upper = NA_real_, se = NA_real_, df = NA_real_,
             p.value = tt$p.value, identified = NA,
             n.subjects = length(unique(p$subject)), n.pairs = nrow(p),
-            min.lag = min(p$h[p$h > 0]), max.lag = max(p$h))
+            min.lag = min(p$h[p$h > 0 & !.is_replicate(p)]),
+            max.lag = max(p$h))
         if( !is.null(g) ){
             out <- cbind(level = g, out)
         }
@@ -785,7 +897,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
 # lags minus that in the lower quartile, against the same statistic with
 # the sampling times permuted within subjects
 .temporal_structure <- function(pairs, time, permutations){
-    p <- pairs[pairs$h > 0, , drop = FALSE]
+    p <- pairs[pairs$h > 0 & !.is_replicate(pairs), , drop = FALSE]
     q <- stats::quantile(p$h, c(0.25, 0.75))
     stat <- function(h){
         lo <- h <= q[[1L]]
@@ -823,7 +935,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
     subj <- unique(pairs$subject)
     K <- min(K, length(subj))
     fold <- stats::setNames(sample(rep_len(seq_len(K), length(subj))), subj)
-    hp <- pairs$h[pairs$h > 0]
+    hp <- pairs$h[pairs$h > 0 & !.is_replicate(pairs)]
     breaks <- unique(stats::quantile(hp, seq(0, 1, length.out = n_bins + 1L)))
     breaks[1L] <- 0
     losses <- vapply(forms, function(form){
@@ -836,8 +948,11 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
             if( is.null(f) ){
                 return(NA_real_)
             }
-            g <- .variogram_form(test$h, f$beta, form)
-            bin <- as.integer(cut(test$h, breaks, include.lowest = TRUE))
+            r <- .is_replicate(test)
+            g <- .variogram_form(test$h, f$beta, form, r)
+            # Replicate pairs form their own bin
+            bin <- ifelse(r, 0L,
+                as.integer(cut(test$h, breaks, include.lowest = TRUE)))
             w <- as.numeric(1 / table(test$subject)[test$subject])
             dbar <- tapply(w * test$d, bin, sum) / tapply(w, bin, sum)
             gbar <- tapply(w * g, bin, sum) / tapply(w, bin, sum)

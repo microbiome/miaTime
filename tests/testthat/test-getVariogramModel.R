@@ -206,3 +206,44 @@ test_that("Seasonal forms add an annual cycle", {
     expect_error(getVariogramModel(hitchip1006, time.col = "time",
         group = "subject", form = "linear.seasonal", period = -1))
 })
+
+test_that("Technical replicates split the nugget", {
+    # Forty subjects; technical noise 0.05, fast change 0.1, partial sill 0.5
+    # and timescale 10. Replicate pairs (lag 0) carry the technical part only
+    set.seed(1)
+    pairs <- .make_exponential_pairs(nugget = 0.15)
+    pairs <- pairs[pairs$h > 0, ]
+    pairs$rep <- FALSE
+    reps <- data.frame(subject = paste0("s", 1:40), h = 0, mid = 20,
+        d = 0.05 * rgamma(40, shape = 50, rate = 50), rep = TRUE)
+    pairs <- rbind(pairs, reps)
+    fit <- miaTime:::.fit_variogram(pairs,
+        miaTime:::.form_spec("exponential", replicates = TRUE))
+    res <- miaTime:::.variogram_parameters(fit, 0.95)
+    est <- setNames(res$estimate, res$parameter)
+    expect_equal(unname(est[c("nugget.technical", "nugget.fast", "nugget")]),
+        c(0.05, 0.1, 0.15), tolerance = 0.1)
+    # Replicate pairs are not used by the stationarity check or the lag range
+    expect_identical(miaTime:::.stationarity(fit, 0.95)$n.pairs,
+        sum(!pairs$rep))
+    expect_identical(res$min.lag[[1]], 1)
+
+    # From a SummarizedExperiment: two replicates of the first sample of
+    # every subject
+    set.seed(1)
+    n <- 160
+    mat <- matrix(runif(5 * n), 5, dimnames = list(paste0("f", 1:5), NULL))
+    cd <- DataFrame(subject = rep(1:20, each = 8),
+        time = rep(0:7, 20) + c(0, 0, runif(6, 0.1, 0.5)),
+        rg = rep(c("r", "r", rep(NA, 6)), 20))
+    cd$rg[!is.na(cd$rg)] <- paste0(cd$rg[!is.na(cd$rg)], cd$subject[
+        !is.na(cd$rg)])
+    tse <- SummarizedExperiment(assays = list(x = mat), colData = cd)
+    res <- getVariogramModel(tse, time.col = "time", group = "subject",
+        assay.type = "x", method = "euclidean", squared = TRUE,
+        form = "linear", replicate.by = "rg")
+    expect_true(all(c("nugget.technical", "nugget.fast") %in% res$parameter))
+    expect_identical(res$n.pairs[[1]], 20L * 21L + 20L)
+    expect_error(getVariogramModel(tse, time.col = "time",
+        group = "subject", assay.type = "x", replicate.by = "x"))
+})
