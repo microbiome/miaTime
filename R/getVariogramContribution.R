@@ -131,6 +131,8 @@ setMethod("getVariogramContribution",
         }
         temp <- .check_input(
             split.by, list(NULL, "character scalar"), colnames(colData(x)))
+        .check_split_by_name(
+            split.by, c(.VARIOGRAM_COLUMNS, "feature", "share"))
         if( !(is.null(time.point) || identical(time.point, "median") ||
                 (is.numeric(time.point) && !anyNA(time.point))) ){
             stop("'time.point' must be NULL, numeric or \"median\".",
