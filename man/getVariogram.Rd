@@ -62,9 +62,9 @@ the units of \code{time.col}, at which \eqn{D(L)} is estimated. If
 (Default: \code{NULL})}
 
 \item{split.by}{\code{NULL} or \code{Character scalar}. Specifies a name
-of a column from \code{colData} with one value per subject. \eqn{D(L)} is
-estimated for each of its levels, and each level is compared with the
-first. (Default: \code{NULL})}
+of a column from \code{colData}, with one value per subject or a
+sample-level state. \eqn{D(L)} is estimated for each of its levels, and
+each level is compared with the first. (Default: \code{NULL})}
 
 \item{time.point}{\code{NULL}, \code{numeric vector} or \code{"median"}. The
 time at which \eqn{D(L)} is estimated, for communities whose change
@@ -175,6 +175,22 @@ and the permutation test is exact, whereas the t test can reject slightly
 too often in real data. When the schedules differ, the labels are not
 exchangeable and the permutation p-value is not valid; use the t test.
 Set a seed (\code{set.seed()}) for reproducible permutation p-values.
+
+\strong{Kinds of pairs.} When \code{split.by} varies within subjects (a
+sample-level state, such as community type or the phase of an
+intervention), each pair takes the level of its earlier sample, and
+\eqn{D(L)} is estimated for the pairs of each level. A subject then
+contributes pairs to several levels, so the levels are not independent.
+Each level is compared with the first in one weighted regression on the
+pairs of both levels in the lag window, with an indicator of the level,
+the terms in \eqn{u} for each level and, with \code{time.point}, the
+terms in \eqn{z} shared by the levels; the log ratio of \eqn{D(L)} is
+\eqn{\log((b_0 + b_1) / b_0)}, where \eqn{b_0} is the intercept and
+\eqn{b_1} the coefficient of the indicator. Its standard error is
+cluster-robust by subject, by the delta method, with \eqn{G - 1} degrees
+of freedom. Both levels must meet the support rules on their own. The
+permutation test is not available, as levels are not assigned to
+subjects.
 
 \strong{Developing communities.} When change at a given lag depends on
 the time since a common origin (age in infant cohorts, time since an
