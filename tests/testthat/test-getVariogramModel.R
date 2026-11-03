@@ -13,6 +13,9 @@ test_that("getVariogramModel input checks", {
         group = "subject", split.by = "sex", BPPARAM = 1))
     expect_error(getVariogramModel(tse, time.col = "time",
         group = "subject", time.point = "median"))
+    tse$form <- tse$sex
+    expect_error(getVariogramModel(tse, time.col = "time",
+        group = "subject", split.by = "form"), "output column")
     # The model compares subject-level groups only
     tse$state <- rep(c("a", "b"), length.out = ncol(tse))
     expect_error(suppressMessages(getVariogramModel(tse, time.col = "time",
