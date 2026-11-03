@@ -53,6 +53,16 @@
 #' at lags supported in both groups. P-values are not adjusted for multiple
 #' comparisons.
 #'
+#' With \code{permutations > 0}, each comparison also gets a permutation
+#' p-value: the levels of \code{split.by} are reassigned at random among
+#' the subjects of the two levels compared, keeping their numbers, and the
+#' t statistic of the log ratio is recomputed. When the levels share a
+#' sampling schedule, subjects are exchangeable under the null hypothesis
+#' and the permutation test is exact, whereas the t test can reject slightly
+#' too often in real data. When the schedules differ, the labels are not
+#' exchangeable and the permutation p-value is not valid; use the t test.
+#' Set a seed (\code{set.seed()}) for reproducible permutation p-values.
+#'
 #' \strong{Developing communities.} When change at a given lag depends on
 #' the time since a common origin (age in infant cohorts, time since an
 #' intervention), groups whose samples were taken at different ages differ
@@ -103,6 +113,8 @@
 #'   \item{df}{Degrees of freedom of the t distribution.}
 #'   \item{p.value}{For comparisons, the p-value of the test that the ratio
 #'   is 1.}
+#'   \item{p.value.permutation}{When \code{permutations > 0}: for
+#'   comparisons, the permutation p-value (see details).}
 #'   \item{n.subjects, n.pairs}{Subjects and pairs in the lag window.}
 #'   \item{supported}{Whether the design supports \eqn{D(L)} at this lag.}
 #'   \item{time.point}{The time at which \eqn{D(L)} was estimated, when
@@ -140,6 +152,10 @@
 #'
 #' @param conf.level \code{Numeric scalar}. Confidence level of the
 #' intervals. (Default: \code{0.95})
+#'
+#' @param permutations \code{Integer scalar}. The number of permutations
+#' of \code{split.by} among subjects for a permutation p-value of each
+#' comparison; \code{0} for none. See details. (Default: \code{0})
 #'
 #' @param name \code{Character scalar}. Specifies a name for storing the
 #' results in \code{metadata}. (Default: \code{"variogram"})
@@ -222,6 +238,7 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         window = 2,
         squared = FALSE,
         conf.level = 0.95,
+        permutations = 0,
         ...){
         ############################# INPUT CHECK ##############################
         x <- .check_and_get_altExp(x, ...)
@@ -261,6 +278,11 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         if( conf.level <= 0 || conf.level >= 1 ){
             stop("'conf.level' must be between 0 and 1.", call. = FALSE)
         }
+        temp <- .check_input(permutations, list("numeric scalar"))
+        if( permutations < 0 || permutations != round(permutations) ){
+            stop("'permutations' must be a non-negative integer.",
+                call. = FALSE)
+        }
         ########################### INPUT CHECK END ############################
         args <- list(...)[!names(list(...)) %in% c("altexp")]
         pairs <- .get_within_subject_pairs(
@@ -269,7 +291,8 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
             time.lag <- .default_lags(pairs)
         }
         res <- .variogram(
-            pairs, time.lag, split.by, time.point, window, conf.level)
+            pairs, time.lag, split.by, time.point, window, conf.level,
+            permutations)
         res <- DataFrame(res, check.names = FALSE)
         return(res)
     }
@@ -361,7 +384,8 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
 
 # D(L) for all lags, levels of split.by, and comparisons with the first level
 .variogram <- function(
-        pairs, lags, split.by, time.point, window, conf.level){
+        pairs, lags, split.by, time.point, window, conf.level,
+        permutations = 0){
     a0 <- .get_at_time(pairs, lags, time.point, window)
     if( is.null(split.by) ){
         res <- .local_variogram(pairs, lags, window, conf.level, a0)
@@ -376,6 +400,17 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     comp <- lapply(est[-1L], function(e2){
         .compare_levels(est[[1L]], e2)
     })
+    if( permutations > 0 ){
+        for( i in seq_along(comp) ){
+            comp[[i]]$p.value.permutation <- .permutation_p(
+                pairs, lev[[1L]], lev[[i + 1L]], lags, window, conf.level,
+                a0, comp[[i]], permutations)
+        }
+        est <- lapply(est, function(e){
+            e$p.value.permutation <- NA_real_
+            e
+        })
+    }
     est <- lapply(seq_along(lev), function(i){
         cbind(level = lev[[i]],
             .format_variogram(est[[i]], time.point, conf.level))
@@ -492,6 +527,38 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         type = "ratio")
 }
 
+# Permutation p-value of each lag's comparison between two levels: the
+# levels are reassigned among the subjects of the two levels, keeping their
+# numbers, and the t statistic of the log ratio is recomputed
+.permutation_p <- function(
+        pairs, lev1, lev2, lags, window, conf.level, a0, obs,
+        permutations){
+    p <- pairs[pairs$level %in% c(lev1, lev2), , drop = FALSE]
+    subj <- unique(data.frame(
+        subject = p$subject, level = as.character(p$level)))
+    t_obs <- log(obs$estimate) / obs$se
+    t_perm <- vapply(seq_len(permutations), function(b){
+        lab <- stats::setNames(sample(subj$level), subj$subject)
+        pl <- lab[p$subject]
+        e1 <- .local_variogram(
+            p[pl == lev1, , drop = FALSE], lags, window, conf.level, a0)
+        e2 <- .local_variogram(
+            p[pl == lev2, , drop = FALSE], lags, window, conf.level, a0)
+        cmp <- .compare_levels(e1, e2)
+        ifelse(cmp$supported, log(cmp$estimate) / cmp$se, NA_real_)
+    }, numeric(length(lags)))
+    t_perm <- matrix(t_perm, nrow = length(lags))
+    res <- vapply(seq_along(lags), function(i){
+        v <- t_perm[i, ]
+        v <- v[!is.na(v)]
+        if( !obs$supported[[i]] || length(v) == 0L ){
+            return(NA_real_)
+        }
+        (1 + sum(abs(v) >= abs(t_obs[[i]]))) / (1 + length(v))
+    }, numeric(1L))
+    return(res)
+}
+
 # Confidence intervals on the log scale, and columns in a fixed order
 .format_variogram <- function(res, time.point, conf.level){
     if( is.null(res$type) ){
@@ -502,7 +569,8 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     res$lower <- res$estimate * exp(-q * res$se)
     res$upper <- res$estimate * exp(q * res$se)
     cols <- c("lag", "type", "estimate", "lower", "upper", "se", "df",
-        "p.value", "n.subjects", "n.pairs", "supported")
+        "p.value", intersect("p.value.permutation", names(res)),
+        "n.subjects", "n.pairs", "supported")
     if( !is.null(time.point) ){
         cols <- c(cols, "time.point")
     }

@@ -25,6 +25,7 @@ addVariogram(x, ...)
   window = 2,
   squared = FALSE,
   conf.level = 0.95,
+  permutations = 0,
   ...
 )
 }
@@ -76,6 +77,10 @@ squared. (Default: \code{FALSE})}
 
 \item{conf.level}{\code{Numeric scalar}. Confidence level of the
 intervals. (Default: \code{0.95})}
+
+\item{permutations}{\code{Integer scalar}. The number of permutations
+of \code{split.by} among subjects for a permutation p-value of each
+comparison; \code{0} for none. See details. (Default: \code{0})}
 }
 \value{
 \code{getVariogram} returns a \code{DataFrame} with one row per
@@ -92,6 +97,8 @@ with the confidence interval.}
 \item{df}{Degrees of freedom of the t distribution.}
 \item{p.value}{For comparisons, the p-value of the test that the ratio
 is 1.}
+\item{p.value.permutation}{When \code{permutations > 0}: for
+comparisons, the permutation p-value (see details).}
 \item{n.subjects, n.pairs}{Subjects and pairs in the lag window.}
 \item{supported}{Whether the design supports \eqn{D(L)} at this lag.}
 \item{time.point}{The time at which \eqn{D(L)} was estimated, when
@@ -146,6 +153,16 @@ with the first level by the ratio of \eqn{D(L)}, with a
 Welch–Satterthwaite t test of the log ratio. The comparison is made only
 at lags supported in both groups. P-values are not adjusted for multiple
 comparisons.
+
+With \code{permutations > 0}, each comparison also gets a permutation
+p-value: the levels of \code{split.by} are reassigned at random among
+the subjects of the two levels compared, keeping their numbers, and the
+t statistic of the log ratio is recomputed. When the levels share a
+sampling schedule, subjects are exchangeable under the null hypothesis
+and the permutation test is exact, whereas the t test can reject slightly
+too often in real data. When the schedules differ, the labels are not
+exchangeable and the permutation p-value is not valid; use the t test.
+Set a seed (\code{set.seed()}) for reproducible permutation p-values.
 
 \strong{Developing communities.} When change at a given lag depends on
 the time since a common origin (age in infant cohorts, time since an

@@ -139,3 +139,33 @@ test_that("addVariogram stores results in metadata", {
         c(list(x = tse, name = "vario"), args))
     expect_equal(metadata(tse)[["vario"]], res)
 })
+
+test_that("Permutation p-values of comparisons", {
+    data(hitchip1006, package = "miaTime")
+    tse <- transformAssay(hitchip1006, method = "hellinger")
+    args <- list(tse, time.col = "time", group = "subject",
+        assay.type = "hellinger", method = "euclidean", squared = TRUE,
+        time.lag = c(1, 3), split.by = "sex")
+    expect_error(do.call(getVariogram, c(args, permutations = -1)))
+    expect_error(do.call(getVariogram, c(args, permutations = 1.5)))
+    # No permutation column by default
+    res <- do.call(getVariogram, args)
+    expect_false("p.value.permutation" %in% colnames(res))
+    set.seed(1)
+    res <- do.call(getVariogram, c(args, permutations = 19))
+    expect_true("p.value.permutation" %in% colnames(res))
+    # Only comparisons get a permutation p-value
+    expect_true(all(is.na(
+        res$p.value.permutation[res$type == "dissimilarity"])))
+    p <- res$p.value.permutation[res$type == "ratio" & res$supported]
+    expect_true(length(p) > 0L)
+    expect_true(all(p >= 1 / 20 & p <= 1))
+    # The estimates do not change
+    res0 <- do.call(getVariogram, args)
+    expect_equal(res$estimate, res0$estimate)
+    expect_equal(res$p.value, res0$p.value)
+    # Reproducible with a seed
+    set.seed(1)
+    res2 <- do.call(getVariogram, c(args, permutations = 19))
+    expect_equal(res$p.value.permutation, res2$p.value.permutation)
+})
