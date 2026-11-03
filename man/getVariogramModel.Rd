@@ -20,6 +20,7 @@ addVariogramModel(x, ...)
   assay.type = "counts",
   method = "bray",
   form = c("exponential", "two.timescale", "power", "linear"),
+  period = NULL,
   split.by = NULL,
   time.point = NULL,
   squared = FALSE,
@@ -58,7 +59,12 @@ Method is passed to the function that is specified by \code{dis.fun}.
 
 \item{form}{\code{Character vector}. The forms among which one is chosen
 by cross-validation: \code{"exponential"}, \code{"two.timescale"},
-\code{"power"} and \code{"linear"}. See details. (Default: all four)}
+\code{"power"} and \code{"linear"}, and their seasonal versions such as
+\code{"exponential.seasonal"}. See details. (Default: the four forms)}
+
+\item{period}{\code{NULL} or \code{Numeric scalar}. The period of the
+seasonal forms, in the units of \code{time.col} (for example 365 for
+days). (Default: \code{NULL})}
 
 \item{split.by}{\code{NULL} or \code{Character scalar}. Specifies a name
 of a column from \code{colData} with one value per subject. The form is
@@ -103,7 +109,8 @@ between levels, or \code{"test"}.}
 \item{parameter}{\code{"nugget"}, \code{"partial.sill"},
 \code{"sill"} and \code{"timescale"} (with suffixes \code{.1} and
 \code{.2} for the two-timescale form), \code{"scale"} and
-\code{"exponent"} (power form) or \code{"slope"} (linear form).}
+\code{"exponent"} (power form) or \code{"slope"} (linear form), and
+\code{"seasonal"} (the amplitude \eqn{c_p} of seasonal forms).}
 \item{estimate, lower, upper}{The estimate, or the ratio between
 levels, with its confidence interval.}
 \item{se}{Standard error on the log scale (without \code{split.by}).}
@@ -139,6 +146,10 @@ that levels off at the sill \eqn{c_0 + c_1}, with timescale \eqn{\phi}.}
 change without a sill.}
 \item{linear}{\eqn{g(h) = c_0 + b h}.}
 }
+Each form also has a seasonal version (\code{"exponential.seasonal"} and
+so on), which adds an annual cycle \eqn{c_p (1 - \cos(2 \pi h / P))}
+with the period \eqn{P} given by \code{period}: pairs taken a period
+apart are then more alike than pairs taken half a period apart.
 In every form \eqn{c_0 = g(0)} is the nugget: the dissimilarity between
 samples taken at the same time, from measurement noise and change faster
 than the shortest lag. Pairs of samples taken at the same time, such as

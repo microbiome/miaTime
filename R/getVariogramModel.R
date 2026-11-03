@@ -24,6 +24,10 @@
 #'   change without a sill.}
 #'   \item{linear}{\eqn{g(h) = c_0 + b h}.}
 #' }
+#' Each form also has a seasonal version (\code{"exponential.seasonal"} and
+#' so on), which adds an annual cycle \eqn{c_p (1 - \cos(2 \pi h / P))}
+#' with the period \eqn{P} given by \code{period}: pairs taken a period
+#' apart are then more alike than pairs taken half a period apart.
 #' In every form \eqn{c_0 = g(0)} is the nugget: the dissimilarity between
 #' samples taken at the same time, from measurement noise and change faster
 #' than the shortest lag. Pairs of samples taken at the same time, such as
@@ -122,7 +126,8 @@
 #'   \item{parameter}{\code{"nugget"}, \code{"partial.sill"},
 #'   \code{"sill"} and \code{"timescale"} (with suffixes \code{.1} and
 #'   \code{.2} for the two-timescale form), \code{"scale"} and
-#'   \code{"exponent"} (power form) or \code{"slope"} (linear form).}
+#'   \code{"exponent"} (power form) or \code{"slope"} (linear form), and
+#'   \code{"seasonal"} (the amplitude \eqn{c_p} of seasonal forms).}
 #'   \item{estimate, lower, upper}{The estimate, or the ratio between
 #'   levels, with its confidence interval.}
 #'   \item{se}{Standard error on the log scale (without \code{split.by}).}
@@ -144,7 +149,12 @@
 #'
 #' @param form \code{Character vector}. The forms among which one is chosen
 #' by cross-validation: \code{"exponential"}, \code{"two.timescale"},
-#' \code{"power"} and \code{"linear"}. See details. (Default: all four)
+#' \code{"power"} and \code{"linear"}, and their seasonal versions such as
+#' \code{"exponential.seasonal"}. See details. (Default: the four forms)
+#'
+#' @param period \code{NULL} or \code{Numeric scalar}. The period of the
+#' seasonal forms, in the units of \code{time.col} (for example 365 for
+#' days). (Default: \code{NULL})
 #'
 #' @param split.by \code{NULL} or \code{Character scalar}. Specifies a name
 #' of a column from \code{colData} with one value per subject. The form is
@@ -249,6 +259,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         assay.type = "counts",
         method = "bray",
         form = c("exponential", "two.timescale", "power", "linear"),
+        period = NULL,
         split.by = NULL,
         time.point = NULL,
         squared = FALSE,
@@ -271,7 +282,15 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         .check_assay_present(assay.type, x)
         temp <- .check_input(method, list("character scalar"))
         temp <- .check_input(form, list("character vector"),
-            names(.VARIOGRAM_FORMS))
+            c(names(.VARIOGRAM_FORMS),
+                paste0(names(.VARIOGRAM_FORMS), ".seasonal")))
+        temp <- .check_input(period, list(NULL, "numeric scalar"))
+        if( !is.null(period) && period <= 0 ){
+            stop("'period' must be positive.", call. = FALSE)
+        }
+        if( any(grepl("\\.seasonal$", form)) && is.null(period) ){
+            stop("Seasonal forms need 'period'.", call. = FALSE)
+        }
         temp <- .check_input(
             split.by, list(NULL, "character scalar"), colnames(colData(x)))
         .check_split_by_name(split.by, c(.VARIOGRAM_COLUMNS, "form",
@@ -310,18 +329,19 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
             pairs <- pairs[r >= 1 / 2 & r <= 2, , drop = FALSE]
         }
         all_pairs <- pairs
-        form <- unique(form)
+        form <- lapply(stats::setNames(nm = unique(form)), .form_spec,
+            period = period)
         if( is.null(split.by) ){
             pairs <- pairs[pairs$h <= .max_lag(pairs), , drop = FALSE]
             cv <- NULL
             if( length(form) > 1L ){
                 cv <- .cv_forms(pairs, form)
-                form <- cv$form[cv$chosen]
+                form <- form[cv$chosen]
             }
-            fit <- .fit_variogram(pairs, form)
+            fit <- .fit_variogram(pairs, form[[1L]])
             if( !fit$converged ){
-                warning("The fit of the ", form, " form did not converge.",
-                    call. = FALSE)
+                warning("The fit of the ", fit$form, " form did not ",
+                    "converge.", call. = FALSE)
             }
             res <- rbind(.variogram_parameters(fit, conf.level),
                 .stationarity(fit, conf.level))
@@ -377,9 +397,27 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         report = function(P) c(nugget = P$c0, slope = P$b))
 )
 
+# A form, with an annual term c_p (1 - cos(2 pi h / period)) for names ending
+# in ".seasonal"
+.form_spec <- function(form, period = NULL){
+    base <- sub("\\.seasonal$", "", form)
+    spec <- c(list(name = form, base = base, seasonal = base != form),
+        .VARIOGRAM_FORMS[[base]])
+    if( spec$seasonal ){
+        g <- spec$g
+        report <- spec$report
+        spec$coef <- c(spec$coef, "log_cp")
+        spec$g <- function(h, P){
+            g(h, P) + P$cp * (1 - cos(2 * pi * h / period))
+        }
+        spec$report <- function(P) c(report(P), seasonal = P$cp)
+    }
+    return(spec)
+}
+
 # Natural parameters from the coefficients
 .natural_parameters <- function(b, form){
-    names(b) <- .VARIOGRAM_FORMS[[form]]$coef
+    names(b) <- form$coef
     P <- list()
     for( n in names(b) ){
         if( n == "logit_a" ){
@@ -395,7 +433,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
 }
 
 .variogram_form <- function(h, b, form){
-    .VARIOGRAM_FORMS[[form]]$g(h, .natural_parameters(b, form))
+    form$g(h, .natural_parameters(b, form))
 }
 
 # The longest lag reached by at least max(5, 20%) of the subjects
@@ -436,7 +474,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
     hmax <- max(p$h)
     phis <- exp(seq(log(hmin), log(hmax), length.out = 6L))
     hmed <- stats::median(p$h)
-    starts <- switch(form,
+    starts <- switch(form$base,
         exponential = lapply(phis, function(ph){
             c(log(c0), log(c1), log(ph))
         }),
@@ -449,6 +487,9 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
             c(log(c0), log(c1 / hmed^a), stats::qlogis(a / 2))
         }),
         linear = list(c(log(c0), log(c1 / hmed))))
+    if( form$seasonal ){
+        starts <- lapply(starts, function(b) c(b, log(0.1 * c1)))
+    }
     return(starts)
 }
 
@@ -495,14 +536,14 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
     })
     dev <- vapply(fits, function(f) f$deviance, numeric(1L))
     if( all(!is.finite(dev)) ){
-        stop("The fit of the ", form, " form failed from all starting ",
-            "values.", call. = FALSE)
+        stop("The fit of the ", form$name, " form failed from all ",
+            "starting values.", call. = FALSE)
     }
     best <- fits[[which.min(dev)]]
     res <- list(
-        beta = best$beta, form = form, converged = best$converged,
-        deviance = best$deviance, pairs = pairs, w = w,
-        fitted = .variogram_form(h, best$beta, form))
+        beta = best$beta, form = form$name, spec = form,
+        converged = best$converged, deviance = best$deviance, pairs = pairs,
+        w = w, fitted = .variogram_form(h, best$beta, form))
     return(res)
 }
 
@@ -537,7 +578,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
 .fit_vcov <- function(fit){
     p <- fit$pairs
     J <- .numerical_jacobian(
-        function(b) .variogram_form(p$h, b, fit$form), fit$beta, 1e-5)
+        function(b) .variogram_form(p$h, b, fit$spec), fit$beta, 1e-5)
     wv <- fit$w / pmax(fit$fitted, 1e-8 * mean(p$d))^2
     A <- crossprod(J, J * wv)
     U <- rowsum(J * (wv * (p$d - fit$fitted)), p$subject)
@@ -555,11 +596,11 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
 
 # Reported parameters with intervals on the log scale (delta method)
 .variogram_parameters <- function(fit, conf.level){
-    rep_fn <- .VARIOGRAM_FORMS[[fit$form]]$report
-    est <- rep_fn(.natural_parameters(fit$beta, fit$form))
+    rep_fn <- fit$spec$report
+    est <- rep_fn(.natural_parameters(fit$beta, fit$spec))
     V <- .fit_vcov(fit)
     J <- .numerical_jacobian(
-        function(b) log(rep_fn(.natural_parameters(b, fit$form))), fit$beta)
+        function(b) log(rep_fn(.natural_parameters(b, fit$spec))), fit$beta)
     se <- sqrt(pmax(rowSums((J %*% V) * J), 0))
     G <- length(unique(fit$pairs$subject))
     q <- stats::qt(1 - (1 - conf.level) / 2, G - 1)
@@ -593,19 +634,18 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
     cv <- NULL
     if( length(form) > 1L ){
         cv <- .cv_forms(do.call(rbind, unname(by_level)), form)
-        form <- cv$form[cv$chosen]
+        form <- form[cv$chosen]
     }
     a <- (1 - conf.level) / 2
     fits <- lapply(lev, function(g){
         p <- by_level[[g]]
-        fit <- .fit_variogram(p, form)
+        fit <- .fit_variogram(p, form[[1L]])
         if( !fit$converged ){
-            warning("The fit of the ", form, " form did not converge for '",
+            warning("The fit of the ", fit$form, " form did not converge for '",
                 g, "'.", call. = FALSE)
         }
-        est <- .VARIOGRAM_FORMS[[form]]$report(
-            .natural_parameters(fit$beta, form))
-        boot <- .bootstrap_subjects(p, form, bootstrap, BPPARAM)
+        est <- fit$spec$report(.natural_parameters(fit$beta, fit$spec))
+        boot <- .bootstrap_subjects(p, fit$spec, bootstrap, BPPARAM)
         if( any(is.na(boot[, 1L])) ){
             message(sum(is.na(boot[, 1L])), " of ", bootstrap,
                 " resamples of '", g, "' failed and were left out.")
@@ -616,7 +656,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         min_lag <- min(h[h > 0])
         timescale <- grepl("^timescale", names(est))
         res <- data.frame(
-            level = g, type = "parameter", form = form,
+            level = g, type = "parameter", form = fit$form,
             parameter = names(est), estimate = unname(est),
             lower = ci[1L, ], upper = ci[2L, ], se = NA_real_, df = NA_real_,
             p.value = NA_real_,
@@ -645,7 +685,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         p[!is.na(e1$identified) & !(e1$identified & e2$identified)] <- NA
         data.frame(
             level = paste(lev[[i]], "/", lev[[1L]]), type = "ratio",
-            form = form, parameter = e1$parameter,
+            form = e1$form[[1L]], parameter = e1$parameter,
             estimate = e2$estimate / e1$estimate,
             lower = exp(apply(lr, 2L, stats::quantile, probs = a,
                 na.rm = TRUE)),
@@ -668,8 +708,8 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
 # fails or does not converge.
 .bootstrap_subjects <- function(pairs, form, bootstrap, BPPARAM){
     by_subject <- split(seq_len(nrow(pairs)), pairs$subject)
-    n_par <- length(.VARIOGRAM_FORMS[[form]]$report(.natural_parameters(
-        rep(0, length(.VARIOGRAM_FORMS[[form]]$coef)), form)))
+    n_par <- length(form$report(.natural_parameters(
+        rep(0, length(form$coef)), form)))
     res <- BiocParallel::bplapply(seq_len(bootstrap), function(b){
         draw <- sample(names(by_subject), length(by_subject), replace = TRUE)
         rows <- by_subject[draw]
@@ -679,7 +719,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         if( is.null(fit) || !fit$converged ){
             return(rep(NA_real_, n_par))
         }
-        .VARIOGRAM_FORMS[[form]]$report(.natural_parameters(fit$beta, form))
+        form$report(.natural_parameters(fit$beta, form))
     }, BPPARAM = BPPARAM)
     res <- do.call(rbind, res)
     return(res)
@@ -779,6 +819,7 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
 # relative difference. The simplest form within one standard error of the
 # best is chosen.
 .cv_forms <- function(pairs, forms, K = 10L, n_bins = 12L){
+    nm <- names(forms)
     subj <- unique(pairs$subject)
     K <- min(K, length(subj))
     fold <- stats::setNames(sample(rep_len(seq_len(K), length(subj))), subj)
@@ -803,11 +844,9 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
             mean((dbar / gbar - 1)^2)
         }, numeric(1L))
     }, numeric(K))
-    losses <- matrix(losses, ncol = length(forms),
-        dimnames = list(NULL, forms))
+    losses <- matrix(losses, ncol = length(forms), dimnames = list(NULL, nm))
     m <- colMeans(losses, na.rm = TRUE)
-    n_coef <- vapply(forms, function(f) length(.VARIOGRAM_FORMS[[f]]$coef),
-        integer(1L))
+    n_coef <- vapply(forms, function(f) length(f$coef), integer(1L))
     if( all(is.na(m)) ){
         stop("No form could be fitted in the cross-validation.",
             call. = FALSE)
@@ -821,8 +860,8 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
     eligible <- eligible[n_coef[eligible] == min(n_coef[eligible])]
     choice <- eligible[which.min(m[eligible])]
     res <- data.frame(
-        form = forms, loss = unname(m), difference = unname(m - m[best]),
+        form = nm, loss = unname(m), difference = unname(m - m[best]),
         se = unname(se_diff), n.coefficients = unname(n_coef),
-        chosen = forms == choice)
+        chosen = nm == choice)
     return(res)
 }

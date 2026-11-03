@@ -34,7 +34,7 @@ test_that("getVariogramModel input checks", {
 test_that("The exponential form is recovered", {
     set.seed(1)
     pairs <- .make_exponential_pairs()
-    fit <- miaTime:::.fit_variogram(pairs, "exponential")
+    fit <- miaTime:::.fit_variogram(pairs, miaTime:::.form_spec("exponential"))
     expect_true(fit$converged)
     res <- miaTime:::.variogram_parameters(fit, 0.95)
     est <- setNames(res$estimate, res$parameter)
@@ -46,7 +46,8 @@ test_that("The exponential form is recovered", {
     expect_equal(res$df[[1]], 39)
     # The simplest adequate form is chosen
     set.seed(1)
-    cv <- miaTime:::.cv_forms(pairs, c("exponential", "power", "linear"))
+    cv <- miaTime:::.cv_forms(pairs, lapply(c(exponential = "exponential",
+        power = "power", linear = "linear"), miaTime:::.form_spec))
     expect_identical(cv$form[cv$chosen], "exponential")
 })
 
@@ -86,7 +87,8 @@ test_that("Parameters are compared between groups", {
         cbind(.make_exponential_pairs(0.1, "a"), level = "A"),
         cbind(.make_exponential_pairs(0.3, "b"), level = "B"))
     pairs$level <- factor(pairs$level)
-    res <- miaTime:::.compare_variogram_models(pairs, "exponential", 0.95,
+    res <- miaTime:::.compare_variogram_models(pairs,
+        list(exponential = miaTime:::.form_spec("exponential")), 0.95,
         99, BiocParallel::SerialParam())
     ratio <- res[res$type == "ratio", ]
     expect_identical(unique(res$level), c("A", "B", "B / A"))
@@ -164,7 +166,7 @@ test_that("Stationarity check", {
     set.seed(1)
     pairs <- .make_exponential_pairs()
     pairs$mid <- rep(seq(0, 90, by = 10), 40)
-    fit <- miaTime:::.fit_variogram(pairs, "exponential")
+    fit <- miaTime:::.fit_variogram(pairs, miaTime:::.form_spec("exponential"))
     res <- miaTime:::.stationarity(fit, 0.95)
     expect_true(abs(res$estimate) < 3 * res$se)
     fit$pairs$d <- fit$fitted * (1 + 0.01 * (pairs$mid - 45) +
@@ -177,4 +179,30 @@ test_that("Stationarity check", {
     # No slope when every pair has the same midpoint
     fit$pairs$mid <- 20
     expect_true(is.na(miaTime:::.stationarity(fit, 0.95)$estimate))
+})
+
+test_that("Seasonal forms add an annual cycle", {
+    # Pairs whose dissimilarity rises and falls with a period of 365 days
+    set.seed(1)
+    h <- rep(seq(0, 1460, by = 20), 30)
+    g <- 0.1 + 0.0002 * h + 0.2 * (1 - cos(2 * pi * h / 365))
+    pairs <- data.frame(subject = rep(paste0("s", 1:30), each = 74), h = h,
+        mid = 800, d = g * rgamma(length(h), shape = 50, rate = 50))
+    fit <- miaTime:::.fit_variogram(pairs,
+        miaTime:::.form_spec("linear.seasonal", period = 365))
+    res <- miaTime:::.variogram_parameters(fit, 0.95)
+    est <- setNames(res$estimate, res$parameter)
+    expect_equal(unname(est[c("nugget", "slope", "seasonal")]),
+        c(0.1, 0.0002, 0.2), tolerance = 0.1)
+    set.seed(1)
+    forms <- lapply(c(linear = "linear",
+        linear.seasonal = "linear.seasonal"), miaTime:::.form_spec,
+        period = 365)
+    cv <- miaTime:::.cv_forms(pairs, forms)
+    expect_identical(cv$form[cv$chosen], "linear.seasonal")
+    data(hitchip1006, package = "miaTime")
+    expect_error(getVariogramModel(hitchip1006, time.col = "time",
+        group = "subject", form = "linear.seasonal"), "period")
+    expect_error(getVariogramModel(hitchip1006, time.col = "time",
+        group = "subject", form = "linear.seasonal", period = -1))
 })
