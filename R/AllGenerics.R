@@ -80,3 +80,13 @@ setGeneric("addVariogram", signature = "x", function(x, ...)
 #' @export
 setGeneric("getVariogramContribution", signature = "x", function(x, ...)
     standardGeneric("getVariogramContribution"))
+
+#' @rdname getVariogramModel
+#' @export
+setGeneric("getVariogramModel", signature = "x", function(x, ...)
+    standardGeneric("getVariogramModel"))
+
+#' @rdname getVariogramModel
+#' @export
+setGeneric("addVariogramModel", signature = "x", function(x, ...)
+    standardGeneric("addVariogramModel"))
