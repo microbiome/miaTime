@@ -55,12 +55,12 @@ test_that("getVariogramModel output", {
     res <- do.call(getVariogramModel, c(args, form = "exponential"))
     expect_s4_class(res, "DataFrame")
     expect_identical(res$parameter,
-        c("nugget", "partial.sill", "sill", "timescale"))
+        c("nugget", "partial.sill", "sill", "timescale", "stationarity"))
     expect_true(all(res$form == "exponential"))
     expect_null(metadata(res)$cv)
     expect_equal(res$estimate[3], res$estimate[1] + res$estimate[2])
     expect_identical(do.call(getVariogramModel, c(args, form = "linear"))$parameter,
-        c("nugget", "slope"))
+        c("nugget", "slope", "stationarity"))
     # Cross-validation
     set.seed(1)
     res <- do.call(getVariogramModel, c(args,
@@ -107,7 +107,8 @@ test_that("Parameters are compared between groups", {
         assay.type = "hellinger", method = "euclidean", squared = TRUE,
         form = "linear", split.by = "sex", bootstrap = 19, time.point = 5)
     expect_identical(unique(res$sex), c("female", "male", "male / female"))
-    expect_identical(res$type, rep(c("parameter", "ratio"), c(4, 2)))
+    expect_identical(res$type, rep(c("parameter", "ratio", "test"),
+        c(4, 2, 2)))
     expect_true(all(res$time.point == 5))
     expect_true(all(is.na(res$p.value[res$type == "parameter"])))
 })
@@ -139,15 +140,38 @@ test_that("Permutation test for temporal structure", {
     args <- list(tse, time.col = "time", group = "subject",
         assay.type = "hellinger", method = "euclidean", squared = TRUE,
         form = "linear")
-    expect_false("test" %in% do.call(getVariogramModel, args)$type)
+    expect_false("temporal.structure" %in%
+        do.call(getVariogramModel, args)$parameter)
     set.seed(1)
     res <- do.call(getVariogramModel, c(args, permutations = 19))
-    tt <- res[res$type == "test", ]
+    tt <- res[res$parameter == "temporal.structure", ]
     expect_identical(tt$parameter, "temporal.structure")
     expect_true(tt$p.value >= 1 / 20 && tt$p.value <= 1)
     set.seed(1)
     res <- do.call(getVariogramModel, c(args, permutations = 19,
         split.by = "sex", bootstrap = 9))
-    expect_identical(res$sex[res$type == "test"], c("female", "male"))
+    expect_identical(res$sex[res$parameter == "temporal.structure"],
+        c("female", "male"))
     expect_error(do.call(getVariogramModel, c(args, permutations = -1)))
+})
+
+test_that("Stationarity check", {
+    # Relative residuals that grow by 0.01 per unit of midpoint time, with
+    # pairs of every subject spread over time
+    set.seed(1)
+    pairs <- .make_exponential_pairs()
+    pairs$mid <- rep(seq(0, 90, by = 10), 40)
+    fit <- miaTime:::.fit_variogram(pairs, "exponential")
+    res <- miaTime:::.stationarity(fit, 0.95)
+    expect_true(abs(res$estimate) < 3 * res$se)
+    fit$pairs$d <- fit$fitted * (1 + 0.01 * (pairs$mid - 45) +
+        rnorm(400, sd = 0.05))
+    res <- miaTime:::.stationarity(fit, 0.95)
+    expect_equal(res$estimate, 0.01, tolerance = 0.05)
+    expect_true(res$p.value < 0.001)
+    expect_true(res$lower < 0.01 && res$upper > 0.01)
+    expect_identical(res$df, 39)
+    # No slope when every pair has the same midpoint
+    fit$pairs$mid <- 20
+    expect_true(is.na(miaTime:::.stationarity(fit, 0.95)$estimate))
 })

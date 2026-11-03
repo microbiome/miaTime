@@ -192,6 +192,17 @@ whose midpoint \eqn{m} satisfies \eqn{(1 + m) / (1 + a)} in
 \code{\link[miaTime:getVariogram]{getVariogram()}}, so that the levels
 are compared around the same time \eqn{a}.
 
+\strong{Stationarity.} A fitted form assumes that change at a given lag
+does not depend on when the pair was taken, which fails in cohorts
+followed from birth or around a perturbation. A row \code{"stationarity"}
+reports the slope of the relative residuals \eqn{d / g(h) - 1} on the
+pair midpoint (time, or age), per unit of time, by weighted least squares
+with every subject counting equally and a standard error clustered by
+subject (CR1, \eqn{G - 1} degrees of freedom). A slope that differs from
+0 means that the fitted form averages over changing dynamics; compare
+change at a stated time with \code{time.point} in
+\code{\link[miaTime:getVariogram]{getVariogram()}} instead.
+
 \strong{Temporal structure.} Without temporal structure, dissimilarity
 does not depend on the lag, the timescale is not identified and tests on
 it are meaningless. With \code{permutations > 0}, a row
