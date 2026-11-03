@@ -77,6 +77,17 @@
 #' \code{\link[miaTime:getVariogram]{getVariogram()}}, so that the levels
 #' are compared around the same time \eqn{a}.
 #'
+#' \strong{Stationarity.} A fitted form assumes that change at a given lag
+#' does not depend on when the pair was taken, which fails in cohorts
+#' followed from birth or around a perturbation. A row \code{"stationarity"}
+#' reports the slope of the relative residuals \eqn{d / g(h) - 1} on the
+#' pair midpoint (time, or age), per unit of time, by weighted least squares
+#' with every subject counting equally and a standard error clustered by
+#' subject (CR1, \eqn{G - 1} degrees of freedom). A slope that differs from
+#' 0 means that the fitted form averages over changing dynamics; compare
+#' change at a stated time with \code{time.point} in
+#' \code{\link[miaTime:getVariogram]{getVariogram()}} instead.
+#'
 #' \strong{Temporal structure.} Without temporal structure, dissimilarity
 #' does not depend on the lag, the timescale is not identified and tests on
 #' it are meaningless. With \code{permutations > 0}, a row
@@ -312,7 +323,8 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
                 warning("The fit of the ", form, " form did not converge.",
                     call. = FALSE)
             }
-            res <- .variogram_parameters(fit, conf.level)
+            res <- rbind(.variogram_parameters(fit, conf.level),
+                .stationarity(fit, conf.level))
         } else{
             res <- .compare_variogram_models(
                 pairs, form, conf.level, bootstrap, BPPARAM)
@@ -612,7 +624,9 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
                 ci[1L, ] >= min_lag & ci[2L, ] <= max_lag, NA),
             n.subjects = length(unique(p$subject)), n.pairs = nrow(p),
             min.lag = min_lag, max.lag = max_lag)
-        list(table = res, boot = boot)
+        st <- cbind(level = g, .stationarity(fit, conf.level))
+        st$max.lag <- max_lag
+        list(table = res, boot = boot, stationarity = st)
     })
     comp <- lapply(seq_along(lev)[-1L], function(i){
         e1 <- fits[[1L]]$table
@@ -642,7 +656,8 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
             n.pairs = e1$n.pairs + e2$n.pairs,
             min.lag = max(e1$min.lag, e2$min.lag), max.lag = max_lag)
     })
-    res <- do.call(rbind, c(lapply(fits, function(f) f$table), comp))
+    res <- do.call(rbind, c(lapply(fits, function(f) f$table), comp,
+        lapply(fits, function(f) f$stationarity)))
     rownames(res) <- NULL
     attr(res, "cv") <- cv
     return(res)
@@ -667,6 +682,37 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         .VARIOGRAM_FORMS[[form]]$report(.natural_parameters(fit$beta, form))
     }, BPPARAM = BPPARAM)
     res <- do.call(rbind, res)
+    return(res)
+}
+
+# Slope of the relative residuals d / g(h) - 1 on the pair midpoint, with
+# subjects weighted equally and a CR1 standard error clustered by subject
+.stationarity <- function(fit, conf.level){
+    p <- fit$pairs
+    r <- p$d / fit$fitted - 1
+    w <- as.numeric(1 / table(p$subject)[p$subject])
+    X <- cbind(1, p$mid - stats::weighted.mean(p$mid, w))
+    A <- crossprod(X, X * w)
+    G <- length(unique(p$subject))
+    b <- c(NA_real_, NA_real_)
+    se <- NA_real_
+    # Without spread in the midpoints there is no slope
+    if( qr(A)$rank == 2L ){
+        Ai <- solve(A)
+        b <- drop(Ai %*% crossprod(X, w * r))
+        U <- rowsum(X * (w * drop(r - X %*% b)), p$subject)
+        V <- Ai %*% crossprod(U) %*% Ai * G / (G - 1)
+        se <- sqrt(V[2L, 2L])
+    }
+    q <- stats::qt(1 - (1 - conf.level) / 2, G - 1)
+    h <- p$h
+    res <- data.frame(
+        type = "test", form = fit$form, parameter = "stationarity",
+        estimate = b[[2L]], lower = b[[2L]] - q * se, upper = b[[2L]] + q * se,
+        se = se, df = G - 1,
+        p.value = 2 * stats::pt(-abs(b[[2L]] / se), G - 1), identified = NA,
+        n.subjects = G, n.pairs = nrow(p), min.lag = min(h[h > 0]),
+        max.lag = max(h))
     return(res)
 }
 
