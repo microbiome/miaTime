@@ -250,4 +250,9 @@ test_that("Pairs are classified by a sample-level state", {
     expect_true(all(pairs$level[pairs$mid - pairs$h / 2 >= 2] == "late"))
     expect_true(all(pairs$level[pairs$mid - pairs$h / 2 < 2] == "early"))
     expect_error(do.call(getVariogram, c(args, permutations = 9)))
+    # split.by must not take the name of an output column
+    tse$type <- tse$state
+    args[[1]] <- tse
+    args$split.by <- "type"
+    expect_error(do.call(getVariogram, args), "output column")
 })

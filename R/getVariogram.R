@@ -303,6 +303,7 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         }
         temp <- .check_input(
             split.by, list(NULL, "character scalar"), colnames(colData(x)))
+        .check_split_by_name(split.by, .VARIOGRAM_COLUMNS)
         if( !(is.null(time.point) || identical(time.point, "median") ||
                 (is.numeric(time.point) && !anyNA(time.point))) ){
             stop("'time.point' must be NULL, numeric or \"median\".",
@@ -358,6 +359,20 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
 )
 
 ################################ HELP FUNCTIONS ################################
+
+# Columns of the output; split.by becomes a column too, so it must not take
+# one of these names
+.VARIOGRAM_COLUMNS <- c(
+    "lag", "type", "estimate", "lower", "upper", "se", "df", "p.value",
+    "p.value.permutation", "n.subjects", "n.pairs", "supported",
+    "time.point", "relative")
+
+.check_split_by_name <- function(split.by, columns){
+    if( !is.null(split.by) && split.by %in% columns ){
+        stop("'split.by' must not be named '", split.by, "', the name of ",
+            "an output column; rename the column of colData.", call. = FALSE)
+    }
+}
 
 # All pairs of samples of the same subject, with their lag, midpoint time and
 # dissimilarity.
