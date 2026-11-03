@@ -25,6 +25,7 @@ addVariogramModel(x, ...)
   squared = FALSE,
   bounded = FALSE,
   conf.level = 0.95,
+  permutations = 0,
   bootstrap = 999,
   BPPARAM = BiocParallel::SerialParam(),
   ...
@@ -78,6 +79,10 @@ bounded by 1 and analysed on the scale \eqn{-\log(1 - d)}. See details.
 \item{conf.level}{\code{Numeric scalar}. Confidence level of the
 intervals. (Default: \code{0.95})}
 
+\item{permutations}{\code{Integer scalar}. The number of permutations of
+the sampling times within subjects for the test of temporal structure;
+\code{0} for none. See details. (Default: \code{0})}
+
 \item{bootstrap}{\code{Integer scalar}. The number of resamples of
 subjects within each level of \code{split.by}. (Default: \code{999})}
 
@@ -92,8 +97,8 @@ parameter (and level of \code{split.by}, and comparison) and the columns
 \describe{
 \item{\code{split.by}}{When \code{split.by} is given: the level, or the
 comparison (\code{"B / A"}).}
-\item{type}{\code{"parameter"}, or \code{"ratio"} for comparisons
-between levels.}
+\item{type}{\code{"parameter"}, \code{"ratio"} for comparisons
+between levels, or \code{"test"}.}
 \item{form}{The fitted form.}
 \item{parameter}{\code{"nugget"}, \code{"partial.sill"},
 \code{"sill"} and \code{"timescale"} (with suffixes \code{.1} and
@@ -186,6 +191,17 @@ whose midpoint \eqn{m} satisfies \eqn{(1 + m) / (1 + a)} in
 \eqn{[1/2, 2]} are fitted, as in
 \code{\link[miaTime:getVariogram]{getVariogram()}}, so that the levels
 are compared around the same time \eqn{a}.
+
+\strong{Temporal structure.} Without temporal structure, dissimilarity
+does not depend on the lag, the timescale is not identified and tests on
+it are meaningless. With \code{permutations > 0}, a row
+\code{"temporal.structure"} tests whether dissimilarity depends on the
+lag at all: its estimate is the subject-weighted mean dissimilarity of
+pairs in the upper quartile of the lags minus that of pairs in the lower
+quartile, and its p-value compares it with the same statistic after the
+sampling times are permuted within each subject, which leaves the
+dissimilarities unchanged. It uses the pairs at all lags, and is computed
+for each level of \code{split.by}.
 
 The dissimilarities are those of
 \code{\link[miaTime:getVariogram]{getVariogram()}}; see its details for

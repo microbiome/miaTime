@@ -114,3 +114,43 @@ test_that("Parameters are compared between groups", {
     expect_true(all(res$time.point == 5))
     expect_true(all(is.na(res$p.value[res$type == "parameter"])))
 })
+
+test_that("Permutation test for temporal structure", {
+    # Twenty subjects with eight samples each: a random walk has temporal
+    # structure, independent values have none
+    time <- rep(0:7, 20)
+    subject <- rep(paste0("s", 1:20), each = 8)
+    ij <- do.call(rbind, lapply(split(seq_along(time), subject), function(i){
+        t(combn(i, 2))
+    }))
+    .pairs <- function(x){
+        data.frame(subject = subject[ij[, 1]],
+            h = abs(time[ij[, 2]] - time[ij[, 1]]),
+            mid = (time[ij[, 1]] + time[ij[, 2]]) / 2,
+            d = (x[ij[, 1]] - x[ij[, 2]])^2, k = ij[, 1], l = ij[, 2])
+    }
+    set.seed(1)
+    walk <- ave(rnorm(160), subject, FUN = cumsum)
+    res <- miaTime:::.temporal_structure(.pairs(walk), time, 99)
+    expect_true(res$statistic > 0)
+    expect_equal(res$p.value, 0.01)
+    res <- miaTime:::.temporal_structure(.pairs(rnorm(160)), time, 99)
+    expect_true(res$p.value > 0.05)
+
+    data(hitchip1006, package = "miaTime")
+    tse <- transformAssay(hitchip1006, method = "hellinger")
+    args <- list(tse, time.col = "time", group = "subject",
+        assay.type = "hellinger", method = "euclidean", squared = TRUE,
+        form = "linear")
+    expect_false("test" %in% do.call(getVariogramModel, args)$type)
+    set.seed(1)
+    res <- do.call(getVariogramModel, c(args, permutations = 19))
+    tt <- res[res$type == "test", ]
+    expect_identical(tt$parameter, "temporal.structure")
+    expect_true(tt$p.value >= 1 / 20 && tt$p.value <= 1)
+    set.seed(1)
+    res <- do.call(getVariogramModel, c(args, permutations = 19,
+        split.by = "sex", bootstrap = 9))
+    expect_identical(res$sex[res$type == "test"], c("female", "male"))
+    expect_error(do.call(getVariogramModel, c(args, permutations = -1)))
+})
