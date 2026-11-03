@@ -21,6 +21,7 @@ addVariogram(x, ...)
   method = "bray",
   time.lag = NULL,
   split.by = NULL,
+  subset.by = NULL,
   time.point = NULL,
   window = 2,
   squared = FALSE,
@@ -65,6 +66,10 @@ the units of \code{time.col}, at which \eqn{D(L)} is estimated. If
 of a column from \code{colData}, with one value per subject or a
 sample-level state. \eqn{D(L)} is estimated for each of its levels, and
 each level is compared with the first. (Default: \code{NULL})}
+
+\item{subset.by}{\code{NULL} or \code{Character scalar}. Specifies a name
+of a logical column of \code{colData}; only pairs whose earlier sample is
+\code{TRUE} are used. See details. (Default: \code{NULL})}
 
 \item{time.point}{\code{NULL}, \code{numeric vector} or \code{"median"}. The
 time at which \eqn{D(L)} is estimated, for communities whose change
@@ -191,6 +196,11 @@ cluster-robust by subject, by the delta method, with \eqn{G - 1} degrees
 of freedom. Both levels must meet the support rules on their own. The
 permutation test is not available, as levels are not assigned to
 subjects.
+
+With \code{subset.by}, only pairs whose earlier sample is \code{TRUE} in
+a logical column of \code{colData} are used, for example pairs starting
+from a given community type. Subjects are then compared on those pairs,
+and a sample-level state is compared within them.
 
 \strong{Developing communities.} When change at a given lag depends on
 the time since a common origin (age in infant cohorts, time since an

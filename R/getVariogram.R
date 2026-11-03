@@ -79,6 +79,11 @@
 #' permutation test is not available, as levels are not assigned to
 #' subjects.
 #'
+#' With \code{subset.by}, only pairs whose earlier sample is \code{TRUE} in
+#' a logical column of \code{colData} are used, for example pairs starting
+#' from a given community type. Subjects are then compared on those pairs,
+#' and a sample-level state is compared within them.
+#'
 #' \strong{Developing communities.} When change at a given lag depends on
 #' the time since a common origin (age in infant cohorts, time since an
 #' intervention), groups whose samples were taken at different ages differ
@@ -173,6 +178,10 @@
 #' of a column from \code{colData}, with one value per subject or a
 #' sample-level state. \eqn{D(L)} is estimated for each of its levels, and
 #' each level is compared with the first. (Default: \code{NULL})
+#'
+#' @param subset.by \code{NULL} or \code{Character scalar}. Specifies a name
+#' of a logical column of \code{colData}; only pairs whose earlier sample is
+#' \code{TRUE} are used. See details. (Default: \code{NULL})
 #'
 #' @param time.point \code{NULL}, \code{numeric vector} or \code{"median"}. The
 #' time at which \eqn{D(L)} is estimated, for communities whose change
@@ -277,6 +286,7 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         method = "bray",
         time.lag = NULL,
         split.by = NULL,
+        subset.by = NULL,
         time.point = NULL,
         window = 2,
         squared = FALSE,
@@ -304,6 +314,12 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         temp <- .check_input(
             split.by, list(NULL, "character scalar"), colnames(colData(x)))
         .check_split_by_name(split.by, .VARIOGRAM_COLUMNS)
+        temp <- .check_input(
+            subset.by, list(NULL, "character scalar"), colnames(colData(x)))
+        if( !is.null(subset.by) && !is.logical(x[[subset.by]]) ){
+            stop("'subset.by' must specify a logical column of colData(x).",
+                call. = FALSE)
+        }
         if( !(is.null(time.point) || identical(time.point, "median") ||
                 (is.numeric(time.point) && !anyNA(time.point))) ){
             stop("'time.point' must be NULL, numeric or \"median\".",
@@ -336,6 +352,9 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         pairs <- .get_within_subject_pairs(
             x, time.col, group, assay.type, method, split.by, squared,
             bounded, args)
+        if( !is.null(subset.by) ){
+            pairs <- .subset_pairs(pairs, x, time.col, subset.by)
+        }
         if( is.null(time.lag) ){
             time.lag <- .default_lags(pairs)
         }
@@ -438,6 +457,23 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     }
     # Columns of the input that k and l index
     attr(pairs, "samples") <- samples
+    return(pairs)
+}
+
+# The pairs whose earlier sample is TRUE in the logical column subset.by
+.subset_pairs <- function(pairs, x, time.col, subset.by){
+    samples <- attr(pairs, "samples")
+    pair_level <- attr(pairs, "pair.level")
+    keep <- x[[subset.by]][samples]
+    time <- x[[time.col]][samples]
+    first <- ifelse(time[pairs$k] <= time[pairs$l], pairs$k, pairs$l)
+    pairs <- pairs[keep[first] %in% TRUE, , drop = FALSE]
+    if( nrow(pairs) == 0L ){
+        stop("No pair starts from a sample with 'subset.by' TRUE.",
+            call. = FALSE)
+    }
+    attr(pairs, "samples") <- samples
+    attr(pairs, "pair.level") <- pair_level
     return(pairs)
 }
 

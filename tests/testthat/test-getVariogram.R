@@ -256,3 +256,26 @@ test_that("Pairs are classified by a sample-level state", {
     args$split.by <- "type"
     expect_error(do.call(getVariogram, args), "output column")
 })
+
+test_that("Pairs are restricted to those from samples with subset.by TRUE", {
+    data(hitchip1006, package = "miaTime")
+    tse <- transformAssay(hitchip1006, method = "hellinger")
+    tse$early <- tse$time < 3
+    args <- list(tse, time.col = "time", group = "subject",
+        assay.type = "hellinger", method = "euclidean", squared = TRUE,
+        time.lag = c(1, 3))
+    res <- do.call(getVariogram, c(args, subset.by = "early"))
+    # The same as the local estimate on the pairs from early samples
+    pairs <- miaTime:::.get_within_subject_pairs(tse, "time", "subject",
+        "hellinger", "euclidean", NULL, TRUE, FALSE, list())
+    first <- pmin(pairs$mid - pairs$h / 2)
+    ref <- miaTime:::.local_variogram(pairs[first < 3, ], c(1, 3), 2, 0.95,
+        c(NA, NA))
+    expect_equal(res$estimate, ref$estimate)
+    expect_equal(res$n.pairs, ref$n.pairs)
+    expect_error(do.call(getVariogram, c(args, subset.by = "time")),
+        "logical")
+    tse$none <- FALSE
+    args[[1]] <- tse
+    expect_error(do.call(getVariogram, c(args, subset.by = "none")))
+})
