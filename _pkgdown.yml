@@ -6,11 +6,23 @@ reference:
   - getBaselineDivergence
   - getStepwiseDivergence
 
+- title: Variogram
+  contents:
+  - getVariogram
+
 - title: Feature dynamics
   contents:
   - getShortTermChange
   - getStability
   - getBimodality
+
+- title: Sampling
+  contents:
+  - getSamplingSummary
+
+- title: Survival
+  contents:
+  - getSurvival
 
 - title: Datasets
   contents:
