@@ -26,6 +26,7 @@ Depends:
     R (>= 4.5.0),
     mia
 Imports:
+    BiocParallel,
     dplyr,
     glmnet,
     methods,
