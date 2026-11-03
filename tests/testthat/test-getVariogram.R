@@ -190,3 +190,30 @@ test_that("Bounded dissimilarities are analysed on the -log(1 - d) scale", {
         bounded = TRUE))
     expect_error(do.call(getVariogram, c(args, bounded = NA)))
 })
+
+test_that("Relative change divides D(L) by the dissimilarity between subjects", {
+    data(hitchip1006, package = "miaTime")
+    tse <- transformAssay(hitchip1006, method = "relabundance")
+    # Subjects with two or more samples, and ten with one
+    n <- table(tse$subject)
+    tse <- tse[, tse$subject %in% c(names(n)[n > 1], names(n)[n == 1][1:10])]
+    args <- list(tse, time.col = "time", group = "subject",
+        assay.type = "relabundance", method = "bray", time.lag = c(1, 3),
+        split.by = "sex")
+    res <- do.call(getVariogram, c(args, relative = TRUE))
+    # Every pair of subjects counts equally
+    d <- as.matrix(getDissimilarity(t(assay(tse, "relabundance")),
+        method = "bray"))
+    s <- tse$subject
+    sp <- combn(unique(s), 2)
+    B <- mean(apply(sp, 2, function(p) mean(d[s == p[1], s == p[2]])))
+    est <- res$type == "dissimilarity"
+    expect_equal(res$relative[est], res$estimate[est] / B)
+    expect_true(all(is.na(res$relative[!est])))
+    expect_false("relative" %in% names(do.call(getVariogram, args)))
+    # On the same scale as D(L)
+    res <- do.call(getVariogram, c(args, relative = TRUE, bounded = TRUE))
+    B <- mean(apply(sp, 2, function(p)
+        mean(-log(1 - d[s == p[1], s == p[2]]))))
+    expect_equal(res$relative[est], res$estimate[est] / B)
+})

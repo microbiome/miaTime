@@ -93,6 +93,16 @@
 #' for small dissimilarities. Pairs without shared features (\eqn{d = 1}) are
 #' set to \eqn{d = 1 - 10^{-9}}.
 #'
+#' \strong{Relative change.} \eqn{D(L)} is on the scale of the
+#' dissimilarity, so it cannot be compared between dissimilarities, studies
+#' or body sites. With \code{relative = TRUE}, \eqn{D(L)} is also reported
+#' relative to \eqn{B}, the mean dissimilarity between samples of different
+#' subjects, where every pair of subjects counts equally: a value of 0.5
+#' means that over \eqn{L} a subject's community changes half as much as it
+#' differs from another subject's. \eqn{B} is computed from the samples of
+#' all subjects, so it is the same for every level of \code{split.by}, and
+#' it is treated as fixed.
+#'
 #' @references
 #' Diggle P.J. (1988) An approach to the analysis of repeated measurements.
 #' Biometrics 44, 959–971. doi: 10.2307/2531727
@@ -126,6 +136,8 @@
 #'   \item{supported}{Whether the design supports \eqn{D(L)} at this lag.}
 #'   \item{time.point}{The time at which \eqn{D(L)} was estimated, when
 #'   \code{time.point} is given.}
+#'   \item{relative}{When \code{relative = TRUE}: \eqn{D(L) / B}, for
+#'   estimates of \eqn{D(L)}.}
 #' }
 #' \code{addVariogram} returns \code{x} with this table in its
 #' \code{metadata}.
@@ -159,6 +171,10 @@
 #'
 #' @param bounded \code{Logical scalar}. Whether the dissimilarities are
 #' bounded by 1 and analysed on the scale \eqn{-\log(1 - d)}. See details.
+#' (Default: \code{FALSE})
+#'
+#' @param relative \code{Logical scalar}. Whether \eqn{D(L)} is also
+#' reported relative to the dissimilarity between subjects. See details.
 #' (Default: \code{FALSE})
 #'
 #' @param conf.level \code{Numeric scalar}. Confidence level of the
@@ -249,6 +265,7 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         window = 2,
         squared = FALSE,
         bounded = FALSE,
+        relative = FALSE,
         conf.level = 0.95,
         permutations = 0,
         ...){
@@ -287,6 +304,7 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         }
         temp <- .check_input(squared, list("logical scalar"))
         temp <- .check_input(bounded, list("logical scalar"))
+        temp <- .check_input(relative, list("logical scalar"))
         temp <- .check_input(conf.level, list("numeric scalar"))
         if( conf.level <= 0 || conf.level >= 1 ){
             stop("'conf.level' must be between 0 and 1.", call. = FALSE)
@@ -307,6 +325,13 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         res <- .variogram(
             pairs, time.lag, split.by, time.point, window, conf.level,
             permutations)
+        if( relative ){
+            B <- .between_subject_level(
+                x, time.col, group, assay.type, method, split.by, squared,
+                bounded, args)
+            res$relative <- ifelse(
+                res$type == "dissimilarity", res$estimate / B, NA_real_)
+        }
         res <- DataFrame(res, check.names = FALSE)
         return(res)
     }
@@ -367,20 +392,51 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
             mid = (time[k] + time[l]) / 2, d = d[ut])
     })
     pairs <- do.call(rbind, unname(res))
-    if( squared ){
-        pairs$d <- pairs$d^2
-    }
-    if( bounded ){
-        if( any(pairs$d < 0 | pairs$d > 1, na.rm = TRUE) ){
-            stop("'bounded = TRUE' needs dissimilarities between 0 and 1.",
-                call. = FALSE)
-        }
-        pairs$d <- -log1p(-pmin(pairs$d, 1 - 1e-9))
-    }
+    pairs$d <- .dissimilarity_scale(pairs$d, squared, bounded)
     if( !is.null(split.by) ){
         pairs$level <- level[match(pairs$subject, subject)]
     }
     return(pairs)
+}
+
+# Squared, or on the scale -log(1 - d) for bounded dissimilarities
+.dissimilarity_scale <- function(d, squared, bounded){
+    if( squared ){
+        d <- d^2
+    }
+    if( bounded ){
+        if( any(d < 0 | d > 1, na.rm = TRUE) ){
+            stop("'bounded = TRUE' needs dissimilarities between 0 and 1.",
+                call. = FALSE)
+        }
+        d <- -log1p(-pmin(d, 1 - 1e-9))
+    }
+    return(d)
+}
+
+# Mean dissimilarity between samples of different subjects, every pair of
+# subjects counting equally
+.between_subject_level <- function(
+        x, time.col, group, assay.type, method, split.by, squared, bounded,
+        args){
+    keep <- !is.na(x[[time.col]]) & !is.na(x[[group]])
+    if( !is.null(split.by) ){
+        keep <- keep & !is.na(x[[split.by]])
+    }
+    x <- x[, keep]
+    subject <- as.character(x[[group]])
+    if( length(unique(subject)) < 2L ){
+        stop("'relative = TRUE' needs at least two subjects.", call. = FALSE)
+    }
+    d <- do.call(getDissimilarity, c(
+        list(x = t(assay(x, assay.type)), method = method), args))
+    d <- .dissimilarity_scale(as.matrix(d), squared, bounded)
+    # Sums and numbers of sample pairs for every pair of subjects
+    sums <- rowsum(t(rowsum(d, subject)), subject)
+    n <- as.numeric(table(subject)[rownames(sums)])
+    means <- sums / outer(n, n)
+    B <- mean(means[upper.tri(means)])
+    return(B)
 }
 
 # The k-th smallest of the subjects' shortest lags and the k-th largest of
