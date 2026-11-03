@@ -100,8 +100,10 @@
 #' pairs in the upper quartile of the lags minus that of pairs in the lower
 #' quartile, and its p-value compares it with the same statistic after the
 #' sampling times are permuted within each subject, which leaves the
-#' dissimilarities unchanged. It uses the pairs at all lags, and is computed
-#' for each level of \code{split.by}.
+#' dissimilarities unchanged. When the times can be permuted within subjects
+#' in at most a million ways, every permutation is used and the p-value is
+#' exact; otherwise \code{permutations} random permutations are used. It uses
+#' the pairs at all lags, and is computed for each level of \code{split.by}.
 #'
 #' \strong{Technical replicates.} The nugget contains measurement noise and
 #' change faster than the shortest lag. When some samples were sequenced
@@ -910,6 +912,10 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         stats::weighted.mean(p$d[hi], wh) - stats::weighted.mean(p$d[lo], wl)
     }
     obs <- stat(p$h)
+    exact <- .temporal_structure_exact(p, time, q, obs)
+    if( !is.null(exact) ){
+        return(list(statistic = obs, p.value = exact))
+    }
     # The samples of the pairs, ordered by subject
     id <- c(p$k, p$l)
     keep <- !duplicated(id)
@@ -923,6 +929,60 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
     }, numeric(1L))
     p_value <- (1 + sum(perm >= obs, na.rm = TRUE)) / (1 + sum(!is.na(perm)))
     return(list(statistic = obs, p.value = p_value))
+}
+
+# The exact p-value of the test for temporal structure, from every
+# permutation of the sampling times within subjects; NULL when there are more
+# than max.perm permutations
+.temporal_structure_exact <- function(pairs, time, q, obs, max.perm = 1e6){
+    parts <- lapply(split(seq_len(nrow(pairs)), pairs$subject), function(i){
+        ids <- sort(unique(c(pairs$k[i], pairs$l[i])))
+        list(t = time[ids], k = match(pairs$k[i], ids),
+            l = match(pairs$l[i], ids), d = pairs$d[i])
+    })
+    n <- vapply(parts, function(x) length(x$t), integer(1L))
+    if( prod(factorial(n)) > max.perm ){
+        return(NULL)
+    }
+    # Lags of each subject's pairs under each permutation of its times
+    lags <- lapply(parts, function(x){
+        pm <- .permutations(length(x$t))
+        tk <- matrix(x$t[pm[, x$k, drop = FALSE]], nrow = nrow(pm))
+        tl <- matrix(x$t[pm[, x$l, drop = FALSE]], nrow = nrow(pm))
+        abs(tl - tk)
+    })
+    idx <- as.matrix(expand.grid(lapply(lags, function(m) seq_len(nrow(m)))))
+    # Subject-weighted means of the pairs in the lower and upper quartile of
+    # the observed lags, for every combination of permutations
+    num_lo <- num_hi <- den_lo <- den_hi <- 0
+    for( j in seq_along(parts) ){
+        h <- lags[[j]][idx[, j], , drop = FALSE]
+        d <- parts[[j]]$d
+        lo <- h <= q[[1L]]
+        hi <- h >= q[[2L]]
+        n_lo <- rowSums(lo)
+        n_hi <- rowSums(hi)
+        num_lo <- num_lo + ifelse(n_lo > 0, drop(lo %*% d) / pmax(n_lo, 1), 0)
+        num_hi <- num_hi + ifelse(n_hi > 0, drop(hi %*% d) / pmax(n_hi, 1), 0)
+        den_lo <- den_lo + (n_lo > 0)
+        den_hi <- den_hi + (n_hi > 0)
+    }
+    st <- num_hi / den_hi - num_lo / den_lo
+    st <- st[is.finite(st)]
+    res <- mean(st >= obs - 1e-12 * max(1, abs(obs)))
+    return(res)
+}
+
+# All permutations of 1, ..., n, one per row
+.permutations <- function(n){
+    if( n == 1L ){
+        return(matrix(1L, 1L, 1L))
+    }
+    sub <- .permutations(n - 1L)
+    res <- do.call(rbind, lapply(seq_len(n), function(i){
+        cbind(i, matrix(setdiff(seq_len(n), i)[sub], nrow = nrow(sub)))
+    }))
+    return(res)
 }
 
 # Ten-fold cross-validation over subjects. Single pairs are too noisy to
