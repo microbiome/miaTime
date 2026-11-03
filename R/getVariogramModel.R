@@ -54,6 +54,29 @@
 #' (\code{\link[miaTime:getVariogram]{getVariogram()}}) is the quantity to
 #' report.
 #'
+#' \strong{Groups.} Two groups can differ in change at a lag because of
+#' measurement noise and fast change (the nugget) or because of slower
+#' dynamics (the sill and the timescale). With \code{split.by}, the form is
+#' fitted separately to the subjects of each level of a subject-level
+#' variable, over the same lag range (the shortest of the levels' ranges),
+#' and each level is compared with the first by the ratio of each parameter.
+#' When several forms are given, the form is chosen once, by cross-validation
+#' on the pairs of all levels, so that the levels share it. Intervals are
+#' percentile intervals from \code{bootstrap} resamples of the subjects
+#' within each level, each refitted; resamples whose fit fails or does not
+#' converge are left out. The p-value of a ratio is twice the smaller share
+#' of resamples on either side of 1. Timescales are compared only when they
+#' are identified in both levels. P-values are not adjusted for multiple
+#' comparisons. Set a seed (\code{set.seed()}) for reproducible intervals.
+#'
+#' \strong{Developing communities.} When change depends on the time since a
+#' common origin (age in infant cohorts), groups sampled at different ages
+#' differ even with the same development. With \code{time.point}, only pairs
+#' whose midpoint \eqn{m} satisfies \eqn{(1 + m) / (1 + a)} in
+#' \eqn{[1/2, 2]} are fitted, as in
+#' \code{\link[miaTime:getVariogram]{getVariogram()}}, so that the levels
+#' are compared around the same time \eqn{a}.
+#'
 #' The dissimilarities are those of
 #' \code{\link[miaTime:getVariogram]{getVariogram()}}; see its details for
 #' the choice of dissimilarity and for bounded dissimilarities.
@@ -67,21 +90,30 @@
 #'
 #' @return
 #' \code{getVariogramModel} returns a \code{DataFrame} with one row per
-#' parameter and the columns
+#' parameter (and level of \code{split.by}, and comparison) and the columns
 #' \describe{
+#'   \item{\code{split.by}}{When \code{split.by} is given: the level, or the
+#'   comparison (\code{"B / A"}).}
+#'   \item{type}{\code{"parameter"}, or \code{"ratio"} for comparisons
+#'   between levels.}
 #'   \item{form}{The fitted form.}
 #'   \item{parameter}{\code{"nugget"}, \code{"partial.sill"},
 #'   \code{"sill"} and \code{"timescale"} (with suffixes \code{.1} and
 #'   \code{.2} for the two-timescale form), \code{"scale"} and
 #'   \code{"exponent"} (power form) or \code{"slope"} (linear form).}
-#'   \item{estimate, lower, upper}{The estimate with its confidence
-#'   interval.}
-#'   \item{se}{Standard error on the log scale.}
-#'   \item{df}{Degrees of freedom of the t distribution.}
+#'   \item{estimate, lower, upper}{The estimate, or the ratio between
+#'   levels, with its confidence interval.}
+#'   \item{se}{Standard error on the log scale (without \code{split.by}).}
+#'   \item{df}{Degrees of freedom of the t distribution (without
+#'   \code{split.by}).}
+#'   \item{p.value}{For comparisons, the p-value of the test that the ratio
+#'   is 1.}
 #'   \item{identified}{For timescales, whether the interval lies within the
 #'   fitted lag range.}
 #'   \item{n.subjects, n.pairs}{Subjects and pairs in the fit.}
 #'   \item{min.lag, max.lag}{The fitted lag range.}
+#'   \item{time.point}{The time around which the pairs were fitted, when
+#'   \code{time.point} is given.}
 #' }
 #' \code{addVariogramModel} returns \code{x} with this table in its
 #' \code{metadata}.
@@ -91,6 +123,23 @@
 #' @param form \code{Character vector}. The forms among which one is chosen
 #' by cross-validation: \code{"exponential"}, \code{"two.timescale"},
 #' \code{"power"} and \code{"linear"}. See details. (Default: all four)
+#'
+#' @param split.by \code{NULL} or \code{Character scalar}. Specifies a name
+#' of a column from \code{colData} with one value per subject. The form is
+#' fitted to each of its levels, and each level is compared with the first.
+#' (Default: \code{NULL})
+#'
+#' @param time.point \code{NULL} or \code{Numeric scalar}. The time around
+#' which pairs are fitted, for communities whose change depends on time since
+#' a common origin. See details. (Default: \code{NULL})
+#'
+#' @param bootstrap \code{Integer scalar}. The number of resamples of
+#' subjects within each level of \code{split.by}. (Default: \code{999})
+#'
+#' @param BPPARAM A
+#' \code{\link[BiocParallel:BiocParallelParam-class]{BiocParallelParam}}
+#' object specifying whether the resamples are fitted in parallel.
+#' (Default: \code{BiocParallel::SerialParam()})
 #'
 #' @param name \code{Character scalar}. Specifies a name for storing the
 #' results in \code{metadata}. (Default: \code{"variogram_model"})
@@ -131,6 +180,21 @@
 #'     )
 #' metadata(tse)[["variogram_model"]]
 #'
+#' # Compare the sexes; use more resamples in practice
+#' set.seed(1)
+#' res <- getVariogramModel(
+#'     tse,
+#'     time.col = "time",
+#'     group = "subject",
+#'     assay.type = "hellinger",
+#'     method = "euclidean",
+#'     squared = TRUE,
+#'     form = "linear",
+#'     split.by = "sex",
+#'     bootstrap = 49
+#'     )
+#' res[res$type == "ratio", ]
+#'
 #' @seealso
 #' \code{\link[miaTime:getVariogram]{getVariogram()}}
 #'
@@ -159,9 +223,13 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         assay.type = "counts",
         method = "bray",
         form = c("exponential", "two.timescale", "power", "linear"),
+        split.by = NULL,
+        time.point = NULL,
         squared = FALSE,
         bounded = FALSE,
         conf.level = 0.95,
+        bootstrap = 999,
+        BPPARAM = BiocParallel::SerialParam(),
         ...){
         ############################# INPUT CHECK ##############################
         x <- .check_and_get_altExp(x, ...)
@@ -177,30 +245,58 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
         temp <- .check_input(method, list("character scalar"))
         temp <- .check_input(form, list("character vector"),
             names(.VARIOGRAM_FORMS))
+        temp <- .check_input(
+            split.by, list(NULL, "character scalar"), colnames(colData(x)))
+        temp <- .check_input(time.point, list(NULL, "numeric scalar"))
         temp <- .check_input(squared, list("logical scalar"))
         temp <- .check_input(bounded, list("logical scalar"))
         temp <- .check_input(conf.level, list("numeric scalar"))
         if( conf.level <= 0 || conf.level >= 1 ){
             stop("'conf.level' must be between 0 and 1.", call. = FALSE)
         }
+        temp <- .check_input(bootstrap, list("numeric scalar"))
+        if( bootstrap < 1 || bootstrap != round(bootstrap) ){
+            stop("'bootstrap' must be a positive integer.", call. = FALSE)
+        }
+        if( !is(BPPARAM, "BiocParallelParam") ){
+            stop("'BPPARAM' must be a BiocParallelParam object.",
+                call. = FALSE)
+        }
         ########################### INPUT CHECK END ############################
         args <- list(...)[!names(list(...)) %in% c("altexp")]
         pairs <- .get_within_subject_pairs(
-            x, time.col, group, assay.type, method, NULL, squared, bounded,
-            args)
-        pairs <- pairs[pairs$h <= .max_lag(pairs), , drop = FALSE]
+            x, time.col, group, assay.type, method, split.by, squared,
+            bounded, args)
+        if( isTRUE(attr(pairs, "pair.level")) ){
+            stop("'split.by' must have one value per subject.", call. = FALSE)
+        }
+        if( !is.null(time.point) ){
+            r <- (1 + pmax(pairs$mid, 0)) / (1 + max(time.point, 0))
+            pairs <- pairs[r >= 1 / 2 & r <= 2, , drop = FALSE]
+        }
         form <- unique(form)
-        cv <- NULL
-        if( length(form) > 1L ){
-            cv <- .cv_forms(pairs, form)
-            form <- cv$form[cv$chosen]
+        if( is.null(split.by) ){
+            pairs <- pairs[pairs$h <= .max_lag(pairs), , drop = FALSE]
+            cv <- NULL
+            if( length(form) > 1L ){
+                cv <- .cv_forms(pairs, form)
+                form <- cv$form[cv$chosen]
+            }
+            fit <- .fit_variogram(pairs, form)
+            if( !fit$converged ){
+                warning("The fit of the ", form, " form did not converge.",
+                    call. = FALSE)
+            }
+            res <- .variogram_parameters(fit, conf.level)
+        } else{
+            res <- .compare_variogram_models(
+                pairs, form, conf.level, bootstrap, BPPARAM)
+            cv <- attr(res, "cv")
+            names(res)[names(res) == "level"] <- split.by
         }
-        fit <- .fit_variogram(pairs, form)
-        if( !fit$converged ){
-            warning("The fit of the ", form, " form did not converge.",
-                call. = FALSE)
+        if( !is.null(time.point) ){
+            res$time.point <- time.point
         }
-        res <- .variogram_parameters(fit, conf.level)
         res <- DataFrame(res, check.names = FALSE)
         metadata(res)$cv <- cv
         return(res)
@@ -431,13 +527,115 @@ setMethod("getVariogramModel", signature = c(x = "SummarizedExperiment"),
     upper <- est * exp(q * se)
     timescale <- grepl("^timescale", names(est))
     res <- data.frame(
-        form = fit$form, parameter = names(est), estimate = unname(est),
-        lower = unname(lower), upper = unname(upper), se = se, df = G - 1,
+        type = "parameter", form = fit$form, parameter = names(est),
+        estimate = unname(est), lower = unname(lower), upper = unname(upper),
+        se = se, df = G - 1, p.value = NA_real_,
         identified = ifelse(timescale,
             is.finite(se) & lower >= min_lag & upper <= max_lag, NA),
         n.subjects = G, n.pairs = nrow(fit$pairs), min.lag = min_lag,
         max.lag = max_lag)
     rownames(res) <- NULL
+    return(res)
+}
+
+# Fits the form to each level of split.by over a common lag range, with
+# percentile intervals from a bootstrap over subjects within each level, and
+# compares each level with the first by the ratio of each parameter
+.compare_variogram_models <- function(
+        pairs, form, conf.level, bootstrap, BPPARAM){
+    lev <- levels(droplevels(pairs$level))
+    by_level <- split(pairs, pairs$level)[lev]
+    max_lag <- min(vapply(by_level, .max_lag, numeric(1L)))
+    by_level <- lapply(by_level, function(p) p[p$h <= max_lag, , drop = FALSE])
+    cv <- NULL
+    if( length(form) > 1L ){
+        cv <- .cv_forms(do.call(rbind, unname(by_level)), form)
+        form <- cv$form[cv$chosen]
+    }
+    a <- (1 - conf.level) / 2
+    fits <- lapply(lev, function(g){
+        p <- by_level[[g]]
+        fit <- .fit_variogram(p, form)
+        if( !fit$converged ){
+            warning("The fit of the ", form, " form did not converge for '",
+                g, "'.", call. = FALSE)
+        }
+        est <- .VARIOGRAM_FORMS[[form]]$report(
+            .natural_parameters(fit$beta, form))
+        boot <- .bootstrap_subjects(p, form, bootstrap, BPPARAM)
+        if( any(is.na(boot[, 1L])) ){
+            message(sum(is.na(boot[, 1L])), " of ", bootstrap,
+                " resamples of '", g, "' failed and were left out.")
+        }
+        ci <- apply(boot, 2L, stats::quantile, probs = c(a, 1 - a),
+            na.rm = TRUE)
+        h <- p$h
+        min_lag <- min(h[h > 0])
+        timescale <- grepl("^timescale", names(est))
+        res <- data.frame(
+            level = g, type = "parameter", form = form,
+            parameter = names(est), estimate = unname(est),
+            lower = ci[1L, ], upper = ci[2L, ], se = NA_real_, df = NA_real_,
+            p.value = NA_real_,
+            identified = ifelse(timescale,
+                ci[1L, ] >= min_lag & ci[2L, ] <= max_lag, NA),
+            n.subjects = length(unique(p$subject)), n.pairs = nrow(p),
+            min.lag = min_lag, max.lag = max_lag)
+        list(table = res, boot = boot)
+    })
+    comp <- lapply(seq_along(lev)[-1L], function(i){
+        e1 <- fits[[1L]]$table
+        e2 <- fits[[i]]$table
+        ok <- stats::complete.cases(fits[[1L]]$boot) &
+            stats::complete.cases(fits[[i]]$boot)
+        lr <- log(fits[[i]]$boot[ok, , drop = FALSE] /
+            fits[[1L]]$boot[ok, , drop = FALSE])
+        # A parameter estimated at 0 in both resamples has no ratio
+        lr[!is.finite(lr)] <- NA
+        p <- apply(lr, 2L, function(v){
+            min(1, 2 * min(mean(v <= 0, na.rm = TRUE),
+                mean(v >= 0, na.rm = TRUE)))
+        })
+        # Timescales are compared only when identified in both levels
+        p[!is.na(e1$identified) & !(e1$identified & e2$identified)] <- NA
+        data.frame(
+            level = paste(lev[[i]], "/", lev[[1L]]), type = "ratio",
+            form = form, parameter = e1$parameter,
+            estimate = e2$estimate / e1$estimate,
+            lower = exp(apply(lr, 2L, stats::quantile, probs = a,
+                na.rm = TRUE)),
+            upper = exp(apply(lr, 2L, stats::quantile, probs = 1 - a,
+                na.rm = TRUE)),
+            se = NA_real_, df = NA_real_, p.value = unname(p),
+            identified = NA, n.subjects = e1$n.subjects + e2$n.subjects,
+            n.pairs = e1$n.pairs + e2$n.pairs,
+            min.lag = max(e1$min.lag, e2$min.lag), max.lag = max_lag)
+    })
+    res <- do.call(rbind, c(lapply(fits, function(f) f$table), comp))
+    rownames(res) <- NULL
+    attr(res, "cv") <- cv
+    return(res)
+}
+
+# Parameters refitted to resamples of the subjects, with replacement; a
+# subject drawn more than once enters as separate subjects. NA when the fit
+# fails or does not converge.
+.bootstrap_subjects <- function(pairs, form, bootstrap, BPPARAM){
+    by_subject <- split(seq_len(nrow(pairs)), pairs$subject)
+    n_par <- length(.VARIOGRAM_FORMS[[form]]$report(.natural_parameters(
+        rep(0, length(.VARIOGRAM_FORMS[[form]]$coef)), form)))
+    res <- BiocParallel::bplapply(seq_len(bootstrap), function(b){
+        draw <- sample(names(by_subject), length(by_subject), replace = TRUE)
+        rows <- by_subject[draw]
+        pb <- pairs[unlist(rows), , drop = FALSE]
+        pb$subject <- rep(paste0(draw, "#", seq_along(draw)), lengths(rows))
+        fit <- tryCatch(.fit_variogram(pb, form), error = function(e) NULL)
+        if( is.null(fit) || !fit$converged ){
+            return(rep(NA_real_, n_par))
+        }
+        .VARIOGRAM_FORMS[[form]]$report(.natural_parameters(fit$beta, form))
+    }, BPPARAM = BPPARAM)
+    res <- do.call(rbind, res)
     return(res)
 }
 
