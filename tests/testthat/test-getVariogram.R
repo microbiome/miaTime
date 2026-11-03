@@ -169,3 +169,24 @@ test_that("Permutation p-values of comparisons", {
     res2 <- do.call(getVariogram, c(args, permutations = 19))
     expect_equal(res$p.value.permutation, res2$p.value.permutation)
 })
+
+test_that("Bounded dissimilarities are analysed on the -log(1 - d) scale", {
+    data(hitchip1006, package = "miaTime")
+    tse <- transformAssay(hitchip1006, method = "relabundance")
+    args <- list(tse, time.col = "time", group = "subject",
+        assay.type = "relabundance", method = "bray", time.lag = c(1, 3))
+    pairs <- miaTime:::.get_within_subject_pairs(tse, "time", "subject",
+        "relabundance", "bray", NULL, FALSE, FALSE, list())
+    pairs$d <- -log(1 - pairs$d)
+    ref <- miaTime:::.local_variogram(pairs, c(1, 3), 2, 0.95, c(NA, NA))
+    res <- do.call(getVariogram, c(args, bounded = TRUE))
+    expect_equal(res$estimate, ref$estimate)
+    expect_true(any(res$supported))
+    expect_true(all(res$estimate > do.call(getVariogram, args)$estimate,
+        na.rm = TRUE))
+    # Dissimilarities above 1 are not bounded
+    expect_error(getVariogram(tse, time.col = "time", group = "subject",
+        assay.type = "counts", method = "euclidean", time.lag = 1,
+        bounded = TRUE))
+    expect_error(do.call(getVariogram, c(args, bounded = NA)))
+})

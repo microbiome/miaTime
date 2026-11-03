@@ -86,6 +86,13 @@
 #' first (\code{\link[mia:rarefyAssay]{rarefyAssay()}}) when depth differs
 #' between samples or groups.
 #'
+#' Dissimilarities bounded by 1, such as Bray–Curtis and Jaccard, approach
+#' their bound as communities share fewer features, so \eqn{D(L)} flattens
+#' near 1 whatever the dynamics. With \code{bounded = TRUE} they are analysed
+#' on the scale \eqn{-\log(1 - d)}, which is unbounded and close to \eqn{d}
+#' for small dissimilarities. Pairs without shared features (\eqn{d = 1}) are
+#' set to \eqn{d = 1 - 10^{-9}}.
+#'
 #' @references
 #' Diggle P.J. (1988) An approach to the analysis of repeated measurements.
 #' Biometrics 44, 959–971. doi: 10.2307/2531727
@@ -149,6 +156,10 @@
 #'
 #' @param squared \code{Logical scalar}. Whether the dissimilarities are
 #' squared. (Default: \code{FALSE})
+#'
+#' @param bounded \code{Logical scalar}. Whether the dissimilarities are
+#' bounded by 1 and analysed on the scale \eqn{-\log(1 - d)}. See details.
+#' (Default: \code{FALSE})
 #'
 #' @param conf.level \code{Numeric scalar}. Confidence level of the
 #' intervals. (Default: \code{0.95})
@@ -237,6 +248,7 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         time.point = NULL,
         window = 2,
         squared = FALSE,
+        bounded = FALSE,
         conf.level = 0.95,
         permutations = 0,
         ...){
@@ -274,6 +286,7 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
             stop("'window' must be greater than 1.", call. = FALSE)
         }
         temp <- .check_input(squared, list("logical scalar"))
+        temp <- .check_input(bounded, list("logical scalar"))
         temp <- .check_input(conf.level, list("numeric scalar"))
         if( conf.level <= 0 || conf.level >= 1 ){
             stop("'conf.level' must be between 0 and 1.", call. = FALSE)
@@ -286,7 +299,8 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         ########################### INPUT CHECK END ############################
         args <- list(...)[!names(list(...)) %in% c("altexp")]
         pairs <- .get_within_subject_pairs(
-            x, time.col, group, assay.type, method, split.by, squared, args)
+            x, time.col, group, assay.type, method, split.by, squared,
+            bounded, args)
         if( is.null(time.lag) ){
             time.lag <- .default_lags(pairs)
         }
@@ -303,7 +317,8 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
 # All pairs of samples of the same subject, with their lag, midpoint time and
 # dissimilarity.
 .get_within_subject_pairs <- function(
-        x, time.col, group, assay.type, method, split.by, squared, args){
+        x, time.col, group, assay.type, method, split.by, squared, bounded,
+        args){
     time <- x[[time.col]]
     subject <- x[[group]]
     keep <- !is.na(time) & !is.na(subject)
@@ -354,6 +369,13 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     pairs <- do.call(rbind, unname(res))
     if( squared ){
         pairs$d <- pairs$d^2
+    }
+    if( bounded ){
+        if( any(pairs$d < 0 | pairs$d > 1, na.rm = TRUE) ){
+            stop("'bounded = TRUE' needs dissimilarities between 0 and 1.",
+                call. = FALSE)
+        }
+        pairs$d <- -log1p(-pmin(pairs$d, 1 - 1e-9))
     }
     if( !is.null(split.by) ){
         pairs$level <- level[match(pairs$subject, subject)]
