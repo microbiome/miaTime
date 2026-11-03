@@ -11,6 +11,10 @@ test_that("getVariogramContribution input checks", {
         group = "subject", time.lag = 1, window = 1))
     expect_error(getVariogramContribution(tse, time.col = "time",
         group = "subject", time.lag = 1, conf.level = 2))
+    tse$feature <- tse$sex
+    expect_error(getVariogramContribution(tse, time.col = "time",
+        group = "subject", time.lag = 1, split.by = "feature"),
+        "output column")
 })
 
 test_that("Contributions split D(L) exactly", {
