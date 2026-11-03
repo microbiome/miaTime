@@ -16,6 +16,14 @@ reference:
   - getStability
   - getBimodality
 
+- title: Sampling
+  contents:
+  - getSamplingSummary
+
+- title: Survival
+  contents:
+  - getSurvival
+
 - title: Datasets
   contents:
   - crohn_survival
