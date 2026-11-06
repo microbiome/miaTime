@@ -337,6 +337,12 @@ test_that("getStepwiseDivergence with time.lag uses elapsed time", {
 
     expect_equal(res$ref_samples, c(NA, "s1", "s2", "s3"))
     expect_equal(res$time_diff, c(NA, 1, 0.8, 2.2))
+
+    res2 <- getStepwiseDivergence(
+      tse, time.col = "time", group = "subject", time.lag = 2)
+
+    expect_equal(res$ref_samples, c(NA, "s1", "s1", "s3"))
+    expect_equal(res$time_diff, c(NA, 1, 1.8, 2.2))
 })
 
 test_that("getStepwiseDivergence time.lag picks the closest earlier sample", {
