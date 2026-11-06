@@ -15,6 +15,7 @@ test_that("getSamplingSummary summarizes each group", {
     expect_equal(res$start, c(0, 2, NA))
     expect_equal(res$end, c(4, 2, NA))
     expect_equal(res$span, c(4, 0, NA))
+    expect_equal(res$min_gap, c(1, NA, NA))
     expect_equal(res$median_gap, c(2, NA, NA))
     expect_equal(res$max_gap, c(3, NA, NA))
 })
