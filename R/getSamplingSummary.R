@@ -11,9 +11,9 @@
 #' Temporal metrics, such as stepwise divergence or stability, depend on how
 #' many time points each group has and how far apart they are. This function
 #' reports, for each group, the number of samples and distinct time points,
-#' the first and last time point, the time span, and the median and maximum
-#' gap between consecutive time points. Gaps are \code{NA} for groups with a
-#' single time point.
+#' the first and last time point, the time span, and the minimum, median and
+#' maximum gap between consecutive time points. Gaps are \code{NA} for groups
+#' with a single time point.
 #'
 #' @return
 #' \code{DataFrame} with one row per group.
@@ -71,11 +71,12 @@ setMethod("getSamplingSummary", signature = c(x = "SummarizedExperiment"),
         n_time_points = length(time_points),
         start = if( length(time_points) ) min(time_points) else NA_real_,
         end = if( length(time_points) ) max(time_points) else NA_real_,
+        min_gap = if( length(gaps) ) min(gaps) else NA_real_,
         median_gap = if( length(gaps) ) median(gaps) else NA_real_,
         max_gap = if( length(gaps) ) max(gaps) else NA_real_
     )
     res[["span"]] <- res[["end"]] - res[["start"]]
     res <- res[, c("n_samples", "n_time_points", "start", "end", "span",
-        "median_gap", "max_gap")]
+        "min_gap", "median_gap", "max_gap")]
     return(res)
 }
