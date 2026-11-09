@@ -1,3 +1,9 @@
+Changes in version 1.3.5 (2026-11-06)
++ getStepwiseDivergence: Option to select reference samples based on time lag
+
+Changes in version 1.3.4 (2026-11-06)
++ Added minimum gap to getSamplingSummary
+
 Changes in version 1.3.3 (2026-10-23)
 + Added getSamplingSummary
 
