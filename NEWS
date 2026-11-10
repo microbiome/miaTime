@@ -1,3 +1,6 @@
+Changes in version 1.3.6 (2026-11-10)
++ temporalMicrobiome20: abundances above 2.1e9 were missing; counts are now doubles
+
 Changes in version 1.3.5 (2026-11-06)
 + getStepwiseDivergence: Option to select reference samples based on time lag
 
