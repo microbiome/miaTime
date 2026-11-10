@@ -21,6 +21,16 @@ setGeneric("getStepwiseDivergence", signature = c("x"), function(x, ...)
 setGeneric("addStepwiseDivergence", signature = "x", function(x, ...)
     standardGeneric("addStepwiseDivergence"))
 
+#' @rdname getTurnover
+#' @export
+setGeneric("getTurnover", signature = "x", function(x, ...)
+    standardGeneric("getTurnover"))
+
+#' @rdname getTurnover
+#' @export
+setGeneric("addTurnover", signature = "x", function(x, ...)
+    standardGeneric("addTurnover"))
+
 #' @rdname getBimodality
 #' @export
 setGeneric("getBimodality", signature = "x", function(x, ...)

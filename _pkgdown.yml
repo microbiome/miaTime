@@ -5,6 +5,7 @@ reference:
   contents:
   - getBaselineDivergence
   - getStepwiseDivergence
+  - getTurnover
 
 - title: Feature dynamics
   contents:
