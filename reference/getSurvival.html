@@ -47,7 +47,7 @@ log-ratios) should be handled upstream
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Survival analysis</h1>
-    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/tm20-counts/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/miaTime/blob/tm20-counts/R/getSurvival.R" class="external-link"><code>R/getSurvival.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/hmp-visits/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/miaTime/blob/hmp-visits/R/getSurvival.R" class="external-link"><code>R/getSurvival.R</code></a></small>
     <div class="hidden name"><code>getSurvival.Rd</code></div>
     </div>
 
@@ -91,7 +91,7 @@ object.</p></dd>
 regression using <code>glmnet</code>. If <code>FALSE</code>, fit standard Cox model
 using <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code>. (Default: <code>TRUE</code>)</p></li>
 <li><p><code>lambda</code>: <code>Character or numeric</code>. Penalization parameter
-passed to <code><a href="https://rdrr.io/pkg/glmnet/man/cv.glmnet.html" class="external-link">cv.glmnet</a></code>. Use <code>"lambda.1se"</code>,
+passed to <code><a href="https://glmnet.stanford.edu/reference/cv.glmnet.html" class="external-link">cv.glmnet</a></code>. Use <code>"lambda.1se"</code>,
 <code>"lambda.min"</code>, or a numeric value. (Default: <code>"lambda.1se"</code>)</p></li>
 <li><p><code>alpha</code>: <code>Numeric scalar</code>. Elastic net mixing parameter
 that controls the balance between Lasso and Ridge regression:
@@ -152,7 +152,7 @@ columns in <code>colData(x)</code> to adjust for in the survival model.
     <p><code>getSurvival()</code> fits a Cox proportional hazards model with the
 features of <code>assay.type</code> as predictors. By default
 (<code>penalized = TRUE</code>), an elastic net penalized model is fitted with
-<code><a href="https://rdrr.io/pkg/glmnet/man/cv.glmnet.html" class="external-link">glmnet::cv.glmnet()</a></code>, and the penalty is selected by
+<code><a href="https://glmnet.stanford.edu/reference/cv.glmnet.html" class="external-link">glmnet::cv.glmnet()</a></code>, and the penalty is selected by
 cross-validation using the concordance index. With
 <code>penalized = FALSE</code>, a standard model is fitted with
 <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph()</a></code>.</p>
@@ -183,7 +183,7 @@ NAR Genomics and Bioinformatics, 6(2), lqae038.
     <div id="see-also">
     <h2>See also</h2>
     <div class="dont-index"><p><code>coda_coxnet</code>,
-<code><a href="https://rdrr.io/pkg/glmnet/man/cv.glmnet.html" class="external-link">cv.glmnet</a></code></p></div>
+<code><a href="https://glmnet.stanford.edu/reference/cv.glmnet.html" class="external-link">cv.glmnet</a></code></p></div>
     </div>
 
     <div id="ref-examples">
