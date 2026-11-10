@@ -53,6 +53,45 @@
 #' at lags supported in both groups. P-values are not adjusted for multiple
 #' comparisons.
 #'
+#' With \code{permutations > 0}, each comparison also gets a permutation
+#' p-value: the levels of \code{split.by} are reassigned at random among
+#' the subjects of the two levels compared, keeping their numbers, and the
+#' t statistic of the log ratio is recomputed. When the levels share a
+#' sampling schedule, subjects are exchangeable under the null hypothesis
+#' and the permutation test is exact, whereas the t test can reject slightly
+#' too often in real data. When the schedules differ, the labels are not
+#' exchangeable and the permutation p-value is not valid; use the t test.
+#' Set a seed (\code{set.seed()}) for reproducible permutation p-values.
+#'
+#' \strong{Kinds of pairs.} When \code{split.by} varies within subjects (a
+#' sample-level state, such as community type or the phase of an
+#' intervention), each pair takes the level of its earlier sample, and
+#' \eqn{D(L)} is estimated for the pairs of each level. A subject then
+#' contributes pairs to several levels, so the levels are not independent.
+#' Each level is compared with the first in one weighted regression on the
+#' pairs of both levels in the lag window, with an indicator of the level,
+#' the terms in \eqn{u} for each level and, with \code{time.point}, the
+#' terms in \eqn{z} shared by the levels; the log ratio of \eqn{D(L)} is
+#' \eqn{\log((b_0 + b_1) / b_0)}, where \eqn{b_0} is the intercept and
+#' \eqn{b_1} the coefficient of the indicator. Its standard error is
+#' cluster-robust by subject, by the delta method, with \eqn{G - 1} degrees
+#' of freedom. Both levels must meet the support rules on their own. The
+#' permutation test is not available, as levels are not assigned to
+#' subjects.
+#'
+#' With \code{pair.level = "highest"}, a pair takes the higher of the levels
+#' of its two samples, in the order of the levels of \code{split.by}: with
+#' levels \code{"baseline"} and \code{"exacerbation"}, pairs that span an
+#' exacerbation are compared with pairs of two baseline samples. A sample
+#' without a level (\code{NA}) classifies its pair only when the other
+#' sample has the highest level, which decides the pair whatever the missing
+#' level; other pairs with such a sample are left out.
+#'
+#' With \code{subset.by}, only pairs whose earlier sample is \code{TRUE} in
+#' a logical column of \code{colData} are used, for example pairs starting
+#' from a given community type. Subjects are then compared on those pairs,
+#' and a sample-level state is compared within them.
+#'
 #' \strong{Developing communities.} When change at a given lag depends on
 #' the time since a common origin (age in infant cohorts, time since an
 #' intervention), groups whose samples were taken at different ages differ
@@ -75,6 +114,23 @@
 #' its level. Dissimilarities depend on sequencing depth; rarefy the counts
 #' first (\code{\link[mia:rarefyAssay]{rarefyAssay()}}) when depth differs
 #' between samples or groups.
+#'
+#' Dissimilarities bounded by 1, such as Bray–Curtis and Jaccard, approach
+#' their bound as communities share fewer features, so \eqn{D(L)} flattens
+#' near 1 whatever the dynamics. With \code{bounded = TRUE} they are analysed
+#' on the scale \eqn{-\log(1 - d)}, which is unbounded and close to \eqn{d}
+#' for small dissimilarities. Pairs without shared features (\eqn{d = 1}) are
+#' set to \eqn{d = 1 - 10^{-9}}.
+#'
+#' \strong{Relative change.} \eqn{D(L)} is on the scale of the
+#' dissimilarity, so it cannot be compared between dissimilarities, studies
+#' or body sites. With \code{relative = TRUE}, \eqn{D(L)} is also reported
+#' relative to \eqn{B}, the mean dissimilarity between samples of different
+#' subjects, where every pair of subjects counts equally: a value of 0.5
+#' means that over \eqn{L} a subject's community changes half as much as it
+#' differs from another subject's. \eqn{B} is computed from the samples of
+#' all subjects, so it is the same for every level of \code{split.by}, and
+#' it is treated as fixed.
 #'
 #' @references
 #' Diggle P.J. (1988) An approach to the analysis of repeated measurements.
@@ -103,10 +159,14 @@
 #'   \item{df}{Degrees of freedom of the t distribution.}
 #'   \item{p.value}{For comparisons, the p-value of the test that the ratio
 #'   is 1.}
+#'   \item{p.value.permutation}{When \code{permutations > 0}: for
+#'   comparisons, the permutation p-value (see details).}
 #'   \item{n.subjects, n.pairs}{Subjects and pairs in the lag window.}
 #'   \item{supported}{Whether the design supports \eqn{D(L)} at this lag.}
 #'   \item{time.point}{The time at which \eqn{D(L)} was estimated, when
 #'   \code{time.point} is given.}
+#'   \item{relative}{When \code{relative = TRUE}: \eqn{D(L) / B}, for
+#'   estimates of \eqn{D(L)}.}
 #' }
 #' \code{addVariogram} returns \code{x} with this table in its
 #' \code{metadata}.
@@ -123,9 +183,18 @@
 #' (Default: \code{NULL})
 #'
 #' @param split.by \code{NULL} or \code{Character scalar}. Specifies a name
-#' of a column from \code{colData} with one value per subject. \eqn{D(L)} is
-#' estimated for each of its levels, and each level is compared with the
-#' first. (Default: \code{NULL})
+#' of a column from \code{colData}, with one value per subject or a
+#' sample-level state. \eqn{D(L)} is estimated for each of its levels, and
+#' each level is compared with the first. (Default: \code{NULL})
+#'
+#' @param pair.level \code{Character scalar}. When \code{split.by} varies
+#' within subjects, the level of a pair: \code{"earlier"}, that of its
+#' earlier sample, or \code{"highest"}, the higher of the levels of its two
+#' samples. See details. (Default: \code{"earlier"})
+#'
+#' @param subset.by \code{NULL} or \code{Character scalar}. Specifies a name
+#' of a logical column of \code{colData}; only pairs whose earlier sample is
+#' \code{TRUE} are used. See details. (Default: \code{NULL})
 #'
 #' @param time.point \code{NULL}, \code{numeric vector} or \code{"median"}. The
 #' time at which \eqn{D(L)} is estimated, for communities whose change
@@ -138,8 +207,20 @@
 #' @param squared \code{Logical scalar}. Whether the dissimilarities are
 #' squared. (Default: \code{FALSE})
 #'
+#' @param bounded \code{Logical scalar}. Whether the dissimilarities are
+#' bounded by 1 and analysed on the scale \eqn{-\log(1 - d)}. See details.
+#' (Default: \code{FALSE})
+#'
+#' @param relative \code{Logical scalar}. Whether \eqn{D(L)} is also
+#' reported relative to the dissimilarity between subjects. See details.
+#' (Default: \code{FALSE})
+#'
 #' @param conf.level \code{Numeric scalar}. Confidence level of the
 #' intervals. (Default: \code{0.95})
+#'
+#' @param permutations \code{Integer scalar}. The number of permutations
+#' of \code{split.by} among subjects for a permutation p-value of each
+#' comparison; \code{0} for none. See details. (Default: \code{0})
 #'
 #' @param name \code{Character scalar}. Specifies a name for storing the
 #' results in \code{metadata}. (Default: \code{"variogram"})
@@ -218,10 +299,15 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         method = "bray",
         time.lag = NULL,
         split.by = NULL,
+        pair.level = "earlier",
+        subset.by = NULL,
         time.point = NULL,
         window = 2,
         squared = FALSE,
+        bounded = FALSE,
+        relative = FALSE,
         conf.level = 0.95,
+        permutations = 0,
         ...){
         ############################# INPUT CHECK ##############################
         x <- .check_and_get_altExp(x, ...)
@@ -241,6 +327,15 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         }
         temp <- .check_input(
             split.by, list(NULL, "character scalar"), colnames(colData(x)))
+        .check_split_by_name(split.by, .VARIOGRAM_COLUMNS)
+        temp <- .check_input(
+            pair.level, list("character scalar"), c("earlier", "highest"))
+        temp <- .check_input(
+            subset.by, list(NULL, "character scalar"), colnames(colData(x)))
+        if( !is.null(subset.by) && !is.logical(x[[subset.by]]) ){
+            stop("'subset.by' must specify a logical column of colData(x).",
+                call. = FALSE)
+        }
         if( !(is.null(time.point) || identical(time.point, "median") ||
                 (is.numeric(time.point) && !anyNA(time.point))) ){
             stop("'time.point' must be NULL, numeric or \"median\".",
@@ -257,19 +352,42 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
             stop("'window' must be greater than 1.", call. = FALSE)
         }
         temp <- .check_input(squared, list("logical scalar"))
+        temp <- .check_input(bounded, list("logical scalar"))
+        temp <- .check_input(relative, list("logical scalar"))
         temp <- .check_input(conf.level, list("numeric scalar"))
         if( conf.level <= 0 || conf.level >= 1 ){
             stop("'conf.level' must be between 0 and 1.", call. = FALSE)
         }
+        temp <- .check_input(permutations, list("numeric scalar"))
+        if( permutations < 0 || permutations != round(permutations) ){
+            stop("'permutations' must be a non-negative integer.",
+                call. = FALSE)
+        }
         ########################### INPUT CHECK END ############################
         args <- list(...)[!names(list(...)) %in% c("altexp")]
         pairs <- .get_within_subject_pairs(
-            x, time.col, group, assay.type, method, split.by, squared, args)
+            x, time.col, group, assay.type, method, split.by, squared,
+            bounded, args, pair.level)
+        if( !is.null(subset.by) ){
+            pairs <- .subset_pairs(pairs, x, time.col, subset.by)
+        }
         if( is.null(time.lag) ){
             time.lag <- .default_lags(pairs)
         }
+        if( isTRUE(attr(pairs, "pair.level")) && permutations > 0 ){
+            stop("'permutations' needs 'split.by' with one value per ",
+                "subject.", call. = FALSE)
+        }
         res <- .variogram(
-            pairs, time.lag, split.by, time.point, window, conf.level)
+            pairs, time.lag, split.by, time.point, window, conf.level,
+            permutations)
+        if( relative ){
+            B <- .between_subject_level(
+                x, time.col, group, assay.type, method, split.by, squared,
+                bounded, args)
+            res$relative <- ifelse(
+                res$type == "dissimilarity", res$estimate / B, NA_real_)
+        }
         res <- DataFrame(res, check.names = FALSE)
         return(res)
     }
@@ -277,14 +395,31 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
 
 ################################ HELP FUNCTIONS ################################
 
+# Columns of the output; split.by becomes a column too, so it must not take
+# one of these names
+.VARIOGRAM_COLUMNS <- c(
+    "lag", "type", "estimate", "lower", "upper", "se", "df", "p.value",
+    "p.value.permutation", "n.subjects", "n.pairs", "supported",
+    "time.point", "relative")
+
+.check_split_by_name <- function(split.by, columns){
+    if( !is.null(split.by) && split.by %in% columns ){
+        stop("'split.by' must not be named '", split.by, "', the name of ",
+            "an output column; rename the column of colData.", call. = FALSE)
+    }
+}
+
 # All pairs of samples of the same subject, with their lag, midpoint time and
 # dissimilarity.
 .get_within_subject_pairs <- function(
-        x, time.col, group, assay.type, method, split.by, squared, args){
+        x, time.col, group, assay.type, method, split.by, squared, bounded,
+        args, pair.level = "earlier"){
     time <- x[[time.col]]
     subject <- x[[group]]
     keep <- !is.na(time) & !is.na(subject)
-    if( !is.null(split.by) ){
+    # With pair.level = "highest", samples without a level can still
+    # classify their pairs
+    if( !is.null(split.by) && pair.level == "earlier" ){
         keep <- keep & !is.na(x[[split.by]])
     }
     if( any(!keep) ){
@@ -296,16 +431,20 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         time <- time[keep]
         subject <- subject[keep]
     }
+    samples <- which(keep)
     subject <- as.character(subject)
     level <- NULL
     if( !is.null(split.by) ){
         level <- as.character(x[[split.by]])
-        n_levels <- tapply(level, subject, function(v) length(unique(v)))
-        if( any(n_levels > 1L) ){
-            stop("'split.by' must have one value per subject ('", group,
-                "').", call. = FALSE)
+        n_levels <- tapply(level, subject, function(v){
+            length(unique(v[!is.na(v)]))
+        })
+        pair_level <- any(n_levels > 1L) || pair.level == "highest"
+        if( pair_level && pair.level == "earlier" ){
+            message("'split.by' varies within subjects: each pair takes ",
+                "the value of its earlier sample.")
         }
-        if( length(unique(level)) < 2L ){
+        if( length(unique(level[!is.na(level)])) < 2L ){
             stop("'split.by' must have at least two levels.", call. = FALSE)
         }
         # The first level is the reference of the comparisons
@@ -326,16 +465,93 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         l <- idx[ut[, 2L]]
         data.frame(
             subject = subject[k], h = abs(time[l] - time[k]),
-            mid = (time[k] + time[l]) / 2, d = d[ut])
+            mid = (time[k] + time[l]) / 2, d = d[ut], k = k, l = l)
     })
     pairs <- do.call(rbind, unname(res))
-    if( squared ){
-        pairs$d <- pairs$d^2
-    }
+    pairs$d <- .dissimilarity_scale(pairs$d, squared, bounded)
     if( !is.null(split.by) ){
-        pairs$level <- level[match(pairs$subject, subject)]
+        if( pair.level == "earlier" ){
+            first <- ifelse(time[pairs$k] <= time[pairs$l], pairs$k, pairs$l)
+            pairs$level <- level[first]
+        } else{
+            pairs$level <- .highest_level(level[pairs$k], level[pairs$l])
+            pairs <- pairs[!is.na(pairs$level), , drop = FALSE]
+        }
+        attr(pairs, "pair.level") <- pair_level
     }
+    # Columns of the input that k and l index
+    attr(pairs, "samples") <- samples
     return(pairs)
+}
+
+# The higher of two levels in the order of the factor levels. A missing level
+# decides nothing, unless the other sample has the highest level
+.highest_level <- function(a, b){
+    top <- nlevels(a)
+    ia <- as.integer(a)
+    ib <- as.integer(b)
+    h <- pmax(ia, ib)
+    h[is.na(ia) & ib %in% top] <- top
+    h[is.na(ib) & ia %in% top] <- top
+    res <- factor(levels(a)[h], levels = levels(a))
+    return(res)
+}
+
+# The pairs whose earlier sample is TRUE in the logical column subset.by
+.subset_pairs <- function(pairs, x, time.col, subset.by){
+    samples <- attr(pairs, "samples")
+    pair_level <- attr(pairs, "pair.level")
+    keep <- x[[subset.by]][samples]
+    time <- x[[time.col]][samples]
+    first <- ifelse(time[pairs$k] <= time[pairs$l], pairs$k, pairs$l)
+    pairs <- pairs[keep[first] %in% TRUE, , drop = FALSE]
+    if( nrow(pairs) == 0L ){
+        stop("No pair starts from a sample with 'subset.by' TRUE.",
+            call. = FALSE)
+    }
+    attr(pairs, "samples") <- samples
+    attr(pairs, "pair.level") <- pair_level
+    return(pairs)
+}
+
+# Squared, or on the scale -log(1 - d) for bounded dissimilarities
+.dissimilarity_scale <- function(d, squared, bounded){
+    if( squared ){
+        d <- d^2
+    }
+    if( bounded ){
+        if( any(d < 0 | d > 1, na.rm = TRUE) ){
+            stop("'bounded = TRUE' needs dissimilarities between 0 and 1.",
+                call. = FALSE)
+        }
+        d <- -log1p(-pmin(d, 1 - 1e-9))
+    }
+    return(d)
+}
+
+# Mean dissimilarity between samples of different subjects, every pair of
+# subjects counting equally
+.between_subject_level <- function(
+        x, time.col, group, assay.type, method, split.by, squared, bounded,
+        args){
+    keep <- !is.na(x[[time.col]]) & !is.na(x[[group]])
+    if( !is.null(split.by) ){
+        keep <- keep & !is.na(x[[split.by]])
+    }
+    x <- x[, keep]
+    subject <- as.character(x[[group]])
+    if( length(unique(subject)) < 2L ){
+        stop("'relative = TRUE' needs at least two subjects.", call. = FALSE)
+    }
+    d <- do.call(getDissimilarity, c(
+        list(x = t(assay(x, assay.type)), method = method), args))
+    d <- .dissimilarity_scale(as.matrix(d), squared, bounded)
+    # Sums and numbers of sample pairs for every pair of subjects
+    sums <- rowsum(t(rowsum(d, subject)), subject)
+    n <- as.numeric(table(subject)[rownames(sums)])
+    means <- sums / outer(n, n)
+    B <- mean(means[upper.tri(means)])
+    return(B)
 }
 
 # The k-th smallest of the subjects' shortest lags and the k-th largest of
@@ -361,7 +577,8 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
 
 # D(L) for all lags, levels of split.by, and comparisons with the first level
 .variogram <- function(
-        pairs, lags, split.by, time.point, window, conf.level){
+        pairs, lags, split.by, time.point, window, conf.level,
+        permutations = 0){
     a0 <- .get_at_time(pairs, lags, time.point, window)
     if( is.null(split.by) ){
         res <- .local_variogram(pairs, lags, window, conf.level, a0)
@@ -373,9 +590,28 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         .local_variogram(
             pairs[pairs$level == g, ], lags, window, conf.level, a0)
     })
-    comp <- lapply(est[-1L], function(e2){
-        .compare_levels(est[[1L]], e2)
-    })
+    if( isTRUE(attr(pairs, "pair.level")) ){
+        comp <- lapply(seq_along(lev)[-1L], function(i){
+            .compare_pair_levels(
+                pairs, lev[[1L]], lev[[i]], lags, window, a0, est[[1L]],
+                est[[i]])
+        })
+    } else{
+        comp <- lapply(est[-1L], function(e2){
+            .compare_levels(est[[1L]], e2)
+        })
+    }
+    if( permutations > 0 ){
+        for( i in seq_along(comp) ){
+            comp[[i]]$p.value.permutation <- .permutation_p(
+                pairs, lev[[1L]], lev[[i + 1L]], lags, window, conf.level,
+                a0, comp[[i]], permutations)
+        }
+        est <- lapply(est, function(e){
+            e$p.value.permutation <- NA_real_
+            e
+        })
+    }
     est <- lapply(seq_along(lev), function(i){
         cbind(level = lev[[i]],
             .format_variogram(est[[i]], time.point, conf.level))
@@ -419,6 +655,34 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
 }
 
 .local_variogram_at <- function(pairs, l, a0, k, window, conf.level){
+    f <- .local_design(pairs, l, a0, k, window)
+    res <- data.frame(
+        lag = l, estimate = NA_real_, se = NA_real_, df = NA_real_,
+        n.subjects = f$G, n.pairs = length(f$rows), supported = FALSE,
+        time.point = a0)
+    if( !f$ok ){
+        return(res)
+    }
+    G <- f$G
+    d <- pairs$d[f$rows]
+    b <- f$Ai %*% crossprod(f$X, f$w * d)
+    r <- d - drop(f$X %*% b)
+    U <- rowsum(f$X * (f$w * r), f$subj)
+    V <- f$Ai %*% crossprod(U) %*% f$Ai * G / (G - 1)
+    D <- b[[1L]]
+    if( !is.finite(D) || D <= 0 ){
+        return(res)
+    }
+    res$estimate <- D
+    res$se <- sqrt(V[1L, 1L]) / D
+    res$df <- G - 1
+    res$supported <- TRUE
+    return(res)
+}
+
+# The pairs in the window of lag l (and time a0), the support rules, and the
+# design of the local regression
+.local_design <- function(pairs, l, a0, k, window){
     rows <- which(pairs$h >= l / window & pairs$h <= l * window)
     if( !is.na(a0) ){
         # Local in time too: midpoints within a factor of two of the target
@@ -430,9 +694,7 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     subj <- q$subject
     ns <- table(subj)
     G <- length(ns)
-    res <- data.frame(
-        lag = l, estimate = NA_real_, se = NA_real_, df = NA_real_,
-        n.subjects = G, n.pairs = nrow(q), supported = FALSE, time.point = a0)
+    res <- list(ok = FALSE, rows = rows, G = G)
     # Interpolation only: pairs from at least three subjects on each side
     below <- length(unique(subj[q$h <= l]))
     above <- length(unique(subj[q$h >= l]))
@@ -460,19 +722,9 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     if( qr(A)$rank < ncol(X) ){
         return(res)
     }
-    Ai <- solve(A)
-    b <- Ai %*% crossprod(X, w * q$d)
-    r <- q$d - drop(X %*% b)
-    U <- rowsum(X * (w * r), subj)
-    V <- Ai %*% crossprod(U) %*% Ai * G / (G - 1)
-    D <- b[[1L]]
-    if( !is.finite(D) || D <= 0 ){
-        return(res)
-    }
-    res$estimate <- D
-    res$se <- sqrt(V[1L, 1L]) / D
-    res$df <- G - 1
-    res$supported <- TRUE
+    res <- list(
+        ok = TRUE, rows = rows, G = G, X = X, w = w, subj = subj,
+        Ai = solve(A))
     return(res)
 }
 
@@ -492,6 +744,118 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
         type = "ratio")
 }
 
+# Ratio of D(L) between two levels of a sample-level state: one regression on
+# the pairs of both levels, with an indicator of the second level, lag terms
+# for each level and time terms shared by the levels. The log ratio is
+# log((b0 + b1) / b0), with a cluster-robust (CR1) standard error by the
+# delta method.
+.compare_pair_levels <- function(pairs, lev1, lev2, lags, window, a0, e1, e2){
+    p <- pairs[pairs$level %in% c(lev1, lev2), , drop = FALSE]
+    res <- lapply(seq_along(lags), function(i){
+        l <- lags[[i]]
+        out <- data.frame(
+            lag = l, estimate = NA_real_, se = NA_real_, df = NA_real_,
+            n.subjects = NA_integer_, n.pairs = NA_integer_,
+            supported = FALSE, time.point = a0[[i]], p.value = NA_real_,
+            type = "ratio")
+        f <- .pair_level_design(p, lev2, l, a0[[i]], window)
+        G <- f$G
+        out$n.subjects <- G
+        out$n.pairs <- length(f$rows)
+        # Each level must be supported on its own
+        if( !e1$supported[[i]] || !e2$supported[[i]] || !f$ok ){
+            return(out)
+        }
+        d <- p$d[f$rows]
+        b <- drop(f$Ai %*% crossprod(f$X, f$w * d))
+        if( b[[1L]] <= 0 || b[[1L]] + b[[2L]] <= 0 ){
+            return(out)
+        }
+        r <- d - drop(f$X %*% b)
+        U <- rowsum(f$X * (f$w * r), f$subj)
+        V <- f$Ai %*% crossprod(U) %*% f$Ai * G / (G - 1)
+        lr <- log(b[[1L]] + b[[2L]]) - log(b[[1L]])
+        grad <- c(1 / (b[[1L]] + b[[2L]]) - 1 / b[[1L]],
+            1 / (b[[1L]] + b[[2L]]), rep(0, ncol(f$X) - 2L))
+        se <- sqrt(drop(t(grad) %*% V %*% grad))
+        out$estimate <- exp(lr)
+        out$se <- se
+        out$df <- G - 1
+        out$supported <- TRUE
+        out$p.value <- 2 * stats::pt(-abs(lr / se), G - 1)
+        return(out)
+    })
+    res <- do.call(rbind, res)
+    return(res)
+}
+
+# Design of the regression on the pairs of two levels of a sample-level state
+# in the window of lag l (and time a0); the second coefficient is that of the
+# indicator of lev2
+.pair_level_design <- function(p, lev2, l, a0, window){
+    rows <- which(p$h >= l / window & p$h <= l * window)
+    if( !is.na(a0) ){
+        r <- (1 + pmax(p$mid[rows], 0)) / (1 + max(a0, 0))
+        rows <- rows[r >= 1 / 2 & r <= 2]
+    }
+    q <- p[rows, , drop = FALSE]
+    subj <- q$subject
+    ns <- table(subj)
+    G <- length(ns)
+    res <- list(ok = FALSE, rows = rows, G = G)
+    g <- as.numeric(q$level == lev2)
+    u <- log(q$h / l)
+    X <- cbind(1, g, u, u^2, g * u, g * u^2)
+    if( !is.na(a0) ){
+        z <- log1p(pmax(q$mid, 0)) - log1p(max(a0, 0))
+        X <- cbind(X, z, z^2)
+    }
+    if( G < 2L * ncol(X) ){
+        return(res)
+    }
+    w <- as.numeric(1 / ns[subj])
+    A <- crossprod(X, X * w)
+    if( qr(A)$rank < ncol(X) ){
+        return(res)
+    }
+    res <- list(
+        ok = TRUE, rows = rows, G = G, X = X, w = w, subj = subj,
+        Ai = solve(A))
+    return(res)
+}
+
+# Permutation p-value of each lag's comparison between two levels: the
+# levels are reassigned among the subjects of the two levels, keeping their
+# numbers, and the t statistic of the log ratio is recomputed
+.permutation_p <- function(
+        pairs, lev1, lev2, lags, window, conf.level, a0, obs,
+        permutations){
+    p <- pairs[pairs$level %in% c(lev1, lev2), , drop = FALSE]
+    subj <- unique(data.frame(
+        subject = p$subject, level = as.character(p$level)))
+    t_obs <- log(obs$estimate) / obs$se
+    t_perm <- vapply(seq_len(permutations), function(b){
+        lab <- stats::setNames(sample(subj$level), subj$subject)
+        pl <- lab[p$subject]
+        e1 <- .local_variogram(
+            p[pl == lev1, , drop = FALSE], lags, window, conf.level, a0)
+        e2 <- .local_variogram(
+            p[pl == lev2, , drop = FALSE], lags, window, conf.level, a0)
+        cmp <- .compare_levels(e1, e2)
+        ifelse(cmp$supported, log(cmp$estimate) / cmp$se, NA_real_)
+    }, numeric(length(lags)))
+    t_perm <- matrix(t_perm, nrow = length(lags))
+    res <- vapply(seq_along(lags), function(i){
+        v <- t_perm[i, ]
+        v <- v[!is.na(v)]
+        if( !obs$supported[[i]] || length(v) == 0L ){
+            return(NA_real_)
+        }
+        (1 + sum(abs(v) >= abs(t_obs[[i]]))) / (1 + length(v))
+    }, numeric(1L))
+    return(res)
+}
+
 # Confidence intervals on the log scale, and columns in a fixed order
 .format_variogram <- function(res, time.point, conf.level){
     if( is.null(res$type) ){
@@ -502,7 +866,8 @@ setMethod("getVariogram", signature = c(x = "SummarizedExperiment"),
     res$lower <- res$estimate * exp(-q * res$se)
     res$upper <- res$estimate * exp(q * res$se)
     cols <- c("lag", "type", "estimate", "lower", "upper", "se", "df",
-        "p.value", "n.subjects", "n.pairs", "supported")
+        "p.value", intersect("p.value.permutation", names(res)),
+        "n.subjects", "n.pairs", "supported")
     if( !is.null(time.point) ){
         cols <- c(cols, "time.point")
     }
