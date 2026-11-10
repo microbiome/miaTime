@@ -11,6 +11,7 @@ reference:
   - getShortTermChange
   - getStability
   - getBimodality
+  - getAutocorrelation
 
 - title: Sampling
   contents:
