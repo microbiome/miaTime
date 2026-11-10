@@ -25,7 +25,9 @@ industrialized country.
 The data is available also on
 \url{https://www.nature.com/articles/s41467-021-27098-7#Sec43}
 The data contains 713 fecal samples from 20 Belgian women collected
-over six weeks.
+over six weeks. The object has the 873 samples of Supplementary Data 1 of
+the paper; 179 of them have no profile (\code{NA} in the source). The
+\code{counts} assay holds the quantitative microbiome profiles (QMP).
 The current implementation in \pkg{miaTime} provides this as
 \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
 object.
