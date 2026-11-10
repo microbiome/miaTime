@@ -13,7 +13,12 @@ addBimodality(x, ...)
 
 \S4method{addBimodality}{SummarizedExperiment}(x, name = "bimodality", ...)
 
-\S4method{getBimodality}{SummarizedExperiment}(x, assay.type = "counts", ...)
+\S4method{getBimodality}{SummarizedExperiment}(
+  x,
+  assay.type = "counts",
+  method = c("coefficient", "potential"),
+  ...
+)
 }
 \arguments{
 \item{x}{A
@@ -25,6 +30,19 @@ object.}
 \item \code{group}: \code{Character scalar}. Specifies a name of the column
 from \code{colData} that identifies the grouping of the samples.
 (Default: \code{NULL})
+\item \code{peak.threshold}: \code{Numeric scalar}. For
+\code{method = "potential"}, how much higher than its neighbouring
+minima a maximum must be to count as a mode, in units of the kernel
+height. (Default: \code{1})
+\item \code{bw.adjust}: \code{Numeric scalar}. For
+\code{method = "potential"}, multiplies the bandwidth of the density.
+(Default: \code{1})
+\item \code{bs.iter}: \code{Integer scalar}. For
+\code{method = "potential"}, the number of bootstrap resamples.
+(Default: \code{100})
+\item \code{min.density}: \code{Numeric scalar}. For
+\code{method = "potential"}, the lowest density of a mode, in units of
+the kernel height. (Default: \code{1})
 }}
 
 \item{name}{\code{Character scalar}. Specifies a column name for storing
@@ -32,6 +50,10 @@ bimodality results. (Default: \code{"bimodality"})}
 
 \item{assay.type}{\code{Character scalar}. Specifies which assay values are
 used in the dissimilarity estimation. (Default: \code{"counts"})}
+
+\item{method}{\code{Character scalar}. The score: the coefficient of
+bimodality (\code{"coefficient"}) or the multimodality score of potential
+analysis (\code{"potential"}). (Default: \code{"coefficient"})}
 }
 \value{
 \code{DataFrame} or \code{x} with results added to its \code{rowData}.
@@ -66,6 +88,15 @@ and kurtosis as follows
 The coefficient ranges from 0-1, where 1 means high bimodality. The
 coefficient was introduced in the paper Shade A et al. 2014, where they used
 bimodality and abundance to determine conditionally rare taxa (CRT).
+
+With \code{method = "potential"}, the score comes from potential analysis
+(Livina et al. 2010), repeated on bootstrap resamples as in Lahti et al.
+(2014). In each resample, the abundances of a feature are smoothed with a
+Gaussian kernel density, and the maxima of the density that are high and
+well separated by minima count as modes. The score is the share of
+resamples with more than one mode, from 0 (unimodal) to 1. Missing values
+are ignored. Small random noise separates tied values, so set a seed for
+reproducible scores.
 }
 \examples{
 library(miaTime)
@@ -73,8 +104,8 @@ library(miaTime)
 data(SilvermanAGutData)
 tse <- SilvermanAGutData
 
-# In this example, we are only interested on vessel 1.
-tse <- tse[, tse[["Vessel"]] == 1]
+# In this example, we are only interested on vessel 1, in samples with reads.
+tse <- tse[, tse[["Vessel"]] == 1 & colSums(assay(tse, "counts")) > 0]
 tse <- transformAssay(tse, method = "relabundance")
 
 # Calculate bimodality
@@ -90,11 +121,25 @@ abundant <- getAbundant(
 crt <- intersect(bimodal_taxa, abundant)
 head(crt)
 
+# Multimodality from potential analysis, for the abundant taxa
+set.seed(1)
+p <- getBimodality(tse[abundant, ], assay.type = "relabundance",
+    method = "potential", bs.iter = 20)
+head(p[order(-p[[1]]), , drop = FALSE])
+
 }
 \references{
 Shade A, et al. (2014)
 Conditionally Rare Taxa Disproportionately Contribute to Temporal Changes in
 Microbial Diversity. doi: 10.1128/mbio.01371-14
+
+Livina V, et al. (2010)
+Potential analysis reveals changing number of climate states during the
+last 60 kyr. Climate of the Past 6, 77-82.
+
+Lahti L, et al. (2014)
+Tipping elements in the human intestinal ecosystem.
+Nature Communications 5, 4344.
 }
 \seealso{
 \code{\link[mia:getAbundant]{mia::getConditionallyLowAbundant()}}
