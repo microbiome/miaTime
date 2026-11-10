@@ -159,6 +159,35 @@ The `time_diff` column shows how much time separates each sample from the one
 it is compared to. The intervals vary between subjects, which is worth keeping
 in mind when comparing divergences.
 
+Divergence measures how much the composition changes, but not whether the
+dominant features keep their order. The mean rank shift (Collins et al. 2008)
+compares the abundance ranks of the features present in both samples. It is
+zero when the order does not change. Below, we follow three bioreactors of a
+synthetic gut community.
+
+```{r}
+#| label: rank_shift
+
+data(minimalgut)
+tse <- minimalgut
+
+tse <- addRankShift(tse, time.col = "Time.hr", group = "StudyIdentifier")
+
+# The first sample of each bioreactor has no previous sample
+df <- as.data.frame(colData(tse))
+df <- df[!is.na(df[["rank_shift"]]), ]
+
+ggplot(df, aes(x = Time.hr, y = rank_shift, colour = StudyIdentifier)) +
+    geom_line() +
+    geom_vline(xintercept = c(152, 248), linetype = "dashed") +
+    labs(x = "Time (h)", y = "Mean rank shift", colour = "Bioreactor")
+```
+
+The ranks change most in the first day, while the community assembles. In
+all three bioreactors, they change again when a new species is added at 152
+hours and when acetate is removed from the feed at 248 hours (dashed lines),
+as Shetty et al. (2022) report.
+
 ## Short term change
 
 Short term change measures how the abundance of each feature changes between
