@@ -7,6 +7,11 @@ The data set can be used to investigate longitudinal dynamics of microbial
 community in a controlled environment.
 Column metadata includes the days of sampling, vessel identifier, sampling
 frequency pre-post challenge with Bacteroides ovatus.
+Time.hr is the sampling time in hours from midnight of day 0, taken
+from the sample names; daily samples were collected at 15:00 (Silverman et
+al. 2018, Additional file 4). It is NA for seven samples whose
+description notes a wrong tube. DAY_ORDER does not give the
+sampling time.
 The row metadata of the microbiome data contains taxonomic information on
 the Kingdom, Phylum, Class, Order, Family and Genus and Species level.
 The row tree consists of a phylogenetic tree build using sequence
@@ -57,7 +62,7 @@ All data are downloaded from ExperimentHub and cached for local re-use"><!-- mat
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>SilvermanAGutData</h1>
-    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/bimodality-potential/R/miaTime.R" class="external-link"><code>R/miaTime.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/silverman-time/R/miaTime.R" class="external-link"><code>R/miaTime.R</code></a></small>
     <div class="hidden name"><code>SilvermanAGutData.Rd</code></div>
     </div>
 
@@ -70,6 +75,11 @@ The data set can be used to investigate longitudinal dynamics of microbial
 community in a controlled environment.</p>
 <p>Column metadata includes the days of sampling, vessel identifier, sampling
 frequency pre-post challenge with Bacteroides ovatus.</p>
+<p><code>Time.hr</code> is the sampling time in hours from midnight of day 0, taken
+from the sample names; daily samples were collected at 15:00 (Silverman et
+al. 2018, Additional file 4). It is <code>NA</code> for seven samples whose
+description notes a wrong tube. <code>DAY_ORDER</code> does not give the
+sampling time.</p>
 <p>The row metadata of the microbiome data contains taxonomic information on
 the Kingdom, Phylum, Class, Order, Family and Genus and Species level.</p>
 <p>The row tree consists of a phylogenetic tree build using sequence

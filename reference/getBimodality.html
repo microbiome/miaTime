@@ -44,7 +44,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Calculate coefficient of bimodality.</h1>
-    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/bimodality-potential/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/miaTime/blob/bimodality-potential/R/getBimodality.R" class="external-link"><code>R/getBimodality.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/silverman-time/R/AllGenerics.R" class="external-link"><code>R/AllGenerics.R</code></a>, <a href="https://github.com/microbiome/miaTime/blob/silverman-time/R/getBimodality.R" class="external-link"><code>R/getBimodality.R</code></a></small>
     <div class="hidden name"><code>getBimodality.Rd</code></div>
     </div>
 
@@ -61,12 +61,7 @@
 <span><span class="fu">addBimodality</span><span class="op">(</span><span class="va">x</span>, name <span class="op">=</span> <span class="st">"bimodality"</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'SummarizedExperiment'</span></span>
-<span><span class="fu">getBimodality</span><span class="op">(</span></span>
-<span>  <span class="va">x</span>,</span>
-<span>  assay.type <span class="op">=</span> <span class="st">"counts"</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"coefficient"</span>, <span class="st">"potential"</span><span class="op">)</span>,</span>
-<span>  <span class="va">...</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">getBimodality</span><span class="op">(</span><span class="va">x</span>, assay.type <span class="op">=</span> <span class="st">"counts"</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -83,19 +78,6 @@ object.</p></dd>
 <dd><p>additional arguments.</p><ul><li><p><code>group</code>: <code>Character scalar</code>. Specifies a name of the column
 from <code>colData</code> that identifies the grouping of the samples.
 (Default: <code>NULL</code>)</p></li>
-<li><p><code>peak.threshold</code>: <code>Numeric scalar</code>. For
-<code>method = "potential"</code>, how much higher than its neighbouring
-minima a maximum must be to count as a mode, in units of the kernel
-height. (Default: <code>1</code>)</p></li>
-<li><p><code>bw.adjust</code>: <code>Numeric scalar</code>. For
-<code>method = "potential"</code>, multiplies the bandwidth of the density.
-(Default: <code>1</code>)</p></li>
-<li><p><code>bs.iter</code>: <code>Integer scalar</code>. For
-<code>method = "potential"</code>, the number of bootstrap resamples.
-(Default: <code>100</code>)</p></li>
-<li><p><code>min.density</code>: <code>Numeric scalar</code>. For
-<code>method = "potential"</code>, the lowest density of a mode, in units of
-the kernel height. (Default: <code>1</code>)</p></li>
 </ul></dd>
 
 
@@ -107,12 +89,6 @@ bimodality results. (Default: <code>"bimodality"</code>)</p></dd>
 <dt id="arg-assay-type">assay.type<a class="anchor" aria-label="anchor" href="#arg-assay-type"></a></dt>
 <dd><p><code>Character scalar</code>. Specifies which assay values are
 used in the dissimilarity estimation. (Default: <code>"counts"</code>)</p></dd>
-
-
-<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p><code>Character scalar</code>. The score: the coefficient of
-bimodality (<code>"coefficient"</code>) or the multimodality score of potential
-analysis (<code>"potential"</code>). (Default: <code>"coefficient"</code>)</p></dd>
 
 </dl></div>
     <div id="value">
@@ -139,26 +115,12 @@ taxa.</p>
 <p>The coefficient ranges from 0-1, where 1 means high bimodality. The
 coefficient was introduced in the paper Shade A et al. 2014, where they used
 bimodality and abundance to determine conditionally rare taxa (CRT).</p>
-<p>With <code>method = "potential"</code>, the score comes from potential analysis
-(Livina et al. 2010), repeated on bootstrap resamples as in Lahti et al.
-(2014). In each resample, the abundances of a feature are smoothed with a
-Gaussian kernel density, and the maxima of the density that are high and
-well separated by minima count as modes. The score is the share of
-resamples with more than one mode, from 0 (unimodal) to 1. Missing values
-are ignored. Small random noise separates tied values, so set a seed for
-reproducible scores.</p>
     </div>
     <div id="references">
     <h2>References</h2>
     <p>Shade A, et al. (2014)
 Conditionally Rare Taxa Disproportionately Contribute to Temporal Changes in
 Microbial Diversity. doi: 10.1128/mbio.01371-14</p>
-<p>Livina V, et al. (2010)
-Potential analysis reveals changing number of climate states during the
-last 60 kyr. Climate of the Past 6, 77-82.</p>
-<p>Lahti L, et al. (2014)
-Tipping elements in the human intestinal ecosystem.
-Nature Communications 5, 4344.</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
@@ -172,9 +134,11 @@ Nature Communications 5, 4344.</p>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">SilvermanAGutData</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">SilvermanAGutData</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># In this example, we are only interested on vessel 1, in samples with reads.</span></span></span>
-<span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">tse</span><span class="op">[</span>, <span class="va">tse</span><span class="op">[[</span><span class="st">"Vessel"</span><span class="op">]</span><span class="op">]</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colSums</a></span><span class="op">(</span><span class="fu">assay</span><span class="op">(</span><span class="va">tse</span>, <span class="st">"counts"</span><span class="op">)</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="co"># In this example, we are only interested on vessel 1.</span></span></span>
+<span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="va">tse</span><span class="op">[</span>, <span class="va">tse</span><span class="op">[[</span><span class="st">"Vessel"</span><span class="op">]</span><span class="op">]</span> <span class="op">==</span> <span class="fl">1</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://microbiome.github.io/mia/reference/transformAssay.html" class="external-link">transformAssay</a></span><span class="op">(</span><span class="va">tse</span>, method <span class="op">=</span> <span class="st">"relabundance"</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>result contains NaN, perhaps due to impossible mathematical</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>                  operation</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Calculate bimodality</span></span></span>
 <span class="r-in"><span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu">getBimodality</span><span class="op">(</span><span class="va">tse</span><span class="op">)</span></span></span>
@@ -189,21 +153,6 @@ Nature Communications 5, 4344.</p>
 <span class="r-in"><span><span class="va">crt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">bimodal_taxa</span>, <span class="va">abundant</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">crt</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> character(0)</span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Multimodality from potential analysis, for the abundant taxa</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">getBimodality</span><span class="op">(</span><span class="va">tse</span><span class="op">[</span><span class="va">abundant</span>, <span class="op">]</span>, assay.type <span class="op">=</span> <span class="st">"relabundance"</span>,</span></span>
-<span class="r-in"><span>    method <span class="op">=</span> <span class="st">"potential"</span>, bs.iter <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">p</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">p</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> DataFrame with 6 rows and 1 column</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        bimodality</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         &lt;numeric&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> seq_2        1.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> seq_4        1.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> seq_8        1.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> seq_1        0.85</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> seq_19       0.70</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> seq_6        0.50</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
