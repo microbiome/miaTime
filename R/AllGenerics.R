@@ -65,3 +65,13 @@ setGeneric("addSurvival", signature = "x", function(x, ...)
 #' @export
 setGeneric("getSamplingSummary", signature = "x", function(x, ...)
     standardGeneric("getSamplingSummary"))
+
+#' @rdname getAutocorrelation
+#' @export
+setGeneric("getAutocorrelation", signature = "x", function(x, ...)
+    standardGeneric("getAutocorrelation"))
+
+#' @rdname getAutocorrelation
+#' @export
+setGeneric("addAutocorrelation", signature = "x", function(x, ...)
+    standardGeneric("addAutocorrelation"))
