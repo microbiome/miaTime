@@ -238,8 +238,8 @@ NULL
 #' The object is provided as a
 #' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}.
 #'
-#' The dataset contains 44 stool samples (two time points per subject: baseline
-#' \code{T0} and follow-up \code{T1}) from 22 subjects with inflammatory bowel
+#' The dataset contains 38 stool samples (two time points per subject: baseline
+#' \code{T0} and follow-up \code{T1}) from 19 subjects with inflammatory bowel
 #' disease who received treatment between the two sampling time points, with
 #' 585 microbial species.
 #'
@@ -261,6 +261,6 @@ NULL
 #' @usage data(HMP_2019_ibdmdb)
 #' @format The data set in
 #' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
-#' format: 585 microbial species (rows) and 44 stool samples (columns).
+#' format: 585 microbial species (rows) and 38 stool samples (columns).
 #' @keywords data
 NULL

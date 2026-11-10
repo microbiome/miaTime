@@ -1,8 +1,8 @@
 # -----------------------------------------------------------------------------
-# multimedia_relative_data_prep.R
+# HMP_2019_ibdmdb_data_prep.R
 #
-# Preparation script for the miaViz example datasets `se_relative` and
-# `tse_relative` (see `?miaViz::multimedia-datasets`).
+# Preparation script for the miaTime example dataset `HMP_2019_ibdmdb`
+# (see `?miaTime::HMP_2019_ibdmdb`).
 #
 # Source: curatedMetagenomicData -> HMP_2019_ibdmdb.relative_abundance
 #         (Lloyd-Price et al., 2019, Nature 569:655-662).
@@ -12,15 +12,14 @@
 #   2. Convert the raw assay to relative abundances in [0, 1].
 #   3. Compute a per-sample dysbiosis score as the median Bray-Curtis
 #      distance to the healthy reference set (excluding self).
-#   4. Subset to IBD subjects with paired baseline (visit 1) and
-#      post-treatment (visit 21) samples.
-#   5. Define a `treatment` factor (T0 = baseline, T1 = post-treatment).
+#   4. Subset to IBD subjects with both a baseline (visit 1) and a
+#      post-treatment (visit 21) sample.
+#   5. Define a `time_point` label (T0 = baseline, T1 = post-treatment).
 #   6. Standardize the relative-abundance assay as `scaled`.
-#   7. Save `tse_relative` (TreeSummarizedExperiment) and `se_relative`
-#      (SummarizedExperiment) as separate .rda files under `data/`.
+#   7. Save `HMP_2019_ibdmdb` as a .rda file under `data/`.
 #
 # Run this script from the package root, or set the destination path
-# in the save() calls at the end accordingly.
+# in the save() call at the end accordingly.
 # -----------------------------------------------------------------------------
 
 remove(list = ls())
@@ -96,9 +95,11 @@ tse <- tse[, tse$disease != "healthy"]
 # Visit 1 (baseline) or 21 (post-treatment)
 tse <- tse[, tse$visit_number %in% c(1, 21)]
 
-# Keep subjects with both visits
-keep_subjects <- names(which(table(tse$subject_id) == 2))
-tse <- tse[, tse$subject_id %in% keep_subjects]
+# Keep subjects with both visits. Some subjects have several samples from
+# visit 1 and none from visit 21.
+both_visits <- tapply(
+    tse$visit_number, tse$subject_id, function(v) all(c(1, 21) %in% v))
+tse <- tse[, tse$subject_id %in% names(which(both_visits))]
 
 # Define time point label
 tse$time_point <- ifelse(tse$visit_number == 1, "T0", "T1")
