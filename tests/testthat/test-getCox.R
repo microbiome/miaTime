@@ -1,5 +1,5 @@
 # Check that input checks work
-test_that("getSurvival validates input", {
+test_that("getCox validates input", {
     # Load and prepare data
     data(crohn_survival)
     tse <- crohn_survival
@@ -7,7 +7,7 @@ test_that("getSurvival validates input", {
     
     # Test that function works with valid inputs
     expect_no_error({
-        fit <- getSurvival(
+        fit <- getCox(
             tse, 
             assay.type = "relabundance",
             time.col = "event_time", 
@@ -16,20 +16,20 @@ test_that("getSurvival validates input", {
     })
     
     expect_error({
-        getSurvival(
+        getCox(
             tse, 
             assay.type = "relabundance"
         )
     })
     expect_error({
-        getSurvival(
+        getCox(
             tse
         )
     })
     
     # Test error with non-existent time column
     expect_error({
-        getSurvival(
+        getCox(
             tse, 
             assay.type = "relabundance",
             time.col = "nonexistent_time", 
@@ -38,7 +38,7 @@ test_that("getSurvival validates input", {
     })
     
     expect_error({
-        getSurvival(
+        getCox(
             tse, 
             assay.type = "relabundance",
             event.col = "event"
@@ -47,7 +47,7 @@ test_that("getSurvival validates input", {
     
     # Test error with non-existent event column
     expect_error({
-        getSurvival(
+        getCox(
             tse, 
             assay.type = "relabundance",
             time.col = "event_time", 
@@ -56,7 +56,7 @@ test_that("getSurvival validates input", {
     })
     
     expect_error({
-        getSurvival(
+        getCox(
             tse, 
             assay.type = "relabundance",
             time.col = "event_time"
@@ -65,7 +65,7 @@ test_that("getSurvival validates input", {
     
     # Test error with non-existent assay
     expect_error({
-        getSurvival(
+        getCox(
             tse, 
             assay.type = "nonexistent_assay",
             time.col = "event_time", 
@@ -75,7 +75,7 @@ test_that("getSurvival validates input", {
 })
 
 # Check that method works correctly
-test_that("getSurvival works correctly", {
+test_that("getCox works correctly", {
     # Load the example data
     data(crohn_survival)
     tse <- crohn_survival
@@ -90,8 +90,8 @@ test_that("getSurvival works correctly", {
     # Transform to relative abundance as in example
     tse <- transformAssay(tse, method = "relabundance")
     
-    # Test basic getSurvival functionality
-    fit <- getSurvival(
+    # Test basic getCox functionality
+    fit <- getCox(
         tse, 
         assay.type = "relabundance",
         time.col = "event_time", 
@@ -127,14 +127,14 @@ test_that("getSurvival works correctly", {
 })
 
 # Check that method handles different params passed in ...
-test_that("getSurvival handles different parameters", {
+test_that("getCox handles different parameters", {
     # Load and prepare data
     data(crohn_survival)
     tse <- crohn_survival
     tse <- transformAssay(tse, method = "relabundance")
     
     # Test with different alpha values
-    fit_ridge <- getSurvival(
+    fit_ridge <- getCox(
         tse, 
         assay.type = "relabundance",
         time.col = "event_time", 
@@ -142,7 +142,7 @@ test_that("getSurvival handles different parameters", {
         alpha = 0.1  # Ridge regression
     )
     
-    fit_lasso <- getSurvival(
+    fit_lasso <- getCox(
         tse, 
         assay.type = "relabundance",
         time.col = "event_time", 
@@ -159,7 +159,7 @@ test_that("getSurvival handles different parameters", {
     expect_false(identical(fit_ridge$risk_scores, fit_lasso$risk_scores))
     
     # Test with standard Cox regression (no penalization)
-    fit_standard <- getSurvival(
+    fit_standard <- getCox(
         tse, 
         assay.type = "relabundance",
         time.col = "event_time", 
@@ -176,7 +176,7 @@ test_that("getSurvival handles different parameters", {
 })
 
 # Check that method handles covariates
-test_that("getSurvival handles covariates", {
+test_that("getCox handles covariates", {
     # Load and prepare data
     data(crohn_survival)
     tse <- crohn_survival
@@ -192,7 +192,7 @@ test_that("getSurvival handles covariates", {
     colData(tse)$sex <- factor(sample(c("M", "F"), n, replace = TRUE))
     
     # Test with available covariates (use first available column)
-    fit_with_covs <- getSurvival(
+    fit_with_covs <- getCox(
         tse, 
         assay.type = "relabundance",
         time.col = "event_time", 
@@ -201,7 +201,7 @@ test_that("getSurvival handles covariates", {
     )
     
     # Test without covariates for comparison
-    fit_without_covs <- getSurvival(
+    fit_without_covs <- getCox(
         tse, 
         assay.type = "relabundance",
         time.col = "event_time", 
@@ -222,7 +222,7 @@ test_that("getSurvival handles covariates", {
 })
 
 # Check that method handles coefficient filtering
-test_that("getSurvival handles coefficient filtering", {
+test_that("getCox handles coefficient filtering", {
     # Load and prepare data
     data(crohn_survival)
     tse <- crohn_survival
@@ -231,7 +231,7 @@ test_that("getSurvival handles coefficient filtering", {
     # Test with different coefficient thresholds. Use the same seed so that
     # cross-validation folds are the same.
     set.seed(1)
-    fit_no_filter <- getSurvival(
+    fit_no_filter <- getCox(
         tse, 
         assay.type = "relabundance",
         time.col = "event_time", 
@@ -240,7 +240,7 @@ test_that("getSurvival handles coefficient filtering", {
     )
     
     set.seed(1)
-    fit_filtered <- getSurvival(
+    fit_filtered <- getCox(
         tse, 
         assay.type = "relabundance",
         time.col = "event_time", 
@@ -257,7 +257,7 @@ test_that("getSurvival handles coefficient filtering", {
     }
     
     # Test with high threshold that might filter out all coefficients
-    fit_high_filter <- getSurvival(
+    fit_high_filter <- getCox(
         tse, 
         assay.type = "relabundance",
         time.col = "event_time", 
@@ -271,13 +271,13 @@ test_that("getSurvival handles coefficient filtering", {
 })
 
 # Check that method handles different transformations
-test_that("getSurvival handles different assay types", {
+test_that("getCox handles different assay types", {
     # Load data
     data(crohn_survival)
     tse <- crohn_survival
     
     # Test with original counts
-    fit_counts <- getSurvival(
+    fit_counts <- getCox(
         tse, 
         assay.type = "counts",
         time.col = "event_time", 
@@ -286,7 +286,7 @@ test_that("getSurvival handles different assay types", {
     
     # Transform and test with relative abundances
     tse <- transformAssay(tse, method = "relabundance")
-    fit_relabundance <- getSurvival(
+    fit_relabundance <- getCox(
         tse, 
         assay.type = "relabundance",
         time.col = "event_time", 
@@ -303,7 +303,7 @@ test_that("getSurvival handles different assay types", {
     
     # Add CLR transformation and test
     tse <- transformAssay(tse, method = "clr", pseudocount = TRUE)
-    fit_clr <- getSurvival(
+    fit_clr <- getCox(
         tse, 
         assay.type = "clr",
         time.col = "event_time", 
@@ -315,7 +315,7 @@ test_that("getSurvival handles different assay types", {
 })
 
 # Check that methods results are reproducible
-test_that("getSurvival results are reproducible", {
+test_that("getCox results are reproducible", {
     # Load and prepare data
     data(crohn_survival)
     tse <- crohn_survival
@@ -323,7 +323,7 @@ test_that("getSurvival results are reproducible", {
     
     # Set seed and run analysis
     set.seed(123)
-    fit1 <- getSurvival(
+    fit1 <- getCox(
         tse, 
         assay.type = "relabundance",
         time.col = "event_time", 
@@ -333,7 +333,7 @@ test_that("getSurvival results are reproducible", {
     
     # Set same seed and run analysis again
     set.seed(123)
-    fit2 <- getSurvival(
+    fit2 <- getCox(
         tse, 
         assay.type = "relabundance",
         time.col = "event_time", 
@@ -347,14 +347,14 @@ test_that("getSurvival results are reproducible", {
     expect_equal(fit1$c_index, fit2$c_index)
 })
 # Check that the response is not used as a predictor
-test_that("getSurvival does not use time or event as predictors", {
+test_that("getCox does not use time or event as predictors", {
     data(crohn_survival)
     tse <- crohn_survival
     tse <- transformAssay(tse, method = "relabundance")
     tse <- tse[order(-rowMeans(assay(tse, "relabundance")))[1:5], ]
     colData(tse)[["age"]] <- seq_len(ncol(tse))
 
-    fit <- getSurvival(
+    fit <- getCox(
         tse,
         assay.type = "relabundance",
         time.col = "event_time",
@@ -368,31 +368,31 @@ test_that("getSurvival does not use time or event as predictors", {
     expect_setequal(names(fit$coef), c(rownames(tse), "age"))
 })
 
-# Check that addSurvival stores results in rowData, colData and metadata
-test_that("addSurvival adds coefficients, risk scores and results", {
+# Check that addCox stores results in rowData, colData and metadata
+test_that("addCox adds coefficients, risk scores and results", {
     data(crohn_survival)
     tse <- crohn_survival
     tse <- transformAssay(tse, method = "relabundance")
 
     set.seed(1)
-    res <- getSurvival(
+    res <- getCox(
         tse,
         assay.type = "relabundance",
         time.col = "event_time",
         event.col = "event"
     )
     set.seed(1)
-    tse <- addSurvival(
+    tse <- addCox(
         tse,
         assay.type = "relabundance",
         time.col = "event_time",
         event.col = "event"
     )
 
-    coefs <- rowData(tse)[["survival_coef"]]
+    coefs <- rowData(tse)[["cox_coef"]]
     names(coefs) <- rownames(tse)
     expect_equal(coefs[names(res$coef)], res$coef)
     expect_true(all(is.na(coefs[!names(coefs) %in% names(res$coef)])))
-    expect_equal(tse[["survival_risk_score"]], res$risk_scores)
-    expect_equal(metadata(tse)[["survival"]]$c_index, res$c_index)
+    expect_equal(tse[["cox_risk_score"]], res$risk_scores)
+    expect_equal(metadata(tse)[["cox"]]$c_index, res$c_index)
 })
