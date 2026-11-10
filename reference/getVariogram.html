@@ -77,10 +77,15 @@ whose sampling schedules differ.</p>
 <span>  method <span class="op">=</span> <span class="st">"bray"</span>,</span>
 <span>  time.lag <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  split.by <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  pair.level <span class="op">=</span> <span class="st">"earlier"</span>,</span>
+<span>  subset.by <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  time.point <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  window <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  squared <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  bounded <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  relative <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  conf.level <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>  permutations <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -136,9 +141,22 @@ the units of <code>time.col</code>, at which \(D(L)\) is estimated. If
 
 <dt id="arg-split-by">split.by<a class="anchor" aria-label="anchor" href="#arg-split-by"></a></dt>
 <dd><p><code>NULL</code> or <code>Character scalar</code>. Specifies a name
-of a column from <code>colData</code> with one value per subject. \(D(L)\) is
-estimated for each of its levels, and each level is compared with the
-first. (Default: <code>NULL</code>)</p></dd>
+of a column from <code>colData</code>, with one value per subject or a
+sample-level state. \(D(L)\) is estimated for each of its levels, and
+each level is compared with the first. (Default: <code>NULL</code>)</p></dd>
+
+
+<dt id="arg-pair-level">pair.level<a class="anchor" aria-label="anchor" href="#arg-pair-level"></a></dt>
+<dd><p><code>Character scalar</code>. When <code>split.by</code> varies
+within subjects, the level of a pair: <code>"earlier"</code>, that of its
+earlier sample, or <code>"highest"</code>, the higher of the levels of its two
+samples. See details. (Default: <code>"earlier"</code>)</p></dd>
+
+
+<dt id="arg-subset-by">subset.by<a class="anchor" aria-label="anchor" href="#arg-subset-by"></a></dt>
+<dd><p><code>NULL</code> or <code>Character scalar</code>. Specifies a name
+of a logical column of <code>colData</code>; only pairs whose earlier sample is
+<code>TRUE</code> are used. See details. (Default: <code>NULL</code>)</p></dd>
 
 
 <dt id="arg-time-point">time.point<a class="anchor" aria-label="anchor" href="#arg-time-point"></a></dt>
@@ -158,9 +176,27 @@ details. (Default: <code>NULL</code>)</p></dd>
 squared. (Default: <code>FALSE</code>)</p></dd>
 
 
+<dt id="arg-bounded">bounded<a class="anchor" aria-label="anchor" href="#arg-bounded"></a></dt>
+<dd><p><code>Logical scalar</code>. Whether the dissimilarities are
+bounded by 1 and analysed on the scale \(-\log(1 - d)\). See details.
+(Default: <code>FALSE</code>)</p></dd>
+
+
+<dt id="arg-relative">relative<a class="anchor" aria-label="anchor" href="#arg-relative"></a></dt>
+<dd><p><code>Logical scalar</code>. Whether \(D(L)\) is also
+reported relative to the dissimilarity between subjects. See details.
+(Default: <code>FALSE</code>)</p></dd>
+
+
 <dt id="arg-conf-level">conf.level<a class="anchor" aria-label="anchor" href="#arg-conf-level"></a></dt>
 <dd><p><code>Numeric scalar</code>. Confidence level of the
 intervals. (Default: <code>0.95</code>)</p></dd>
+
+
+<dt id="arg-permutations">permutations<a class="anchor" aria-label="anchor" href="#arg-permutations"></a></dt>
+<dd><p><code>Integer scalar</code>. The number of permutations
+of <code>split.by</code> among subjects for a permutation p-value of each
+comparison; <code>0</code> for none. See details. (Default: <code>0</code>)</p></dd>
 
 </dl></div>
     <div id="value">
@@ -191,6 +227,10 @@ with the confidence interval.</p></dd>
 <dd><p>For comparisons, the p-value of the test that the ratio
 is 1.</p></dd>
 
+<dt>p.value.permutation</dt>
+<dd><p>When <code>permutations &gt; 0</code>: for
+comparisons, the permutation p-value (see details).</p></dd>
+
 <dt>n.subjects, n.pairs</dt>
 <dd><p>Subjects and pairs in the lag window.</p></dd>
 
@@ -200,6 +240,10 @@ is 1.</p></dd>
 <dt>time.point</dt>
 <dd><p>The time at which \(D(L)\) was estimated, when
 <code>time.point</code> is given.</p></dd>
+
+<dt>relative</dt>
+<dd><p>When <code>relative = TRUE</code>: \(D(L) / B\), for
+estimates of \(D(L)\).</p></dd>
 
 
 </dl><p><code>addVariogram</code> returns <code>x</code> with this table in its
@@ -241,6 +285,41 @@ with the first level by the ratio of \(D(L)\), with a
 Welch–Satterthwaite t test of the log ratio. The comparison is made only
 at lags supported in both groups. P-values are not adjusted for multiple
 comparisons.</p>
+<p>With <code>permutations &gt; 0</code>, each comparison also gets a permutation
+p-value: the levels of <code>split.by</code> are reassigned at random among
+the subjects of the two levels compared, keeping their numbers, and the
+t statistic of the log ratio is recomputed. When the levels share a
+sampling schedule, subjects are exchangeable under the null hypothesis
+and the permutation test is exact, whereas the t test can reject slightly
+too often in real data. When the schedules differ, the labels are not
+exchangeable and the permutation p-value is not valid; use the t test.
+Set a seed (<code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code>) for reproducible permutation p-values.</p>
+<p><strong>Kinds of pairs.</strong> When <code>split.by</code> varies within subjects (a
+sample-level state, such as community type or the phase of an
+intervention), each pair takes the level of its earlier sample, and
+\(D(L)\) is estimated for the pairs of each level. A subject then
+contributes pairs to several levels, so the levels are not independent.
+Each level is compared with the first in one weighted regression on the
+pairs of both levels in the lag window, with an indicator of the level,
+the terms in \(u\) for each level and, with <code>time.point</code>, the
+terms in \(z\) shared by the levels; the log ratio of \(D(L)\) is
+\(\log((b_0 + b_1) / b_0)\), where \(b_0\) is the intercept and
+\(b_1\) the coefficient of the indicator. Its standard error is
+cluster-robust by subject, by the delta method, with \(G - 1\) degrees
+of freedom. Both levels must meet the support rules on their own. The
+permutation test is not available, as levels are not assigned to
+subjects.</p>
+<p>With <code>pair.level = "highest"</code>, a pair takes the higher of the levels
+of its two samples, in the order of the levels of <code>split.by</code>: with
+levels <code>"baseline"</code> and <code>"exacerbation"</code>, pairs that span an
+exacerbation are compared with pairs of two baseline samples. A sample
+without a level (<code>NA</code>) classifies its pair only when the other
+sample has the highest level, which decides the pair whatever the missing
+level; other pairs with such a sample are left out.</p>
+<p>With <code>subset.by</code>, only pairs whose earlier sample is <code>TRUE</code> in
+a logical column of <code>colData</code> are used, for example pairs starting
+from a given community type. Subjects are then compared on those pairs,
+and a sample-level state is compared within them.</p>
 <p><strong>Developing communities.</strong> When change at a given lag depends on
 the time since a common origin (age in infant cohorts, time since an
 intervention), groups whose samples were taken at different ages differ
@@ -262,6 +341,21 @@ additively, so the noise does not change the shape of the variogram, only
 its level. Dissimilarities depend on sequencing depth; rarefy the counts
 first (<code><a href="https://microbiome.github.io/mia/reference/rarefyAssay.html" class="external-link">rarefyAssay()</a></code>) when depth differs
 between samples or groups.</p>
+<p>Dissimilarities bounded by 1, such as Bray–Curtis and Jaccard, approach
+their bound as communities share fewer features, so \(D(L)\) flattens
+near 1 whatever the dynamics. With <code>bounded = TRUE</code> they are analysed
+on the scale \(-\log(1 - d)\), which is unbounded and close to \(d\)
+for small dissimilarities. Pairs without shared features (\(d = 1\)) are
+set to \(d = 1 - 10^{-9}\).</p>
+<p><strong>Relative change.</strong> \(D(L)\) is on the scale of the
+dissimilarity, so it cannot be compared between dissimilarities, studies
+or body sites. With <code>relative = TRUE</code>, \(D(L)\) is also reported
+relative to \(B\), the mean dissimilarity between samples of different
+subjects, where every pair of subjects counts equally: a value of 0.5
+means that over \(L\) a subject's community changes half as much as it
+differs from another subject's. \(B\) is computed from the samples of
+all subjects, so it is the same for every level of <code>split.by</code>, and
+it is treated as fixed.</p>
     </div>
     <div id="references">
     <h2>References</h2>
