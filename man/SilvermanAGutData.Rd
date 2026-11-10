@@ -26,6 +26,12 @@ community in a controlled environment.
 Column metadata includes the days of sampling, vessel identifier, sampling
 frequency pre-post challenge with Bacteroides ovatus.
 
+\code{Time.hr} is the sampling time in hours from midnight of day 0, taken
+from the sample names; daily samples were collected at 15:00 (Silverman et
+al. 2018, Additional file 4). It is \code{NA} for seven samples whose
+description notes a wrong tube. \code{DAY_ORDER} does not give the
+sampling time.
+
 The row metadata of the microbiome data contains taxonomic information on
 the Kingdom, Phylum, Class, Order, Family and Genus and Species level.
 
