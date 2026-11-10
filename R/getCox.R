@@ -1,5 +1,5 @@
 #' @name
-#' getSurvival
+#' getCox
 #'
 #' @export
 #'
@@ -13,7 +13,7 @@
 #' (e.g. with \code{mia::transformAssay()}).
 #'
 #' @details
-#' \code{getSurvival()} fits a Cox proportional hazards model with the
+#' \code{getCox()} fits a Cox proportional hazards model with the
 #' features of \code{assay.type} as predictors. By default
 #' (\code{penalized = TRUE}), an elastic net penalized model is fitted with
 #' \code{glmnet::cv.glmnet()}, and the penalty is selected by
@@ -37,7 +37,7 @@
 #' available from \code{fit}. Risk scores and C-index are calculated from the
 #' fitted model and are not affected by the rescaling.
 #'
-#' \code{addSurvival()} adds the coefficients to \code{rowData} (\code{NA}
+#' \code{addCox()} adds the coefficients to \code{rowData} (\code{NA}
 #' for features not in the model), the risk scores to \code{colData}, and the
 #' full results to \code{metadata}.
 #'
@@ -72,8 +72,9 @@
 #'   \item \code{nfolds}: \code{Integer scalar}. Number of cross-validation
 #'   folds for \code{cv.glmnet}. (Default: \code{10})
 #'
-#'   \item \code{nvar}: \code{Integer scalar}. Optional. Maximum number of
-#'   variables (log-ratios) to include in the model. (Default: \code{NULL})
+#'   \item \code{max.features}: \code{Integer scalar}. Optional. Maximum
+#'   number of features (log-ratios) to include in the model.
+#'   (Default: \code{NULL})
 #'
 #'   \item \code{coef.threshold}: \code{Numeric scalar}. Minimum absolute value
 #'   for a coefficient to be included in the final model. (Default: \code{0})
@@ -82,11 +83,11 @@
 #' @param name \code{Character vector} of length 3. Names for the
 #' coefficients in \code{rowData}, the risk scores in \code{colData} and the
 #' full results in \code{metadata}.
-#' (Default: \code{c("survival_coef", "survival_risk_score", "survival")})
+#' (Default: \code{c("cox_coef", "cox_risk_score", "cox")})
 #'
 #' @inheritParams addBaselineDivergence
 #'
-#' @return \code{getSurvival()} returns a list with model summaries:
+#' @return \code{getCox()} returns a list with model summaries:
 #' \itemize{
 #'   \item \code{coef}: estimated model coefficients
 #'   \item \code{risk_scores}: predicted risk scores
@@ -95,7 +96,7 @@
 #'   \item \code{c_index_cv_sd}: SD of cross-validated C-index (if penalized)
 #'   \item \code{fit}: fitted model object (coxph or cv.glmnet)
 #' }
-#' \code{addSurvival()} returns \code{x} with the results added.
+#' \code{addCox()} returns \code{x} with the results added.
 #'
 #' @seealso \code{\link[coda4microbiome]{coda_coxnet}},
 #' \code{\link[glmnet]{cv.glmnet}}
@@ -110,26 +111,50 @@
 #' data(crohn_survival)
 #' tse <- crohn_survival
 #' tse <- transformAssay(tse, method = "relabundance")
-#' fit <- getSurvival(
+#' set.seed(1)
+#' tse <- addCox(
 #'     tse, assay.type = "relabundance",
 #'     time.col = "event_time", event.col = "event"
 #' )
 #'
+#' # Features in the model, by coefficient, and the concordance index
+#' coefs <- rowData(tse)[["cox_coef"]]
+#' names(coefs) <- rownames(tse)
+#' coefs <- sort(coefs[!is.na(coefs) & coefs != 0])
+#' data.frame(feature = names(coefs), coefficient = unname(coefs))
+#' metadata(tse)[["cox"]][["c_index"]]
+#'
+#' # The coefficients
+#' op <- par(mar = c(4, 14, 1, 1))
+#' barplot(coefs, horiz = TRUE, las = 1, xlab = "Coefficient")
+#' par(op)
+#'
+#' # Time to event of samples with risk scores above and below the median;
+#' # the scores come from the data the model was fitted to, so the separation
+#' # is optimistic
+#' df <- data.frame(time = tse$event_time, event = tse$event,
+#'     risk = ifelse(tse$cox_risk_score > median(tse$cox_risk_score),
+#'         "high", "low"))
+#' km <- survival::survfit(survival::Surv(time, event) ~ risk, data = df)
+#' plot(km, col = c("red", "blue"), xlab = "Time", ylab = "Without event")
+#' legend("bottomleft", legend = c("high risk", "low risk"),
+#'     col = c("red", "blue"), lty = 1)
+#'
 NULL
 
-#' @rdname getSurvival
+#' @rdname getCox
 #' @export
-setMethod("addSurvival", signature = c(x = "SummarizedExperiment"),
+setMethod("addCox", signature = c(x = "SummarizedExperiment"),
     function(
         x, time.col, event.col,
-        name = c("survival_coef", "survival_risk_score", "survival"), ...){
+        name = c("cox_coef", "cox_risk_score", "cox"), ...){
         .check_input(name, "character vector", length = 3L)
         x <- .check_and_get_altExp(x, ...)
         # Run analysis
         args <- c(
             list(x = x, time.col = time.col, event.col = event.col),
             list(...)[!names(list(...)) %in% c("altexp")])
-        res <- do.call(getSurvival, args)
+        res <- do.call(getCox, args)
         # Add feature coefficients to rowData. Features that are not in the
         # model get NA.
         coefs <- unname(res[["coef"]][rownames(x)])
@@ -142,9 +167,9 @@ setMethod("addSurvival", signature = c(x = "SummarizedExperiment"),
     }
 )
 
-#' @rdname getSurvival
+#' @rdname getCox
 #' @export
-setMethod("getSurvival", signature(x = "SummarizedExperiment"),
+setMethod("getCox", signature(x = "SummarizedExperiment"),
     function(x, time.col, event.col, assay.type = "counts", col.var = NULL,
         ...){
         # Input checks
@@ -271,9 +296,9 @@ setMethod("getSurvival", signature(x = "SummarizedExperiment"),
         offset = offset
     )
 
-    # Select lambda value based on user input and optional nvar constraint to
-    # allow selecting lambda that balances model sparsity and predictive
-    # performance
+    # Select lambda value based on user input and optional max.features
+    # constraint to allow selecting lambda that balances model sparsity and
+    # predictive performance
     lambda_value <- .lambda_selector(fit, lambda, ...)
     # Extract coefficients at chosen lambda
     coefs <- coef(fit, s = lambda_value)
@@ -381,11 +406,12 @@ setMethod("getSurvival", signature(x = "SummarizedExperiment"),
 #
 # Allows choosing lambda based on CV results or restricting the model to a
 # maximum number of variables.
-.lambda_selector <- function(fit, lambda, nvar = NULL, ...) {
-    # Handle nvar cutoff
-    if( !is.null(nvar) ){
-        # Identify lambda values with number of non-zero coefficients <= nvar.
-        valid <- which(fit[["glmnet.fit"]][["df"]] <= nvar)
+.lambda_selector <- function(fit, lambda, max.features = NULL, ...) {
+    # Handle max.features cutoff
+    if( !is.null(max.features) ){
+        # Identify lambda values with at most max.features non-zero
+        # coefficients.
+        valid <- which(fit[["glmnet.fit"]][["df"]] <= max.features)
         # If such lambdas exist, choose the lambda for model that has
         # highest number of taxa.
         if( length(valid) > 0L ){
