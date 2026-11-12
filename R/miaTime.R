@@ -28,6 +28,9 @@ NULL
 #' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
 #' object.
 #' Some of the subjects also have short time series.
+#' In 11 pairs of samples of \code{atlas1006}, the counts are identical; each
+#' pair is one subject at time 0 and 0.2. The time-0.2 sample of each pair is
+#' removed, leaving 1140 samples.
 #' @docType data
 #' @author Leo Lahti
 #' @return Loads the data set in R.
