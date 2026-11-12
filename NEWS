@@ -1,3 +1,6 @@
+Changes in version 1.3.6 (2026-11-12)
++ hitchip1006: removed 11 duplicated samples
+
 Changes in version 1.3.5 (2026-11-06)
 + getStepwiseDivergence: Option to select reference samples based on time lag
 
