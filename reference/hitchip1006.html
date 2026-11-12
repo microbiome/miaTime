@@ -46,7 +46,7 @@ reported in Lahti et al. (2014)."><!-- mathjax --><script src="https://cdnjs.clo
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>HITChip Atlas with 1006 Western Adults</h1>
-    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/hmp-visits/R/miaTime.R" class="external-link"><code>R/miaTime.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/microbiome/miaTime/blob/hitchip-duplicates/R/miaTime.R" class="external-link"><code>R/miaTime.R</code></a></small>
     <div class="hidden name"><code>hitchip1006.Rd</code></div>
     </div>
 
@@ -78,7 +78,10 @@ as a phyloseq object under the name atlas1006 in <span class="pkg">microbiome</s
 The <span class="pkg">miaTime</span> package provides this as
 <code><a href="https://rdrr.io/pkg/TreeSummarizedExperiment/man/TreeSummarizedExperiment-class.html" class="external-link">TreeSummarizedExperiment</a></code>
 object.
-Some of the subjects also have short time series.</p>
+Some of the subjects also have short time series.
+In 11 pairs of samples of <code>atlas1006</code>, the counts are identical; each
+pair is one subject at time 0 and 0.2. The time-0.2 sample of each pair is
+removed, leaving 1140 samples.</p>
     </div>
     <div id="references">
     <h2>References</h2>
