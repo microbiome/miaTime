@@ -71,6 +71,37 @@ NULL
 #'
 NULL
 
+#' @title Moving Pictures of the Human Microbiome
+#' @description This time-series data set contains 16S rRNA gene profiles of
+#' two adults (\code{host_subject_id} F4 and M3) sampled at four body sites
+#' (\code{common_sample_site}: feces, left palm, right palm and tongue),
+#' mostly daily.
+#' @name MovingPictures
+#' @details The data contains 1967 samples, taken over 186 days for F4 and
+#' 445 days for M3 (\code{days_since_experiment_start}). The OTUs of the source are
+#' agglomerated to genus; OTUs without a genus are kept at their lowest
+#' assigned rank, so no reads are lost. The result has 1650 features and a
+#' matching phylogenetic tree. The original study marked 13 samples as
+#' mislabeled (\code{mislabeled}).
+#'
+#' The data come from the \code{MovingPictures} phyloseq object of the MicrobeDS
+#' package (\url{https://github.com/twbattaglia/MicrobeDS}, CC0), from Qiita
+#' study 550. The script \code{inst/scripts/MovingPictures.R} prepares the
+#' object.
+#' @docType data
+#' @return Loads the data set in R.
+#' @references
+#' Caporaso JG, Lauber CL, Costello EK, et al. Moving pictures of the human
+#' microbiome. Genome Biology 12, R50 (2011).
+#' https://doi.org/10.1186/gb-2011-12-5-r50
+#' @usage data(MovingPictures)
+#' @format The data set in
+#' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
+#' format.
+#' @keywords data
+#'
+NULL
+
 #' @title Human Gut Minimal Microbiome Profiling Data
 #' @description This time-series data set contains absolute temporal abundances
 #' for 16 human gut species that were assembled in an in vitro gut system. These
