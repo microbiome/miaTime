@@ -137,7 +137,7 @@ setMethod("getBimodality", signature = c(x = "SummarizedExperiment"),
     if( !is.null(group) ){
         res <- res |>
             pivot_wider(
-                names_from = group,
+                names_from = all_of(group),
                 values_from = b
             )
     }
