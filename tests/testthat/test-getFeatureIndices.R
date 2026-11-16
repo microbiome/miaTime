@@ -2,23 +2,23 @@ data(minimalgut)
 tse <- transformAssay(minimalgut, method = "relabundance")
 m <- assay(tse, "relabundance")
 
-test_that("getVariability checks its input", {
-    expect_error(getVariability(tse, assay.type = "missing"))
-    expect_error(getVariability(tse, assay.type = "relabundance",
+test_that("getFeatureIndices checks its input", {
+    expect_error(getFeatureIndices(tse, assay.type = "missing"))
+    expect_error(getFeatureIndices(tse, assay.type = "relabundance",
         index = "missing"))
-    expect_error(getVariability(tse, assay.type = "relabundance",
+    expect_error(getFeatureIndices(tse, assay.type = "relabundance",
         index = c("cv", "cv")), "duplicates")
-    expect_error(getVariability(tse, assay.type = "relabundance",
+    expect_error(getFeatureIndices(tse, assay.type = "relabundance",
         group = "missing"))
-    expect_error(addVariability(tse, assay.type = "relabundance",
+    expect_error(addFeatureIndices(tse, assay.type = "relabundance",
         index = c("cv", "variance"), name = "a"))
     # Stability needs the time column
-    expect_error(getVariability(tse, assay.type = "relabundance",
+    expect_error(getFeatureIndices(tse, assay.type = "relabundance",
         index = "stability"))
 })
 
-test_that("getVariability equals direct calculations", {
-    res <- getVariability(tse, assay.type = "relabundance")
+test_that("getFeatureIndices equals direct calculations", {
+    res <- getFeatureIndices(tse, assay.type = "relabundance")
     expect_identical(colnames(res),
         c("variance", "cv", "skewness", "kurtosis", "bimodality"))
     expect_identical(rownames(res), rownames(tse))
@@ -31,8 +31,8 @@ test_that("getVariability equals direct calculations", {
         assay.type = "relabundance")[["bimodality"]])
 })
 
-test_that("getVariability works within groups", {
-    res <- getVariability(tse, assay.type = "relabundance",
+test_that("getFeatureIndices works within groups", {
+    res <- getFeatureIndices(tse, assay.type = "relabundance",
         index = c("variance", "stability"), group = "StudyIdentifier",
         time.col = "Time.hr")
     groups <- unique(tse$StudyIdentifier)
@@ -47,10 +47,10 @@ test_that("getVariability works within groups", {
         stab[["stability_Bioreactor A"]])
 })
 
-test_that("addVariability adds the indices to rowData", {
-    x <- addVariability(tse, assay.type = "relabundance",
+test_that("addFeatureIndices adds the indices to rowData", {
+    x <- addFeatureIndices(tse, assay.type = "relabundance",
         index = c("cv", "bimodality"), name = c("cv_all", "bc"))
     expect_true(all(c("cv_all", "bc") %in% colnames(rowData(x))))
-    expect_equal(rowData(x)[["cv_all"]], getVariability(tse,
+    expect_equal(rowData(x)[["cv_all"]], getFeatureIndices(tse,
         assay.type = "relabundance", index = "cv")[["cv"]])
 })

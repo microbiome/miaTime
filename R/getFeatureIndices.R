@@ -1,10 +1,10 @@
 #' @name
-#' getVariability
+#' getFeatureIndices
 #'
 #' @export
 #'
 #' @title
-#' Variability of features
+#' Indices of features
 #'
 #' @description
 #' Calculates indices that describe how the abundance of each feature varies
@@ -33,8 +33,8 @@
 #' within each subject, and the columns are named \code{<index>_<group>}.
 #'
 #' @return
-#' \code{getVariability} returns a \code{DataFrame} with one row per feature.
-#' \code{addVariability} adds the results to \code{rowData(x)}.
+#' \code{getFeatureIndices} returns a \code{DataFrame} with one row per feature.
+#' \code{addFeatureIndices} adds the results to \code{rowData(x)}.
 #'
 #' @param x \code{SummarizedExperiment}.
 #'
@@ -64,37 +64,37 @@
 #' data(minimalgut)
 #' tse <- transformAssay(minimalgut, method = "relabundance")
 #'
-#' # Variability of each species over time, within each bioreactor
-#' getVariability(tse, assay.type = "relabundance",
+#' # Indices of each species over time, within each bioreactor
+#' getFeatureIndices(tse, assay.type = "relabundance",
 #'     index = c("cv", "stability"), group = "StudyIdentifier",
 #'     time.col = "Time.hr")
 #'
 #' # Add the indices over all samples to rowData
-#' tse <- addVariability(tse, assay.type = "relabundance")
+#' tse <- addFeatureIndices(tse, assay.type = "relabundance")
 #' rowData(tse)
 #'
 #' @seealso
 #' \code{\link[mia:addAlpha]{getAlpha()}}
 NULL
 
-#' @rdname getVariability
+#' @rdname getFeatureIndices
 #' @export
-setMethod("getVariability", signature = c(x = "SummarizedExperiment"),
+setMethod("getFeatureIndices", signature = c(x = "SummarizedExperiment"),
     function(x, assay.type = "counts", index = c(
             "variance", "cv", "skewness", "kurtosis", "bimodality"),
             group = NULL, ...){
-        .get_variability(x, assay.type, index, name = index, group, ...)
+        .get_feature_indices(x, assay.type, index, name = index, group, ...)
     }
 )
 
-#' @rdname getVariability
+#' @rdname getFeatureIndices
 #' @export
-setMethod("addVariability", signature = c(x = "SummarizedExperiment"),
+setMethod("addFeatureIndices", signature = c(x = "SummarizedExperiment"),
     function(x, assay.type = "counts", index = c(
             "variance", "cv", "skewness", "kurtosis", "bimodality"),
             name = index, group = NULL, ...){
         x <- .check_and_get_altExp(x, ...)
-        res <- .get_variability(x, assay.type, index, name, group, ...)
+        res <- .get_feature_indices(x, assay.type, index, name, group, ...)
         res <- as.list(res)
         x <- .add_values_to_colData(x, unname(res), names(res), MARGIN = 1L)
         return(x)
@@ -104,15 +104,15 @@ setMethod("addVariability", signature = c(x = "SummarizedExperiment"),
 ################################ HELP FUNCTIONS ################################
 
 # Indices that are calculated from the abundances of a feature alone.
-.variability_functions <- list(
+.feature_index_functions <- list(
     variance = function(v) var(v),
     cv = function(v) sd(v) / mean(v),
     skewness = function(v) .calculate_skewness(v),
     kurtosis = function(v) .calculate_kurtosis(v)
 )
 
-.get_variability <- function(x, assay.type, index, name, group, ...){
-    supported <- c(names(.variability_functions), "bimodality", "stability")
+.get_feature_indices <- function(x, assay.type, index, name, group, ...){
+    supported <- c(names(.feature_index_functions), "bimodality", "stability")
     temp <- .check_input(index, list("character vector"), supported)
     temp <- .check_input(name, list("character vector"),
         length = length(index))
@@ -130,7 +130,7 @@ setMethod("addVariability", signature = c(x = "SummarizedExperiment"),
             stability = getStability(
                 x, assay.type = assay.type, group = group, name = nm, ...),
             .summarize_features(
-                x, assay.type, .variability_functions[[i]], nm, group))
+                x, assay.type, .feature_index_functions[[i]], nm, group))
     }, index, name, SIMPLIFY = FALSE)
     res <- do.call(cbind, unname(res))
     return(res)

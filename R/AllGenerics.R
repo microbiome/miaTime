@@ -66,12 +66,12 @@ setGeneric("addSurvival", signature = "x", function(x, ...)
 setGeneric("getSamplingSummary", signature = "x", function(x, ...)
     standardGeneric("getSamplingSummary"))
 
-#' @rdname getVariability
+#' @rdname getFeatureIndices
 #' @export
-setGeneric("getVariability", signature = "x", function(x, ...)
-    standardGeneric("getVariability"))
+setGeneric("getFeatureIndices", signature = "x", function(x, ...)
+    standardGeneric("getFeatureIndices"))
 
-#' @rdname getVariability
+#' @rdname getFeatureIndices
 #' @export
-setGeneric("addVariability", signature = "x", function(x, ...)
-    standardGeneric("addVariability"))
+setGeneric("addFeatureIndices", signature = "x", function(x, ...)
+    standardGeneric("addFeatureIndices"))
