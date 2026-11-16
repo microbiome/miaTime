@@ -387,7 +387,7 @@ setMethod("getStability", signature = c(x = "SummarizedExperiment"),
         df <-  df |>
             group_by(across(all_of(c(group, "FeatureID")))) |>
             pivot_wider(
-                names_from = group,
+                names_from = all_of(group),
                 values_from = any_of(c(
                     "stability", "stability_(<)", "stability_(>=)"))
             ) |> ungroup()
