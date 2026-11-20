@@ -79,3 +79,62 @@ test_that("addBimodality: errors", {
     addBimodality(tse, name = c("test", "test2")) |> expect_error()
     addBimodality(tse, name = TRUE) |> expect_error()
 })
+
+test_that("potential analysis gives the multimodality score of microbiome", {
+    data(SilvermanAGutData)
+    tse <- SilvermanAGutData[, colSums(assay(SilvermanAGutData, "counts")) > 0]
+    tse <- transformAssay(tse, method = "relabundance")
+    a <- assay(tse, "relabundance")
+    # microbiome::multimodality(x, peak.threshold = 0, bs.iter = 30) with
+    # set.seed(7) gives these scores
+    expected <- c(seq_3 = 7 / 30, seq_5 = 9 / 30, seq_9 = 18 / 30)
+    for( feature in names(expected) ){
+        set.seed(7)
+        score <- .calculate_multimodality(as.numeric(a[feature, ]),
+            peak.threshold = 0, bs.iter = 30)
+        expect_equal(score, expected[[feature]])
+    }
+    # Modes where shallow maxima are dropped and neighbours merged; the
+    # positions are those of microbiome:::potential_univariate()
+    expect_equal(.potential_maxima(as.numeric(a["seq_16", ]), 1, 1, 1),
+        c(4, 30, 65, 99))
+    expect_equal(.potential_maxima(as.numeric(a["seq_1", ]), 1, 1, 1),
+        c(12, 40))
+})
+
+test_that("getBimodality(method = 'potential') separates one and two modes", {
+    set.seed(3)
+    x <- rbind(
+        one = rnorm(200),
+        two = c(rnorm(100, mean = 0), rnorm(100, mean = 6)),
+        flat = rep(1, 200))
+    se <- SummarizedExperiment(assays = list(counts = x),
+        colData = DataFrame(g = rep(c("a", "b"), 100)))
+    res <- getBimodality(se, method = "potential", bs.iter = 50)
+    expect_s4_class(res, "DataFrame")
+    expect_identical(rownames(res), rownames(x))
+    expect_lt(res["one", 1], 0.3)
+    expect_gt(res["two", 1], 0.9)
+    expect_equal(res["flat", 1], 0)
+    # Missing values are ignored
+    x_na <- x
+    x_na["two", 1:5] <- NA
+    se_na <- SummarizedExperiment(assays = list(counts = x_na))
+    expect_false(anyNA(getBimodality(se_na, method = "potential",
+        bs.iter = 5)[[1]]))
+    # One column per group, and stored in rowData by addBimodality
+    res_g <- getBimodality(se, method = "potential", bs.iter = 10, group = "g")
+    expect_identical(colnames(res_g), c("bimodality_a", "bimodality_b"))
+    se <- addBimodality(se, method = "potential", bs.iter = 10, name = "pot")
+    expect_true("pot" %in% colnames(rowData(se)))
+    expect_error(getBimodality(se, method = "other"))
+})
+
+test_that("a higher peak.threshold keeps fewer modes", {
+    set.seed(5)
+    x <- c(rnorm(100), rnorm(100, mean = 3))
+    n_modes <- vapply(c(0, 1, 10), function(t){
+        length(.potential_maxima(x, t, 1, 1))
+    }, numeric(1))
+    expect_identical(n_modes, c(2, 1, 1))
+})
