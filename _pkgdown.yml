@@ -9,6 +9,7 @@ reference:
 - title: Variogram
   contents:
   - getVariogram
+  - getVariogramContribution
 
 - title: Feature dynamics
   contents:
