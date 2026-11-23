@@ -28,7 +28,7 @@ test_that("Divergence in baseline other than 0", {
     data(hitchip1006)
     tse <- hitchip1006
     # Should also work when baseline is not 0
-    inds <- which(tse[["subject"]] == "843")[2:5]
+    inds <- which(tse[["subject"]] == "843")[-1]
     tse2 <- addBaselineDivergence(
         tse[, inds], group = "subject", time.col = "time",
         name = c("divergence_from_baseline", "time_from_baseline",

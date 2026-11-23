@@ -302,7 +302,7 @@ test_that("getCox handles different assay types", {
     expect_false(identical(fit_counts$risk_scores, fit_relabundance$risk_scores))
     
     # Add CLR transformation and test
-    tse <- transformAssay(tse, method = "clr", pseudocount = TRUE)
+    tse <- transformAssay(tse, method = "clr", pseudocount = 0.5)
     fit_clr <- getCox(
         tse, 
         assay.type = "clr",
