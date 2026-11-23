@@ -28,6 +28,9 @@ NULL
 #' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
 #' object.
 #' Some of the subjects also have short time series.
+#' In 11 pairs of samples of \code{atlas1006}, the counts are identical; each
+#' pair is one subject at time 0 and 0.2. The time-0.2 sample of each pair is
+#' removed, leaving 1140 samples.
 #' @docType data
 #' @author Leo Lahti
 #' @return Loads the data set in R.
@@ -51,7 +54,9 @@ NULL
 #' @details The data is available also on
 #' \url{https://www.nature.com/articles/s41467-021-27098-7#Sec43}
 #' The data contains 713 fecal samples from 20 Belgian women collected
-#' over six weeks.
+#' over six weeks. The object has the 873 samples of Supplementary Data 1 of
+#' the paper; 179 of them have no profile (\code{NA} in the source). The
+#' \code{counts} assay holds the quantitative microbiome profiles (QMP).
 #' The current implementation in \pkg{miaTime} provides this as
 #' \code{\link[TreeSummarizedExperiment:TreeSummarizedExperiment-class]{TreeSummarizedExperiment}}
 #' object.
