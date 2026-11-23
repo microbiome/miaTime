@@ -61,9 +61,12 @@
 #'   tse, assay.type = "relabundance", time.col = "Time.hr",
 #'   group = "StudyIdentifier")
 #'
-#' # Calculate the logarithm of the ratio described in Ji, B.W., et al. (2020)
+#' # Calculate the logarithm of the ratio described in Ji, B.W., et al. (2020),
+#' # adding half of the smallest positive relative abundance as a pseudocount
+#' relab <- assay(tse, "relabundance")
 #' tse <- transformAssay(
-#'     tse, assay.type = "relabundance", method = "log10", pseudocount = TRUE)
+#'     tse, assay.type = "relabundance", method = "log10",
+#'     pseudocount = min(relab[relab > 0]) / 2)
 #' df <- getShortTermChange(
 #'   tse, assay.type = "log10", time.col = "Time.hr", group = "StudyIdentifier")
 #'
