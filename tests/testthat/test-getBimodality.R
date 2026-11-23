@@ -28,15 +28,19 @@ test_that(".calculate_kurtosis works as expected", {
     expect_equal(.calculate_kurtosis(rep(5, 10)), NaN)
 })
 
-# Tests for .calculate_bimodality_coefficient (references calculated with
-# mousetrap::bimodality_coefficient)
+# Tests for .calculate_bimodality_coefficient (values of Sarle's coefficient,
+# Pfister et al. 2013)
 test_that(".calculate_bimodality_coefficient works as expected", {
-    # Normalish data
-    dat <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-    skew <- .calculate_skewness(dat)
-    kurt <- .calculate_kurtosis(dat)
-    ref <- (1+skew^2)/(kurt+3)
-    expect_equal(.calculate_bimodality_coefficient(dat), ref)
+    # Two equally frequent values give 1
+    expect_equal(.calculate_bimodality_coefficient(rep(c(0, 1), 50)), 1)
+    # A uniform distribution gives 5/9
+    expect_equal(
+        .calculate_bimodality_coefficient(seq(0, 1, length.out = 1e5)), 5 / 9,
+        tolerance = 1e-4)
+    # A normal distribution gives 1/3
+    set.seed(12346)
+    expect_equal(.calculate_bimodality_coefficient(rnorm(1e5)), 1 / 3,
+        tolerance = 0.01)
     # Constant data should result in NaN
     expect_equal(.calculate_bimodality_coefficient(rep(5, 10)), NaN)
 })

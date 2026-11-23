@@ -26,12 +26,13 @@
 #' \deqn{skewness = \frac{\sum_{i=1}^{n}(x_{i}-\overline{x})^{3}/n}{
 #' \sum_{i=1}^{n}(x_{i}-\overline{x})^{2}/n]^{3/2}}}
 #'
-#' and kurtosis as follows
+#' and kurtosis is the excess kurtosis
 #'
 #' \deqn{kurtosis = \frac{\sum_{i=1}^{n}(x_{i}-\overline{x})^{4}/n}{
-#' (\sum_{i=1}^{n}(x_{i}-\overline{x})^{2}/n)^{2}}}
+#' (\sum_{i=1}^{n}(x_{i}-\overline{x})^{2}/n)^{2}} - 3}
 #'
-#' The coefficient ranges from 0-1, where 1 means high bimodality. The
+#' The coefficient ranges from 0-1, where 1 means high bimodality (two equally
+#' frequent values). A uniform distribution gives 5/9. The
 #' coefficient was introduced in the paper Shade A et al. 2014, where they used
 #' bimodality and abundance to determine conditionally rare taxa (CRT).
 #'
@@ -205,7 +206,8 @@ setMethod("getBimodality", signature = c(x = "SummarizedExperiment"),
 # Function to calculate bimodality coefficient for single vector/taxon
 .calculate_bimodality_coefficient <- function(x, ...) {
     skewness <- .calculate_skewness(x, ...)
-    kurtosis <- .calculate_kurtosis(x, ...)
+    # Excess kurtosis, 0 for a normal distribution
+    kurtosis <- .calculate_kurtosis(x, ...) - 3
     b <- (1 + skewness^2) / (kurtosis + 3)
     return(b)
 }
