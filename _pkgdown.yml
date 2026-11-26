@@ -5,6 +5,7 @@ reference:
   contents:
   - getBaselineDivergence
   - getStepwiseDivergence
+  - getRankShift
 
 - title: Feature dynamics
   contents:
