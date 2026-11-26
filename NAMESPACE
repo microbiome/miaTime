@@ -59,9 +59,12 @@ importFrom(glmnet,
 )
 importFrom(stats,
   coef,
+  density,
+  dnorm,
   lm,
   median,
   predict,
+  rnorm,
   setNames
 )
 importFrom(survival,
