@@ -6,6 +6,10 @@ reference:
   - getBaselineDivergence
   - getStepwiseDivergence
 
+- title: Variogram
+  contents:
+  - getVariogram
+
 - title: Feature dynamics
   contents:
   - getShortTermChange
